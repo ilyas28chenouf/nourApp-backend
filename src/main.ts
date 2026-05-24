@@ -1,3 +1,4 @@
+import './common-utils/polyfills/node-crypto.polyfill';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';

@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: npm
 
       - name: Install dependencies
@@ -27,42 +27,102 @@ jobs:
         run: npm run build
 
       - name: Prepare SSH
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/lightsail_key
-          chmod 600 ~/.ssh/lightsail_key
-          ssh-keyscan -H ${{ secrets.LIGHTSAIL_HOST }} >> ~/.ssh/known_hosts
+          set -e
 
-      - name: Create deploy directory
+          if [ -z "$LIGHTSAIL_HOST" ]; then
+            echo "ERROR: LIGHTSAIL_HOST secret is missing"
+            exit 1
+          fi
+
+          if [ -z "$LIGHTSAIL_SSH_KEY" ]; then
+            echo "ERROR: LIGHTSAIL_SSH_KEY secret is missing"
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          echo "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail_key
+          chmod 600 ~/.ssh/lightsail_key
+
+          ssh-keyscan -H "$LIGHTSAIL_HOST" >> ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
         run: |
           ssh -i ~/.ssh/lightsail_key \
-            ${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }} \
-            "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
+            "echo SSH OK && hostname && whoami"
+
+      - name: Create deploy directory
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/lightsail_key \
+            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
+            "mkdir -p '$DEPLOY_PATH'"
 
       - name: Upload dist
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           rsync -az --delete \
             -e "ssh -i ~/.ssh/lightsail_key" \
             dist/ \
-            ${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }}:${{ secrets.DEPLOY_PATH }}/dist/
+            "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/dist/"
 
       - name: Upload package files
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           rsync -az \
             -e "ssh -i ~/.ssh/lightsail_key" \
             package.json package-lock.json \
-            ${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }}:${{ secrets.DEPLOY_PATH }}/
+            "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/"
 
       - name: Install production dependencies and restart PM2
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           ssh -i ~/.ssh/lightsail_key \
-            ${{ secrets.LIGHTSAIL_USER }}@${{ secrets.LIGHTSAIL_HOST }} << 'EOF'
+            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" << 'EOF'
               set -e
 
-              cd /home/ubuntu/apps/nourapp-api
+              export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 
+              echo "Checking server tools..."
+              which node
+              node -v
+
+              which npm
+              npm -v
+
+              which pm2
+              pm2 -v
+
+              echo "Go to deploy folder..."
+              cd "$DEPLOY_PATH"
+
+              echo "Files in deploy folder:"
+              ls -la
+
+              echo "Install production dependencies..."
               npm ci --omit=dev
 
+              echo "Restart PM2 app..."
               if pm2 describe nourapp-api > /dev/null; then
                 pm2 reload nourapp-api --update-env
               else

@@ -26,7 +26,7 @@ async function bootstrap() {
   );
 
   const swaggerConfig = createSwaggerConfig(
-    configService.get<string>('SWAGGER_TITLE', 'Éducation Spirituelle API'),
+    configService.get<string>('SWAGGER_TITLE', 'Éducation Spirituelle API V1'),
     configService.get<string>(
       'SWAGGER_DESCRIPTION',
       'Backend API for spiritual education and purification mobile application',

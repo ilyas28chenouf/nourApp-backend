@@ -101,16 +101,40 @@ jobs:
             "DEPLOY_PATH='$DEPLOY_PATH' bash -s" << 'EOF'
               set -e
 
-              export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+              echo "Loading Node environment..."
+
+              export NVM_DIR="$HOME/.nvm"
+
+              if [ -s "$NVM_DIR/nvm.sh" ]; then
+                . "$NVM_DIR/nvm.sh"
+                nvm use 18 || nvm use default
+              fi
+
+              export PATH="$HOME/.nvm/versions/node/v18.13.0/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
               echo "Checking server tools..."
-              which node
+
+              command -v node || {
+                echo "ERROR: node not found in non-interactive SSH session"
+                echo "PATH=$PATH"
+                exit 1
+              }
+
               node -v
 
-              which npm
+              command -v npm || {
+                echo "ERROR: npm not found in non-interactive SSH session"
+                echo "PATH=$PATH"
+                exit 1
+              }
+
               npm -v
 
-              which pm2
+              command -v pm2 || {
+                echo "ERROR: pm2 not found. Installing pm2 locally for this Node version..."
+                npm install -g pm2
+              }
+
               pm2 -v
 
               echo "Go to deploy folder..."

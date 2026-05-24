@@ -1,0 +1,1 @@
+export class CreateGoalProgressUsecase { constructor(private readonly persistence: import('../../domain/goals/ports/goals-persistence.port').GoalsPersistencePort) {} execute(userId: string, goalId: string, data: any) { return this.persistence.createProgress({ ...data, goalId, userId }); } }

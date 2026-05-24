@@ -1,0 +1,1 @@
+export class GetResourcesUsecase { constructor(private readonly persistence: import('../../domain/resources/ports/resources-persistence.port').ResourcesPersistencePort) {} execute() { return this.persistence.findActive(); } }

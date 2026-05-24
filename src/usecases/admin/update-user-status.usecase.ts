@@ -1,0 +1,1 @@
+export class UpdateUserStatusUsecase { constructor(private readonly users: import('../../domain/users/ports/users-persistence.port').UsersPersistencePort) {} execute(id: string, isActive: boolean) { return this.users.update(id, { isActive }); } }

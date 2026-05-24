@@ -1,0 +1,1 @@
+export class RemoveGroupMemberUsecase { constructor(private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort) {} async execute(_userId: string, _groupId: string, memberId: string) { await this.persistence.updateMember(memberId, { status: 'REMOVED' }); return { removed: true }; } }

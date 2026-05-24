@@ -1,0 +1,47 @@
+import { UserTypeormEntity } from '../users/entities/user.typeorm-entity';
+import { UserPreferenceTypeormEntity } from '../users/entities/user-preference.typeorm-entity';
+import { PrayerTimeTypeormEntity } from '../prayers/entities/prayer-time.typeorm-entity';
+import { PrayerLogTypeormEntity } from '../prayers/entities/prayer-log.typeorm-entity';
+import { FastingRecommendedDayTypeormEntity } from '../fasting/entities/fasting-recommended-day.typeorm-entity';
+import { FastingLogTypeormEntity } from '../fasting/entities/fasting-log.typeorm-entity';
+import { QuranReadingLogTypeormEntity } from '../quran/entities/quran-reading-log.typeorm-entity';
+import { QuranReadingGoalTypeormEntity } from '../quran/entities/quran-reading-goal.typeorm-entity';
+import { DhikrItemTypeormEntity } from '../dhikr/entities/dhikr-item.typeorm-entity';
+import { DhikrLogTypeormEntity } from '../dhikr/entities/dhikr-log.typeorm-entity';
+import { CharityLogTypeormEntity } from '../charity/entities/charity-log.typeorm-entity';
+import { MeditationLogTypeormEntity } from '../meditation/entities/meditation-log.typeorm-entity';
+import { ResourceTypeormEntity } from '../resources/entities/resource.typeorm-entity';
+import { LearningItemTypeormEntity } from '../learning/entities/learning-item.typeorm-entity';
+import { UserLearningProgressTypeormEntity } from '../learning/entities/user-learning-progress.typeorm-entity';
+import { DeviceTokenTypeormEntity } from '../notifications/entities/device-token.typeorm-entity';
+import { ScheduledNotificationTypeormEntity } from '../notifications/entities/scheduled-notification.typeorm-entity';
+import { GoalTypeormEntity } from '../goals/entities/goal.typeorm-entity';
+import { GoalProgressTypeormEntity } from '../goals/entities/goal-progress.typeorm-entity';
+import { GroupTypeormEntity } from '../groups/entities/group.typeorm-entity';
+import { GroupMemberTypeormEntity } from '../groups/entities/group-member.typeorm-entity';
+import { GroupEncouragementTypeormEntity } from '../groups/entities/group-encouragement.typeorm-entity';
+
+export const TYPEORM_ENTITIES = [
+  UserTypeormEntity,
+  UserPreferenceTypeormEntity,
+  PrayerTimeTypeormEntity,
+  PrayerLogTypeormEntity,
+  FastingRecommendedDayTypeormEntity,
+  FastingLogTypeormEntity,
+  QuranReadingLogTypeormEntity,
+  QuranReadingGoalTypeormEntity,
+  DhikrItemTypeormEntity,
+  DhikrLogTypeormEntity,
+  CharityLogTypeormEntity,
+  MeditationLogTypeormEntity,
+  ResourceTypeormEntity,
+  LearningItemTypeormEntity,
+  UserLearningProgressTypeormEntity,
+  DeviceTokenTypeormEntity,
+  ScheduledNotificationTypeormEntity,
+  GoalTypeormEntity,
+  GoalProgressTypeormEntity,
+  GroupTypeormEntity,
+  GroupMemberTypeormEntity,
+  GroupEncouragementTypeormEntity,
+];

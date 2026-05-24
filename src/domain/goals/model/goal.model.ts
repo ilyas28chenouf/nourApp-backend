@@ -1,0 +1,2 @@
+import { GoalFrequency } from '../enums/goal-frequency.enum'; import { GoalType } from '../enums/goal-type.enum';
+export interface GoalModel { id: string; ownerUserId?: string | null; groupId?: string | null; title: string; description?: string | null; goalType: GoalType; targetValue?: string | number | null; targetUnit?: string | null; frequency: GoalFrequency; startDate: string; endDate?: string | null; isGroupGoal: boolean; isActive: boolean; createdAt?: Date; updatedAt?: Date; }

@@ -1,0 +1,1 @@
+export class GetGroupProgressUsecase { constructor(private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort) {} execute(_userId: string, _groupId: string) { return this.persistence.findAllProgress(); } }

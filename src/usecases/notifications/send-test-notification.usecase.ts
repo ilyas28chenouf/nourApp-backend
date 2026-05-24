@@ -1,0 +1,1 @@
+export class SendTestNotificationUsecase { constructor(private readonly persistence: import('../../domain/notifications/ports/notifications-persistence.port').NotificationsPersistencePort) {} execute(userId: string, data: any) { return this.persistence.createScheduled({ ...data, userId, scheduledAt: new Date(), sentAt: new Date(), status: 'SENT' }); } }

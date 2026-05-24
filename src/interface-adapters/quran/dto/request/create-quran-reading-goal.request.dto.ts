@@ -1,0 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { GoalFrequency } from '../../../../domain/goals/enums/goal-frequency.enum'; import { QuranGoalType } from '../../../../domain/quran/enums/quran-goal-type.enum';
+export class CreateQuranReadingGoalRequestDto { @ApiProperty() @IsString() title: string; @ApiProperty({ enum: QuranGoalType }) @IsEnum(QuranGoalType) goalType: QuranGoalType; @ApiPropertyOptional() @IsOptional() @IsInt() targetPages?: number; @ApiPropertyOptional() @IsOptional() @IsString() targetSurah?: string; @ApiPropertyOptional() @IsOptional() @IsNumber() targetHizb?: number; @ApiProperty({ enum: GoalFrequency }) @IsEnum(GoalFrequency) frequency: GoalFrequency; @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean; }

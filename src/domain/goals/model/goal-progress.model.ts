@@ -1,0 +1,1 @@
+export interface GoalProgressModel { id: string; goalId: string; userId: string; progressDate: string; value: string | number; completed: boolean; notes?: string | null; createdAt?: Date; updatedAt?: Date; }

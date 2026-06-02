@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -10,20 +9,22 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBadGatewayResponse,
+  ApiBadRequestResponse,
   ApiBody,
   ApiOperation,
   ApiOkResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { PrayersUsecasesProxyService } from '../../../usecases-proxy/prayers/prayers-usecases-proxy.service';
 import { CreatePrayerLogRequestDto } from '../dto/request/create-prayer-log.request.dto';
 import { UpdatePrayerLogRequestDto } from '../dto/request/update-prayer-log.request.dto';
 import { PrayerLogResponseDto } from '../dto/response/prayer-log.response.dto';
+import { PrayerMethodsResponseDto } from '../dto/response/prayer-methods.response.dto';
 import { PrayerSummaryResponseDto } from '../dto/response/prayer-summary.response.dto';
 import { PrayerTimeResponseDto } from '../dto/response/prayer-time.response.dto';
 import { PrayerResponseMapper } from '../mappers/prayer.response.mapper';
@@ -35,9 +36,29 @@ export class PrayersController {
   constructor(private readonly proxy: PrayersUsecasesProxyService) {}
   @Get('times')
   @ApiOperation({ summary: 'Get prayer times for date' })
+  @ApiQuery({ name: 'date', example: '2026-06-02' })
   @ApiOkResponse({ type: PrayerTimeResponseDto })
-  times(@CurrentUser() user: UserModel, @Query('date') date: string) {
-    return PrayerResponseMapper.toDto(this.proxy.getPrayerTimes(user.id, date));
+  @ApiBadRequestResponse({
+    description:
+      'User location and timezone are required to calculate prayer times',
+  })
+  @ApiBadGatewayResponse({
+    description: 'Unable to fetch prayer times from provider',
+  })
+  async times(@CurrentUser() user: UserModel, @Query('date') date: string) {
+    return PrayerResponseMapper.toPrayerTimeDto(
+      await this.proxy.getPrayerTimes(user.id, date),
+    );
+  }
+
+  @Get('methods')
+  @ApiOperation({ summary: 'Get available prayer calculation methods' })
+  @ApiOkResponse({ type: PrayerMethodsResponseDto })
+  @ApiBadGatewayResponse({
+    description: 'Unable to fetch prayer times from provider',
+  })
+  methods() {
+    return PrayerResponseMapper.toDto(this.proxy.getPrayerMethods());
   }
   @Get('logs')
   @ApiOperation({ summary: 'Get prayer logs' })

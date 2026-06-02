@@ -25,4 +25,6 @@ export class UserPreferenceTypeormEntity {
   @Column({ default: true }) dhikrNotificationsEnabled: boolean;
   @Column({ default: true }) quranNotificationsEnabled: boolean;
   @Column({ default: true }) encouragementNotificationsEnabled: boolean;
+  @Column({ default: 'Algeria' }) prayerCalculationMethod: string;
+  @Column({ default: 'Shafi' }) prayerMadhab: string;
 }

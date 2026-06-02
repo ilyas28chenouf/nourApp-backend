@@ -4,7 +4,12 @@ export class UpdateUserPreferencesUsecase {
   async execute(userId: string, data: any) {
     const pref =
       (await this.preferences.findByUserId(userId)) ??
-      (await this.preferences.create({ userId, language: 'fr' }));
+      (await this.preferences.create({
+        userId,
+        language: 'fr',
+        prayerCalculationMethod: 'Algeria',
+        prayerMadhab: 'Shafi',
+      }));
     return this.preferences.update(pref.id, data);
   }
 }

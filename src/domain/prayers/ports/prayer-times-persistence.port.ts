@@ -3,8 +3,12 @@ export const PRAYER_TIMES_PERSISTENCE_PORT = Symbol(
   'PRAYER_TIMES_PERSISTENCE_PORT',
 );
 export interface PrayerTimesPersistencePort {
-  findByUserAndDate(
+  findCached(
     userId: string,
     prayerDate: string,
+    calculationMethod: string,
+    madhab: string,
+    timezone: string,
   ): Promise<PrayerTimeModel | null>;
+  create(data: Partial<PrayerTimeModel>): Promise<PrayerTimeModel>;
 }

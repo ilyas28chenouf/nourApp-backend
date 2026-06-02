@@ -1,16 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDateString,
   IsEnum,
-  IsInt,
-  IsNumber,
+  IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
-  Max,
-  Min,
 } from 'class-validator';
+import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
+
 export class UpdatePreferencesRequestDto {
   @ApiPropertyOptional() @IsOptional() @IsString() theme?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() language?: string;
@@ -34,4 +31,15 @@ export class UpdatePreferencesRequestDto {
   @IsOptional()
   @IsBoolean()
   encouragementNotificationsEnabled?: boolean;
+
+  @ApiPropertyOptional({ example: 'Algeria' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  prayerCalculationMethod?: string;
+
+  @ApiPropertyOptional({ enum: PrayerMadhab, example: PrayerMadhab.SHAFI })
+  @IsOptional()
+  @IsEnum(PrayerMadhab)
+  prayerMadhab?: PrayerMadhab;
 }

@@ -8,6 +8,8 @@ export interface UserPreferenceModel {
   dhikrNotificationsEnabled: boolean;
   quranNotificationsEnabled: boolean;
   encouragementNotificationsEnabled: boolean;
+  prayerCalculationMethod: string;
+  prayerMadhab: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

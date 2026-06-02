@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
 
 export class UserPreferenceResponseDto {
   @ApiProperty()
@@ -27,6 +28,12 @@ export class UserPreferenceResponseDto {
 
   @ApiProperty()
   encouragementNotificationsEnabled: boolean;
+
+  @ApiProperty({ example: 'Algeria' })
+  prayerCalculationMethod: string;
+
+  @ApiProperty({ enum: PrayerMadhab, example: PrayerMadhab.SHAFI })
+  prayerMadhab: PrayerMadhab;
 
   @ApiPropertyOptional()
   createdAt?: Date;

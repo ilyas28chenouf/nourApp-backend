@@ -4,7 +4,12 @@ export class GetUserPreferencesUsecase {
   async execute(userId: string) {
     return (
       (await this.preferences.findByUserId(userId)) ??
-      this.preferences.create({ userId, language: 'fr' })
+      this.preferences.create({
+        userId,
+        language: 'fr',
+        prayerCalculationMethod: 'Algeria',
+        prayerMadhab: 'Shafi',
+      })
     );
   }
 }

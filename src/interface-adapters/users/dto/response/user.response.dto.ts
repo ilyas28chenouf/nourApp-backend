@@ -38,10 +38,10 @@ export class UserResponseDto {
   country?: string;
 
   @ApiPropertyOptional()
-  latitude?: number;
+  latitude?: number | string;
 
   @ApiPropertyOptional()
-  longitude?: number;
+  longitude?: number | string;
 
   @ApiProperty()
   isActive: boolean;

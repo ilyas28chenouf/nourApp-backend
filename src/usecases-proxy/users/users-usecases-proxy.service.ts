@@ -6,12 +6,10 @@ import { UpdateUserLocationUsecase } from '../../usecases/users/update-user-loca
 
 @Injectable()
 export class UsersUsecasesProxyService {
-  private readonly getCurrentUserUsecase = new GetCurrentUserUsecase();
-
   constructor(private readonly users: UsersTypeormAdapter) {}
 
   getCurrentUser(user: any) {
-    return this.getCurrentUserUsecase.execute(user);
+    return new GetCurrentUserUsecase(this.users).execute(user);
   }
   updateCurrentUser(userId: string, data: any) {
     return new UpdateCurrentUserUsecase(this.users).execute(userId, data);

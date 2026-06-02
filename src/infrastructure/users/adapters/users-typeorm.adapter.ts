@@ -20,6 +20,11 @@ export class UsersTypeormAdapter implements UsersPersistencePort {
       where: { firebaseUid },
     }) as Promise<UserModel | null>;
   }
+  findByEmail(email: string) {
+    return this.repository.findOne({
+      where: { email },
+    }) as Promise<UserModel | null>;
+  }
   findAll() {
     return this.repository.find({ order: { createdAt: 'DESC' } }) as Promise<
       UserModel[]
@@ -33,9 +38,16 @@ export class UsersTypeormAdapter implements UsersPersistencePort {
   async update(id: string, data: Partial<UserModel>) {
     const existing = await this.repository.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('User not found');
-    return this.repository.save({
-      ...existing,
-      ...data,
-    } as any) as unknown as Promise<UserModel>;
+    const updatePayload = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    ) as Partial<UserTypeormEntity>;
+    await this.repository.update({ id }, updatePayload);
+    return (await this.repository.findOne({ where: { id } })) as UserModel;
+  }
+  async save(user: UserModel) {
+    await this.repository.save(user as any);
+    return (await this.repository.findOne({
+      where: { id: user.id },
+    })) as UserModel;
   }
 }

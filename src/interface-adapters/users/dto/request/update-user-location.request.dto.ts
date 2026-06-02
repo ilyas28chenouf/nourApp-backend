@@ -1,17 +1,8 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Max,
-  Min,
-} from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+
 export class UpdateUserLocationRequestDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() timezone?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() city?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() country?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() latitude?: number;

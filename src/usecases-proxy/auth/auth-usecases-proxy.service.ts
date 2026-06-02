@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersTypeormAdapter } from '../../infrastructure/users/adapters/users-typeorm.adapter';
 import { UserPreferencesTypeormAdapter } from '../../infrastructure/users/adapters/user-preferences-typeorm.adapter';
 import { UserRole } from '../../domain/users/enums/user-role.enum';
+import { AppLoggerService } from '../../infrastructure/logger/app-logger.service';
 import { GetCurrentAuthUserUsecase } from '../../usecases/auth/get-current-auth-user.usecase';
 import { SyncFirebaseUserUsecase } from '../../usecases/auth/sync-firebase-user.usecase';
 
@@ -14,6 +15,7 @@ export class AuthUsecasesProxyService {
     private readonly users: UsersTypeormAdapter,
     private readonly preferences: UserPreferencesTypeormAdapter,
     private readonly configService: ConfigService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   syncFirebaseUser(firebaseUser: import('firebase-admin/auth').DecodedIdToken) {
@@ -24,6 +26,7 @@ export class AuthUsecasesProxyService {
       this.users,
       this.preferences,
       defaultRole,
+      this.logger,
       superadminEmail,
     ).execute(firebaseUser);
   }

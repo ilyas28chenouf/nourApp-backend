@@ -1,1 +1,12 @@
-export class DeleteQuranReadingGoalUsecase { constructor(private readonly persistence: import('../../domain/quran/ports/quran-persistence.port').QuranPersistencePort) {} async execute(userId: string, id: string) { const existing = await this.persistence.findGoalById(id); if (!existing || existing.userId !== userId) throw new Error('Record not found'); await this.persistence.deleteGoal(id); return { deleted: true }; } }
+export class DeleteQuranReadingGoalUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/quran/ports/quran-persistence.port').QuranPersistencePort,
+  ) {}
+  async execute(userId: string, id: string) {
+    const existing = await this.persistence.findGoalById(id);
+    if (!existing || existing.userId !== userId)
+      throw new Error('Record not found');
+    await this.persistence.deleteGoal(id);
+    return { deleted: true };
+  }
+}

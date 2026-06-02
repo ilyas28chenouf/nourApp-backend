@@ -1,1 +1,8 @@
-export class UpdateUserRoleUsecase { constructor(private readonly users: import('../../domain/users/ports/users-persistence.port').UsersPersistencePort) {} execute(id: string, role: any) { return this.users.update(id, { role }); } }
+export class UpdateUserRoleUsecase {
+  constructor(
+    private readonly users: import('../../domain/users/ports/users-persistence.port').UsersPersistencePort,
+  ) {}
+  execute(id: string, role: any) {
+    return this.users.update(id, { role });
+  }
+}

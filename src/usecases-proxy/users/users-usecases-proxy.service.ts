@@ -10,7 +10,13 @@ export class UsersUsecasesProxyService {
 
   constructor(private readonly users: UsersTypeormAdapter) {}
 
-  getCurrentUser(user: any) { return this.getCurrentUserUsecase.execute(user); }
-  updateCurrentUser(userId: string, data: any) { return new UpdateCurrentUserUsecase(this.users).execute(userId, data); }
-  updateUserLocation(userId: string, data: any) { return new UpdateUserLocationUsecase(this.users).execute(userId, data); }
+  getCurrentUser(user: any) {
+    return this.getCurrentUserUsecase.execute(user);
+  }
+  updateCurrentUser(userId: string, data: any) {
+    return new UpdateCurrentUserUsecase(this.users).execute(userId, data);
+  }
+  updateUserLocation(userId: string, data: any) {
+    return new UpdateUserLocationUsecase(this.users).execute(userId, data);
+  }
 }

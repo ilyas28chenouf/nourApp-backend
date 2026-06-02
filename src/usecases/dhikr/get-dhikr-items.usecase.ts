@@ -1,1 +1,8 @@
-export class GetDhikrItemsUsecase { constructor(private readonly persistence: import('../../domain/dhikr/ports/dhikr-persistence.port').DhikrPersistencePort) {} execute() { return this.persistence.findItems(); } }
+export class GetDhikrItemsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/dhikr/ports/dhikr-persistence.port').DhikrPersistencePort,
+  ) {}
+  execute() {
+    return this.persistence.findItems();
+  }
+}

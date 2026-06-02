@@ -7,13 +7,28 @@ import { UpdateUserLearningProgressUsecase } from '../../usecases/learning/updat
 
 @Injectable()
 export class LearningUsecasesProxyService {
-  
-
   constructor(private readonly learning: LearningTypeormAdapter) {}
 
-  items() { return new GetLearningItemsUsecase(this.learning).execute(); }
-  item(id: string) { return new GetLearningItemByIdUsecase(this.learning).execute(id); }
-  progress(userId: string) { return new GetUserLearningProgressUsecase(this.learning).execute(userId); }
-  createProgress(userId: string, data: any) { return new UpdateUserLearningProgressUsecase(this.learning).execute(userId, data); }
-  updateProgress(userId: string, id: string, data: any) { return new UpdateUserLearningProgressUsecase(this.learning).execute(userId, id, data); }
+  items() {
+    return new GetLearningItemsUsecase(this.learning).execute();
+  }
+  item(id: string) {
+    return new GetLearningItemByIdUsecase(this.learning).execute(id);
+  }
+  progress(userId: string) {
+    return new GetUserLearningProgressUsecase(this.learning).execute(userId);
+  }
+  createProgress(userId: string, data: any) {
+    return new UpdateUserLearningProgressUsecase(this.learning).execute(
+      userId,
+      data,
+    );
+  }
+  updateProgress(userId: string, id: string, data: any) {
+    return new UpdateUserLearningProgressUsecase(this.learning).execute(
+      userId,
+      id,
+      data,
+    );
+  }
 }

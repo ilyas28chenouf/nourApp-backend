@@ -1,1 +1,11 @@
-export class GetFastingLogsUsecase { constructor(private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort) {} async execute(userId: string, from?: string, to?: string) { const logs = await this.persistence.findLogsByUserId(userId); return logs.filter((l) => (!from || l.fastingDate >= from) && (!to || l.fastingDate <= to)); } }
+export class GetFastingLogsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort,
+  ) {}
+  async execute(userId: string, from?: string, to?: string) {
+    const logs = await this.persistence.findLogsByUserId(userId);
+    return logs.filter(
+      (l) => (!from || l.fastingDate >= from) && (!to || l.fastingDate <= to),
+    );
+  }
+}

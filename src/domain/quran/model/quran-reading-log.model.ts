@@ -1,2 +1,17 @@
 import { ReadingPeriod } from '../enums/reading-period.enum';
-export interface QuranReadingLogModel { id: string; userId: string; readingDate: string; pagesCount: number; surahName?: string | null; surahNumber?: number | null; ayahFrom?: number | null; ayahTo?: number | null; hizbCount: string | number; readingPeriod?: ReadingPeriod | null; objectiveReached: boolean; notes?: string | null; createdAt?: Date; updatedAt?: Date; }
+export interface QuranReadingLogModel {
+  id: string;
+  userId: string;
+  readingDate: string;
+  pagesCount: number;
+  surahName?: string | null;
+  surahNumber?: number | null;
+  ayahFrom?: number | null;
+  ayahTo?: number | null;
+  hizbCount: string | number;
+  readingPeriod?: ReadingPeriod | null;
+  objectiveReached: boolean;
+  notes?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

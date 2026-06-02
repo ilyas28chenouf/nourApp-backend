@@ -1,1 +1,21 @@
-export class CreateGroupUsecase { constructor(private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort) {} async execute(userId: string, data: any) { const group = await this.persistence.create({ ...data, ownerUserId: userId, inviteCode: Math.random().toString(36).slice(2,10).toUpperCase(), isActive: true }); await this.persistence.createMember({ groupId: group.id, userId, role: 'OWNER', status: 'ACTIVE', joinedAt: new Date() }); return group; } }
+export class CreateGroupUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort,
+  ) {}
+  async execute(userId: string, data: any) {
+    const group = await this.persistence.create({
+      ...data,
+      ownerUserId: userId,
+      inviteCode: Math.random().toString(36).slice(2, 10).toUpperCase(),
+      isActive: true,
+    });
+    await this.persistence.createMember({
+      groupId: group.id,
+      userId,
+      role: 'OWNER',
+      status: 'ACTIVE',
+      joinedAt: new Date(),
+    });
+    return group;
+  }
+}

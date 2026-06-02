@@ -1,2 +1,10 @@
 import { UserPreferencesPersistencePort } from '../../domain/users/ports/user-preferences-persistence.port';
-export class UpdateUserPreferencesUsecase { constructor(private readonly preferences: UserPreferencesPersistencePort) {} async execute(userId: string, data: any) { const pref = (await this.preferences.findByUserId(userId)) ?? await this.preferences.create({ userId, language: 'fr' }); return this.preferences.update(pref.id, data); } }
+export class UpdateUserPreferencesUsecase {
+  constructor(private readonly preferences: UserPreferencesPersistencePort) {}
+  async execute(userId: string, data: any) {
+    const pref =
+      (await this.preferences.findByUserId(userId)) ??
+      (await this.preferences.create({ userId, language: 'fr' }));
+    return this.preferences.update(pref.id, data);
+  }
+}

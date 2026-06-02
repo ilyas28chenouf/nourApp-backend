@@ -4,9 +4,21 @@ export class GroupProgressResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiPropertyOptional()
-  createdAt?: Date;
+  @ApiProperty()
+  goalId: string;
+
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  progressDate: string;
+
+  @ApiProperty()
+  value: number;
+
+  @ApiProperty()
+  completed: boolean;
 
   @ApiPropertyOptional()
-  updatedAt?: Date;
+  notes?: string;
 }

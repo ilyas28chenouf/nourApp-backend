@@ -1,11 +1,28 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../../../common-utils/decorators/current-user.decorator';
-import { Roles } from '../../../common-utils/decorators/roles.decorator';
-import { UserRole } from '../../../common-utils/enums/user-role.enum';
-import { ProtectedApi } from '../../../common-utils/swagger/swagger.config';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { Roles } from '../../shared/decorators/roles.decorator';
+import { UserRole } from '../../../domain/users/enums/user-role.enum';
+import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { AuthUsecasesProxyService } from '../../../usecases-proxy/auth/auth-usecases-proxy.service';
+import { AuthResponseMapper } from '../mappers/auth.response.mapper';
+
 import { AuthUserResponseDto } from '../dto/response/auth-user.response.dto';
 
 @ApiTags('Auth')
@@ -14,6 +31,16 @@ import { AuthUserResponseDto } from '../dto/response/auth-user.response.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly proxy: AuthUsecasesProxyService) {}
-  @Get('me') @ApiOperation({ summary: 'Get current authenticated user' }) @ApiResponse({ type: AuthUserResponseDto }) me(@CurrentUser() user: UserModel) { return this.proxy.getCurrentUser(user); }
-  @Post('sync-firebase-user') @ApiOperation({ summary: 'Synchronize Firebase user with local database' }) @ApiResponse({ type: AuthUserResponseDto }) sync(@CurrentUser() user: UserModel) { return this.proxy.getCurrentUser(user); }
+  @Get('me')
+  @ApiOperation({ summary: 'Get current authenticated user' })
+  @ApiOkResponse({ type: AuthUserResponseDto })
+  me(@CurrentUser() user: UserModel) {
+    return AuthResponseMapper.toDto(this.proxy.getCurrentUser(user));
+  }
+  @Post('sync-firebase-user')
+  @ApiOperation({ summary: 'Synchronize Firebase user with local database' })
+  @ApiOkResponse({ type: AuthUserResponseDto })
+  sync(@CurrentUser() user: UserModel) {
+    return AuthResponseMapper.toDto(this.proxy.getCurrentUser(user));
+  }
 }

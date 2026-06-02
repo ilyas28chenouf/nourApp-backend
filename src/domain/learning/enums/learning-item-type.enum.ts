@@ -1,1 +1,5 @@
-export enum LearningItemType { SURAH = 'SURAH', DHIKR = 'DHIKR', HADITH = 'HADITH' }
+export enum LearningItemType {
+  SURAH = 'SURAH',
+  DHIKR = 'DHIKR',
+  HADITH = 'HADITH',
+}

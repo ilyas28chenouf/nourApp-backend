@@ -8,13 +8,21 @@ import { UpdateResourceUsecase } from '../../usecases/resources/update-resource.
 
 @Injectable()
 export class ResourcesUsecasesProxyService {
-  
-
   constructor(private readonly resources: ResourcesTypeormAdapter) {}
 
-  list() { return new GetResourcesUsecase(this.resources).execute(); }
-  get(id: string) { return new GetResourceByIdUsecase(this.resources).execute(id); }
-  create(createdBy: string, data: any) { return new CreateResourceUsecase(this.resources).execute(createdBy, data); }
-  update(id: string, data: any) { return new UpdateResourceUsecase(this.resources).execute(id, data); }
-  delete(id: string) { return new DeleteResourceUsecase(this.resources).execute(id); }
+  list() {
+    return new GetResourcesUsecase(this.resources).execute();
+  }
+  get(id: string) {
+    return new GetResourceByIdUsecase(this.resources).execute(id);
+  }
+  create(createdBy: string, data: any) {
+    return new CreateResourceUsecase(this.resources).execute(createdBy, data);
+  }
+  update(id: string, data: any) {
+    return new UpdateResourceUsecase(this.resources).execute(id, data);
+  }
+  delete(id: string) {
+    return new DeleteResourceUsecase(this.resources).execute(id);
+  }
 }

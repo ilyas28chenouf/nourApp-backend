@@ -1,1 +1,11 @@
-export class GetQuranReadingLogsUsecase { constructor(private readonly persistence: import('../../domain/quran/ports/quran-persistence.port').QuranPersistencePort) {} async execute(userId: string, from?: string, to?: string) { const logs = await this.persistence.findLogsByUserId(userId); return logs.filter((l) => (!from || l.readingDate >= from) && (!to || l.readingDate <= to)); } }
+export class GetQuranReadingLogsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/quran/ports/quran-persistence.port').QuranPersistencePort,
+  ) {}
+  async execute(userId: string, from?: string, to?: string) {
+    const logs = await this.persistence.findLogsByUserId(userId);
+    return logs.filter(
+      (l) => (!from || l.readingDate >= from) && (!to || l.readingDate <= to),
+    );
+  }
+}

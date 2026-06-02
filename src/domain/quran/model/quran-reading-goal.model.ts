@@ -1,2 +1,15 @@
-import { QuranGoalType } from '../enums/quran-goal-type.enum'; import { GoalFrequency } from '../../goals/enums/goal-frequency.enum';
-export interface QuranReadingGoalModel { id: string; userId: string; title: string; goalType: QuranGoalType; targetPages?: number | null; targetSurah?: string | null; targetHizb?: string | number | null; frequency: GoalFrequency; isActive: boolean; createdAt?: Date; updatedAt?: Date; }
+import { QuranGoalType } from '../enums/quran-goal-type.enum';
+import { GoalFrequency } from '../../goals/enums/goal-frequency.enum';
+export interface QuranReadingGoalModel {
+  id: string;
+  userId: string;
+  title: string;
+  goalType: QuranGoalType;
+  targetPages?: number | null;
+  targetSurah?: string | null;
+  targetHizb?: string | number | null;
+  frequency: GoalFrequency;
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

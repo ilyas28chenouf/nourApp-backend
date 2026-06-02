@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { createSwaggerConfig } from './common-utils/swagger/swagger.config';
+import { createSwaggerConfig } from './infrastructure/swagger/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,7 +15,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix(globalPrefix);
   app.enableCors({
-    origin: corsOrigin === '*' ? true : corsOrigin.split(',').map((origin) => origin.trim()),
+    origin:
+      corsOrigin === '*'
+        ? true
+        : corsOrigin.split(',').map((origin) => origin.trim()),
     credentials: true,
   });
   app.useGlobalPipes(

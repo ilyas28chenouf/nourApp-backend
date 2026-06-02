@@ -4,9 +4,21 @@ export class FastingRecommendedDayResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiPropertyOptional()
-  createdAt?: Date;
+  @ApiProperty()
+  date: string;
 
   @ApiPropertyOptional()
-  updatedAt?: Date;
+  hijriDate?: string;
+
+  @ApiProperty()
+  type: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiPropertyOptional()
+  createdAt?: Date;
 }

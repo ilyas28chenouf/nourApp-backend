@@ -1,2 +1,15 @@
-import { NotificationStatus } from '../enums/notification-status.enum'; import { NotificationType } from '../enums/notification-type.enum';
-export interface ScheduledNotificationModel { id: string; userId: string; type: NotificationType; title: string; body: string; scheduledAt: Date; sentAt?: Date | null; status: NotificationStatus; metadata?: Record<string, unknown> | null; createdAt?: Date; updatedAt?: Date; }
+import { NotificationStatus } from '../enums/notification-status.enum';
+import { NotificationType } from '../enums/notification-type.enum';
+export interface ScheduledNotificationModel {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  scheduledAt: Date;
+  sentAt?: Date | null;
+  status: NotificationStatus;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

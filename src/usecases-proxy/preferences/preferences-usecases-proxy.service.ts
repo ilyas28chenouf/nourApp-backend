@@ -5,10 +5,15 @@ import { UpdateUserPreferencesUsecase } from '../../usecases/preferences/update-
 
 @Injectable()
 export class PreferencesUsecasesProxyService {
-  
-
   constructor(private readonly preferences: UserPreferencesTypeormAdapter) {}
 
-  getUserPreferences(userId: string) { return new GetUserPreferencesUsecase(this.preferences).execute(userId); }
-  updateUserPreferences(userId: string, data: any) { return new UpdateUserPreferencesUsecase(this.preferences).execute(userId, data); }
+  getUserPreferences(userId: string) {
+    return new GetUserPreferencesUsecase(this.preferences).execute(userId);
+  }
+  updateUserPreferences(userId: string, data: any) {
+    return new UpdateUserPreferencesUsecase(this.preferences).execute(
+      userId,
+      data,
+    );
+  }
 }

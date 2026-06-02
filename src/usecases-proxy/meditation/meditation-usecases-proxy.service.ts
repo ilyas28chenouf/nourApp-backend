@@ -7,12 +7,29 @@ import { UpdateMeditationLogUsecase } from '../../usecases/meditation/update-med
 
 @Injectable()
 export class MeditationUsecasesProxyService {
-  
-
   constructor(private readonly persistence: MeditationTypeormAdapter) {}
 
-  logs(userId: string, from?: string, to?: string) { return new GetMeditationLogsUsecase(this.persistence).execute(userId, from, to); }
-  createLog(userId: string, data: any) { return new CreateMeditationLogUsecase(this.persistence).execute(userId, data); }
-  updateLog(userId: string, id: string, data: any) { return new UpdateMeditationLogUsecase(this.persistence).execute(userId, id, data); }
-  deleteLog(userId: string, id: string) { return new DeleteMeditationLogUsecase(this.persistence).execute(userId, id); }
+  logs(userId: string, from?: string, to?: string) {
+    return new GetMeditationLogsUsecase(this.persistence).execute(
+      userId,
+      from,
+      to,
+    );
+  }
+  createLog(userId: string, data: any) {
+    return new CreateMeditationLogUsecase(this.persistence).execute(
+      userId,
+      data,
+    );
+  }
+  updateLog(userId: string, id: string, data: any) {
+    return new UpdateMeditationLogUsecase(this.persistence).execute(
+      userId,
+      id,
+      data,
+    );
+  }
+  deleteLog(userId: string, id: string) {
+    return new DeleteMeditationLogUsecase(this.persistence).execute(userId, id);
+  }
 }

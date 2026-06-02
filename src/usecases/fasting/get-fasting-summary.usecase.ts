@@ -1,1 +1,14 @@
-export class GetFastingSummaryUsecase { constructor(private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort) {} async execute(userId: string, period: string) { const logs = await this.persistence.findLogsByUserId(userId); return { period, total: logs.length, fasted: logs.filter((l) => l.status === 'FASTED').length, planned: logs.filter((l) => l.status === 'PLANNED').length }; } }
+export class GetFastingSummaryUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort,
+  ) {}
+  async execute(userId: string, period: string) {
+    const logs = await this.persistence.findLogsByUserId(userId);
+    return {
+      period,
+      total: logs.length,
+      fasted: logs.filter((l) => l.status === 'FASTED').length,
+      planned: logs.filter((l) => l.status === 'PLANNED').length,
+    };
+  }
+}

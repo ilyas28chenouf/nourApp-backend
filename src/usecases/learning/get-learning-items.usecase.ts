@@ -1,1 +1,8 @@
-export class GetLearningItemsUsecase { constructor(private readonly persistence: import('../../domain/learning/ports/learning-persistence.port').LearningPersistencePort) {} execute() { return this.persistence.findItems(); } }
+export class GetLearningItemsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/learning/ports/learning-persistence.port').LearningPersistencePort,
+  ) {}
+  execute() {
+    return this.persistence.findItems();
+  }
+}

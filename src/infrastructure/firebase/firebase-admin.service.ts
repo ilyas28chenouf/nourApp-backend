@@ -14,16 +14,25 @@ export class FirebaseAdminService {
   }
 
   async verifyIdToken(token: string): Promise<DecodedIdToken> {
-    try { return await this.auth.verifyIdToken(token); } catch { throw new UnauthorizedException('Invalid Firebase token'); }
+    try {
+      return await this.auth.verifyIdToken(token);
+    } catch {
+      throw new UnauthorizedException('Invalid Firebase token');
+    }
   }
 
   private getFirebaseOptions() {
-    const serviceAccountPath = this.configService.get<string>('FIREBASE_SERVICE_ACCOUNT_PATH');
+    const serviceAccountPath = this.configService.get<string>(
+      'FIREBASE_SERVICE_ACCOUNT_PATH',
+    );
     if (serviceAccountPath) return { credential: cert(serviceAccountPath) };
     const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID');
     const clientEmail = this.configService.get<string>('FIREBASE_CLIENT_EMAIL');
-    const privateKey = this.configService.get<string>('FIREBASE_PRIVATE_KEY')?.replace(/\n/g, '\n');
-    if (projectId && clientEmail && privateKey) return { credential: cert({ projectId, clientEmail, privateKey }) };
+    const privateKey = this.configService
+      .get<string>('FIREBASE_PRIVATE_KEY')
+      ?.replace(/\n/g, '\n');
+    if (projectId && clientEmail && privateKey)
+      return { credential: cert({ projectId, clientEmail, privateKey }) };
     return projectId ? { projectId } : undefined;
   }
 }

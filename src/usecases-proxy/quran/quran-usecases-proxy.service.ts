@@ -11,16 +11,38 @@ import { UpdateQuranReadingLogUsecase } from '../../usecases/quran/update-quran-
 
 @Injectable()
 export class QuranUsecasesProxyService {
-  
-
   constructor(private readonly quran: QuranTypeormAdapter) {}
 
-  logs(userId: string, from?: string, to?: string) { return new GetQuranReadingLogsUsecase(this.quran).execute(userId, from, to); }
-  createLog(userId: string, data: any) { return new CreateQuranReadingLogUsecase(this.quran).execute(userId, data); }
-  updateLog(userId: string, id: string, data: any) { return new UpdateQuranReadingLogUsecase(this.quran).execute(userId, id, data); }
-  goals(userId: string) { return new GetQuranReadingGoalsUsecase(this.quran).execute(userId); }
-  createGoal(userId: string, data: any) { return new CreateQuranReadingGoalUsecase(this.quran).execute(userId, data); }
-  updateGoal(userId: string, id: string, data: any) { return new UpdateQuranReadingGoalUsecase(this.quran).execute(userId, id, data); }
-  deleteGoal(userId: string, id: string) { return new DeleteQuranReadingGoalUsecase(this.quran).execute(userId, id); }
-  summary(userId: string, period: string) { return new GetQuranSummaryUsecase(this.quran).execute(userId, period); }
+  logs(userId: string, from?: string, to?: string) {
+    return new GetQuranReadingLogsUsecase(this.quran).execute(userId, from, to);
+  }
+  createLog(userId: string, data: any) {
+    return new CreateQuranReadingLogUsecase(this.quran).execute(userId, data);
+  }
+  updateLog(userId: string, id: string, data: any) {
+    return new UpdateQuranReadingLogUsecase(this.quran).execute(
+      userId,
+      id,
+      data,
+    );
+  }
+  goals(userId: string) {
+    return new GetQuranReadingGoalsUsecase(this.quran).execute(userId);
+  }
+  createGoal(userId: string, data: any) {
+    return new CreateQuranReadingGoalUsecase(this.quran).execute(userId, data);
+  }
+  updateGoal(userId: string, id: string, data: any) {
+    return new UpdateQuranReadingGoalUsecase(this.quran).execute(
+      userId,
+      id,
+      data,
+    );
+  }
+  deleteGoal(userId: string, id: string) {
+    return new DeleteQuranReadingGoalUsecase(this.quran).execute(userId, id);
+  }
+  summary(userId: string, period: string) {
+    return new GetQuranSummaryUsecase(this.quran).execute(userId, period);
+  }
 }

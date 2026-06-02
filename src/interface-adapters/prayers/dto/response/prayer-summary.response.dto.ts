@@ -2,11 +2,17 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PrayerSummaryResponseDto {
   @ApiProperty()
-  id: string;
+  period: string;
 
-  @ApiPropertyOptional()
-  createdAt?: Date;
+  @ApiProperty()
+  total: number;
 
-  @ApiPropertyOptional()
-  updatedAt?: Date;
+  @ApiProperty()
+  done: number;
+
+  @ApiProperty()
+  missed: number;
+
+  @ApiProperty()
+  late: number;
 }

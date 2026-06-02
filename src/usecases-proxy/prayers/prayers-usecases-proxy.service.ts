@@ -9,13 +9,24 @@ import { UpdatePrayerLogUsecase } from '../../usecases/prayers/update-prayer-log
 
 @Injectable()
 export class PrayersUsecasesProxyService {
-  
+  constructor(
+    private readonly times: PrayerTimesTypeormAdapter,
+    private readonly logs: PrayerLogsTypeormAdapter,
+  ) {}
 
-  constructor(private readonly times: PrayerTimesTypeormAdapter, private readonly logs: PrayerLogsTypeormAdapter) {}
-
-  getPrayerTimes(userId: string, date: string) { return new GetPrayerTimesUsecase(this.times).execute(userId, date); }
-  getPrayerLogs(userId: string, from?: string, to?: string) { return new GetPrayerLogsUsecase(this.logs).execute(userId, from, to); }
-  createPrayerLog(userId: string, data: any) { return new CreatePrayerLogUsecase(this.logs).execute(userId, data); }
-  updatePrayerLog(userId: string, id: string, data: any) { return new UpdatePrayerLogUsecase(this.logs).execute(userId, id, data); }
-  getPrayerSummary(userId: string, period: string) { return new GetPrayerSummaryUsecase(this.logs).execute(userId, period); }
+  getPrayerTimes(userId: string, date: string) {
+    return new GetPrayerTimesUsecase(this.times).execute(userId, date);
+  }
+  getPrayerLogs(userId: string, from?: string, to?: string) {
+    return new GetPrayerLogsUsecase(this.logs).execute(userId, from, to);
+  }
+  createPrayerLog(userId: string, data: any) {
+    return new CreatePrayerLogUsecase(this.logs).execute(userId, data);
+  }
+  updatePrayerLog(userId: string, id: string, data: any) {
+    return new UpdatePrayerLogUsecase(this.logs).execute(userId, id, data);
+  }
+  getPrayerSummary(userId: string, period: string) {
+    return new GetPrayerSummaryUsecase(this.logs).execute(userId, period);
+  }
 }

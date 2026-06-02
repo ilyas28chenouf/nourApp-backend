@@ -4,6 +4,27 @@ export class AuthUserResponseDto {
   @ApiProperty()
   id: string;
 
+  @ApiProperty()
+  firebaseUid: string;
+
+  @ApiPropertyOptional()
+  email?: string;
+
+  @ApiPropertyOptional()
+  fullName?: string;
+
+  @ApiProperty()
+  role: string;
+
+  @ApiProperty()
+  language: string;
+
+  @ApiProperty()
+  isActive: boolean;
+
+  @ApiPropertyOptional()
+  lastLoginAt?: Date;
+
   @ApiPropertyOptional()
   createdAt?: Date;
 

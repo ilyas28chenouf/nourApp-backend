@@ -1,1 +1,11 @@
-export class GetCharityLogsUsecase { constructor(private readonly persistence: import('../../domain/charity/ports/charity-persistence.port').CharityPersistencePort) {} async execute(userId: string, from?: string, to?: string) { const logs = await this.persistence.findByUserId(userId); return logs.filter((l) => (!from || l.charityDate >= from) && (!to || l.charityDate <= to)); } }
+export class GetCharityLogsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/charity/ports/charity-persistence.port').CharityPersistencePort,
+  ) {}
+  async execute(userId: string, from?: string, to?: string) {
+    const logs = await this.persistence.findByUserId(userId);
+    return logs.filter(
+      (l) => (!from || l.charityDate >= from) && (!to || l.charityDate <= to),
+    );
+  }
+}

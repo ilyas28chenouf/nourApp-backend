@@ -2,11 +2,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class DashboardTodayResponseDto {
   @ApiProperty()
-  id: string;
+  userId: string;
 
-  @ApiPropertyOptional()
-  createdAt?: Date;
+  @ApiProperty()
+  period: string;
 
-  @ApiPropertyOptional()
-  updatedAt?: Date;
+  @ApiProperty()
+  generatedAt: Date;
 }

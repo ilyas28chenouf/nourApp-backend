@@ -6,11 +6,23 @@ import { SendTestNotificationUsecase } from '../../usecases/notifications/send-t
 
 @Injectable()
 export class NotificationsUsecasesProxyService {
-  
-
   constructor(private readonly notifications: NotificationsTypeormAdapter) {}
 
-  registerDeviceToken(userId: string, data: any) { return new RegisterDeviceTokenUsecase(this.notifications).execute(userId, data); }
-  scheduled(userId: string) { return new GetScheduledNotificationsUsecase(this.notifications).execute(userId); }
-  sendTest(userId: string, data: any) { return new SendTestNotificationUsecase(this.notifications).execute(userId, data); }
+  registerDeviceToken(userId: string, data: any) {
+    return new RegisterDeviceTokenUsecase(this.notifications).execute(
+      userId,
+      data,
+    );
+  }
+  scheduled(userId: string) {
+    return new GetScheduledNotificationsUsecase(this.notifications).execute(
+      userId,
+    );
+  }
+  sendTest(userId: string, data: any) {
+    return new SendTestNotificationUsecase(this.notifications).execute(
+      userId,
+      data,
+    );
+  }
 }

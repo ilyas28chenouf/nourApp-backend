@@ -1,1 +1,8 @@
-export class GetScheduledNotificationsUsecase { constructor(private readonly persistence: import('../../domain/notifications/ports/notifications-persistence.port').NotificationsPersistencePort) {} execute(userId: string) { return this.persistence.findScheduled(userId); } }
+export class GetScheduledNotificationsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/notifications/ports/notifications-persistence.port').NotificationsPersistencePort,
+  ) {}
+  execute(userId: string) {
+    return this.persistence.findScheduled(userId);
+  }
+}

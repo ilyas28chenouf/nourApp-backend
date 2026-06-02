@@ -1,1 +1,8 @@
-export class GetRecommendedFastingDaysUsecase { constructor(private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort) {} execute(month?: string) { return this.persistence.findRecommendedDays(month); } }
+export class GetRecommendedFastingDaysUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/fasting/ports/fasting-persistence.port').FastingPersistencePort,
+  ) {}
+  execute(month?: string) {
+    return this.persistence.findRecommendedDays(month);
+  }
+}

@@ -1,3 +1,16 @@
 import { GroupModel } from '../model/group.model';
 export const GROUPS_PERSISTENCE_PORT = Symbol('GROUPS_PERSISTENCE_PORT');
-export interface GroupsPersistencePort { findById(id: string): Promise<GroupModel | null>; findByInviteCode(inviteCode: string): Promise<GroupModel | null>; create(data: Partial<GroupModel>): Promise<GroupModel>; update(id: string, data: Partial<GroupModel>): Promise<GroupModel>; findMember(groupId: string, userId: string): Promise<any | null>; findMemberships(userId: string): Promise<any[]>; createMember(data: any): Promise<any>; updateMember(id: string, data: any): Promise<any>; findMembers(groupId: string): Promise<any[]>; createEncouragement(data: any): Promise<any>; findEncouragements(groupId: string): Promise<any[]>; findAllProgress(): Promise<any[]>; }
+export interface GroupsPersistencePort {
+  findById(id: string): Promise<GroupModel | null>;
+  findByInviteCode(inviteCode: string): Promise<GroupModel | null>;
+  create(data: Partial<GroupModel>): Promise<GroupModel>;
+  update(id: string, data: Partial<GroupModel>): Promise<GroupModel>;
+  findMember(groupId: string, userId: string): Promise<any | null>;
+  findMemberships(userId: string): Promise<any[]>;
+  createMember(data: any): Promise<any>;
+  updateMember(id: string, data: any): Promise<any>;
+  findMembers(groupId: string): Promise<any[]>;
+  createEncouragement(data: any): Promise<any>;
+  findEncouragements(groupId: string): Promise<any[]>;
+  findAllProgress(): Promise<any[]>;
+}

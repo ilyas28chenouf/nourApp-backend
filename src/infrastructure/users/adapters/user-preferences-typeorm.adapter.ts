@@ -7,8 +7,25 @@ import { UserPreferenceTypeormEntity } from '../entities/user-preference.typeorm
 @Injectable()
 export class UserPreferencesTypeormAdapter implements UserPreferencesPersistencePort {
   private readonly repository: Repository<UserPreferenceTypeormEntity>;
-  constructor(dataSource: DataSource) { this.repository = dataSource.getRepository(UserPreferenceTypeormEntity); }
-  findByUserId(userId: string) { return this.repository.findOne({ where: { userId } }) as Promise<UserPreferenceModel | null>; }
-  create(data: Partial<UserPreferenceModel>) { return this.repository.save(this.repository.create(data as any) as any) as any as Promise<UserPreferenceModel>; }
-  async update(id: string, data: Partial<UserPreferenceModel>) { const existing = await this.repository.findOne({ where: { id } }); if (!existing) throw new NotFoundException('Preferences not found'); return this.repository.save({ ...existing, ...data }) as Promise<UserPreferenceModel>; }
+  constructor(dataSource: DataSource) {
+    this.repository = dataSource.getRepository(UserPreferenceTypeormEntity);
+  }
+  findByUserId(userId: string) {
+    return this.repository.findOne({
+      where: { userId },
+    }) as Promise<UserPreferenceModel | null>;
+  }
+  create(data: Partial<UserPreferenceModel>) {
+    return this.repository.save(
+      this.repository.create(data as any) as any,
+    ) as any as Promise<UserPreferenceModel>;
+  }
+  async update(id: string, data: Partial<UserPreferenceModel>) {
+    const existing = await this.repository.findOne({ where: { id } });
+    if (!existing) throw new NotFoundException('Preferences not found');
+    return this.repository.save({
+      ...existing,
+      ...data,
+    }) as Promise<UserPreferenceModel>;
+  }
 }

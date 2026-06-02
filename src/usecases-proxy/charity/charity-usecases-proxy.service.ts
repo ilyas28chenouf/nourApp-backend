@@ -8,13 +8,32 @@ import { UpdateCharityLogUsecase } from '../../usecases/charity/update-charity-l
 
 @Injectable()
 export class CharityUsecasesProxyService {
-  
-
   constructor(private readonly persistence: CharityTypeormAdapter) {}
 
-  logs(userId: string, from?: string, to?: string) { return new GetCharityLogsUsecase(this.persistence).execute(userId, from, to); }
-  createLog(userId: string, data: any) { return new CreateCharityLogUsecase(this.persistence).execute(userId, data); }
-  updateLog(userId: string, id: string, data: any) { return new UpdateCharityLogUsecase(this.persistence).execute(userId, id, data); }
-  deleteLog(userId: string, id: string) { return new DeleteCharityLogUsecase(this.persistence).execute(userId, id); }
-  summary(userId: string, period: string) { return new GetCharitySummaryUsecase(this.persistence).execute(userId, period); }
+  logs(userId: string, from?: string, to?: string) {
+    return new GetCharityLogsUsecase(this.persistence).execute(
+      userId,
+      from,
+      to,
+    );
+  }
+  createLog(userId: string, data: any) {
+    return new CreateCharityLogUsecase(this.persistence).execute(userId, data);
+  }
+  updateLog(userId: string, id: string, data: any) {
+    return new UpdateCharityLogUsecase(this.persistence).execute(
+      userId,
+      id,
+      data,
+    );
+  }
+  deleteLog(userId: string, id: string) {
+    return new DeleteCharityLogUsecase(this.persistence).execute(userId, id);
+  }
+  summary(userId: string, period: string) {
+    return new GetCharitySummaryUsecase(this.persistence).execute(
+      userId,
+      period,
+    );
+  }
 }

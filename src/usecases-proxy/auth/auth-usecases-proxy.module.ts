@@ -5,7 +5,11 @@ import { UserPreferencesTypeormAdapter } from '../../infrastructure/users/adapte
 import { AuthUsecasesProxyService } from './auth-usecases-proxy.service';
 
 @Module({
-  providers: [UsersTypeormAdapter, UserPreferencesTypeormAdapter, AuthUsecasesProxyService],
+  providers: [
+    UsersTypeormAdapter,
+    UserPreferencesTypeormAdapter,
+    AuthUsecasesProxyService,
+  ],
   exports: [AuthUsecasesProxyService],
 })
 export class AuthUsecasesProxyModule {}

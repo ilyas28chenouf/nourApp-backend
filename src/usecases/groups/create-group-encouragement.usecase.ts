@@ -1,1 +1,12 @@
-export class CreateGroupEncouragementUsecase { constructor(private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort) {} execute(userId: string, groupId: string, data: any) { return this.persistence.createEncouragement({ ...data, groupId, senderUserId: userId }); } }
+export class CreateGroupEncouragementUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort,
+  ) {}
+  execute(userId: string, groupId: string, data: any) {
+    return this.persistence.createEncouragement({
+      ...data,
+      groupId,
+      senderUserId: userId,
+    });
+  }
+}

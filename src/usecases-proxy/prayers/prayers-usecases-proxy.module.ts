@@ -4,7 +4,11 @@ import { PrayerTimesTypeormAdapter } from '../../infrastructure/prayers/adapters
 import { PrayersUsecasesProxyService } from './prayers-usecases-proxy.service';
 
 @Module({
-  providers: [PrayerTimesTypeormAdapter, PrayerLogsTypeormAdapter, PrayersUsecasesProxyService],
+  providers: [
+    PrayerTimesTypeormAdapter,
+    PrayerLogsTypeormAdapter,
+    PrayersUsecasesProxyService,
+  ],
   exports: [PrayersUsecasesProxyService],
 })
 export class PrayersUsecasesProxyModule {}

@@ -4,6 +4,24 @@ export class CharityLogResponseDto {
   @ApiProperty()
   id: string;
 
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  charityDate: string;
+
+  @ApiPropertyOptional()
+  amount?: number;
+
+  @ApiProperty()
+  currency: string;
+
+  @ApiPropertyOptional()
+  frequencyType?: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
   @ApiPropertyOptional()
   createdAt?: Date;
 

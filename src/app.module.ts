@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminResourcesController } from './interface-adapters/admin/controllers/admin-resources.controller';
 import { AdminUsersController } from './interface-adapters/admin/controllers/admin-users.controller';
 import { AuthController } from './interface-adapters/auth/controllers/auth.controller';
@@ -19,6 +20,10 @@ import { ResourcesController } from './interface-adapters/resources/controllers/
 import { UsersController } from './interface-adapters/users/controllers/users.controller';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { FirebaseModule } from './infrastructure/firebase/firebase.module';
+import { HttpExceptionLoggingFilter } from './infrastructure/logger/http-exception-logging.filter';
+import { LoggerModule } from './infrastructure/logger/logger.module';
+import { LoggingInterceptor } from './infrastructure/logger/logging.interceptor';
+import { RequestIdMiddleware } from './infrastructure/logger/request-id.middleware';
 import { AdminUsecasesProxyModule } from './usecases-proxy/admin/admin-usecases-proxy.module';
 import { AuthUsecasesProxyModule } from './usecases-proxy/auth/auth-usecases-proxy.module';
 import { CharityUsecasesProxyModule } from './usecases-proxy/charity/charity-usecases-proxy.module';
@@ -41,6 +46,7 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     FirebaseModule,
+    LoggerModule,
     AuthUsecasesProxyModule,
     UsersUsecasesProxyModule,
     PreferencesUsecasesProxyModule,
@@ -77,6 +83,19 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     AdminUsersController,
     AdminResourcesController,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionLoggingFilter,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}

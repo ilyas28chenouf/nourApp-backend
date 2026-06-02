@@ -1,1 +1,11 @@
-export class GetMeditationLogsUsecase { constructor(private readonly persistence: import('../../domain/meditation/ports/meditation-persistence.port').MeditationPersistencePort) {} async execute(userId: string, from?: string, to?: string) { const logs = await this.persistence.findByUserId(userId); return logs.filter((l) => (!from || l.sessionDate >= from) && (!to || l.sessionDate <= to)); } }
+export class GetMeditationLogsUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/meditation/ports/meditation-persistence.port').MeditationPersistencePort,
+  ) {}
+  async execute(userId: string, from?: string, to?: string) {
+    const logs = await this.persistence.findByUserId(userId);
+    return logs.filter(
+      (l) => (!from || l.sessionDate >= from) && (!to || l.sessionDate <= to),
+    );
+  }
+}

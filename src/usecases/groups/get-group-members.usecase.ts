@@ -1,1 +1,8 @@
-export class GetGroupMembersUsecase { constructor(private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort) {} execute(_userId: string, groupId: string) { return this.persistence.findMembers(groupId); } }
+export class GetGroupMembersUsecase {
+  constructor(
+    private readonly persistence: import('../../domain/groups/ports/groups-persistence.port').GroupsPersistencePort,
+  ) {}
+  execute(_userId: string, groupId: string) {
+    return this.persistence.findMembers(groupId);
+  }
+}

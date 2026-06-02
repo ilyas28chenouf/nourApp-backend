@@ -1,1 +1,8 @@
-export class GetPrayerTimesUsecase { constructor(private readonly prayerTimes: import('../../domain/prayers/ports/prayer-times-persistence.port').PrayerTimesPersistencePort) {} execute(userId: string, date: string) { return this.prayerTimes.findByUserAndDate(userId, date); } }
+export class GetPrayerTimesUsecase {
+  constructor(
+    private readonly prayerTimes: import('../../domain/prayers/ports/prayer-times-persistence.port').PrayerTimesPersistencePort,
+  ) {}
+  execute(userId: string, date: string) {
+    return this.prayerTimes.findByUserAndDate(userId, date);
+  }
+}

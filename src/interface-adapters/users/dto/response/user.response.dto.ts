@@ -4,6 +4,51 @@ export class UserResponseDto {
   @ApiProperty()
   id: string;
 
+  @ApiProperty()
+  firebaseUid: string;
+
+  @ApiPropertyOptional()
+  email?: string;
+
+  @ApiPropertyOptional()
+  phone?: string;
+
+  @ApiPropertyOptional()
+  fullName?: string;
+
+  @ApiPropertyOptional()
+  avatarUrl?: string;
+
+  @ApiPropertyOptional()
+  provider?: string;
+
+  @ApiProperty()
+  role: string;
+
+  @ApiProperty()
+  language: string;
+
+  @ApiPropertyOptional()
+  timezone?: string;
+
+  @ApiPropertyOptional()
+  city?: string;
+
+  @ApiPropertyOptional()
+  country?: string;
+
+  @ApiPropertyOptional()
+  latitude?: number;
+
+  @ApiPropertyOptional()
+  longitude?: number;
+
+  @ApiProperty()
+  isActive: boolean;
+
+  @ApiPropertyOptional()
+  lastLoginAt?: Date;
+
   @ApiPropertyOptional()
   createdAt?: Date;
 

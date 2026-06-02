@@ -1,1 +1,11 @@
-export class GetPrayerLogsUsecase { constructor(private readonly prayerLogs: import('../../domain/prayers/ports/prayer-logs-persistence.port').PrayerLogsPersistencePort) {} async execute(userId: string, from?: string, to?: string) { const logs = await this.prayerLogs.findByUserId(userId); return logs.filter((l) => (!from || l.prayerDate >= from) && (!to || l.prayerDate <= to)); } }
+export class GetPrayerLogsUsecase {
+  constructor(
+    private readonly prayerLogs: import('../../domain/prayers/ports/prayer-logs-persistence.port').PrayerLogsPersistencePort,
+  ) {}
+  async execute(userId: string, from?: string, to?: string) {
+    const logs = await this.prayerLogs.findByUserId(userId);
+    return logs.filter(
+      (l) => (!from || l.prayerDate >= from) && (!to || l.prayerDate <= to),
+    );
+  }
+}

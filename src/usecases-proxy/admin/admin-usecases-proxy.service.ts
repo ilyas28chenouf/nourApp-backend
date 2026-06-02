@@ -6,11 +6,15 @@ import { UpdateUserStatusUsecase } from '../../usecases/admin/update-user-status
 
 @Injectable()
 export class AdminUsecasesProxyService {
-  
-
   constructor(private readonly users: UsersTypeormAdapter) {}
 
-  usersList() { return new GetUsersAdminUsecase(this.users).execute(); }
-  updateRole(id: string, role: any) { return new UpdateUserRoleUsecase(this.users).execute(id, role); }
-  updateStatus(id: string, isActive: boolean) { return new UpdateUserStatusUsecase(this.users).execute(id, isActive); }
+  usersList() {
+    return new GetUsersAdminUsecase(this.users).execute();
+  }
+  updateRole(id: string, role: any) {
+    return new UpdateUserRoleUsecase(this.users).execute(id, role);
+  }
+  updateStatus(id: string, isActive: boolean) {
+    return new UpdateUserStatusUsecase(this.users).execute(id, isActive);
+  }
 }

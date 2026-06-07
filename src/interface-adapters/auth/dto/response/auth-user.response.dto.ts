@@ -11,13 +11,19 @@ export class AuthUserResponseDto {
   email?: string;
 
   @ApiPropertyOptional()
-  fullName?: string;
+  firstName?: string;
+
+  @ApiPropertyOptional()
+  lastName?: string;
 
   @ApiProperty()
   role: string;
 
   @ApiProperty()
   language: string;
+
+  @ApiPropertyOptional()
+  ageRange?: string;
 
   @ApiProperty()
   isActive: boolean;

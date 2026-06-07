@@ -23,6 +23,9 @@ export class UserTypeormEntity {
   @Column({ nullable: true })
   email?: string;
   @Column({ nullable: true }) phone?: string;
+  @Column({ nullable: true }) firstName?: string;
+  @Column({ nullable: true }) lastName?: string;
+  @Column({ nullable: true }) ageRange?: string;
   @Column({ nullable: true }) fullName?: string;
   @Column({ nullable: true }) avatarUrl?: string;
   @Column({ nullable: true }) provider?: string;

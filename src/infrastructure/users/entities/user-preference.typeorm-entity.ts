@@ -27,4 +27,15 @@ export class UserPreferenceTypeormEntity {
   @Column({ default: true }) encouragementNotificationsEnabled: boolean;
   @Column({ default: 'Algeria' }) prayerCalculationMethod: string;
   @Column({ default: 'Shafi' }) prayerMadhab: string;
+  @Column({ nullable: true }) dailyAvailableTime?: string;
+  @Column({ nullable: true }) globalPracticeLevel?: string;
+  @Column({ nullable: true }) prayerPracticeLevel?: string;
+  @Column({ nullable: true }) quranPracticeLevel?: string;
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  dhikrPractices?: string[];
+  @Column({ nullable: true }) fastingPracticeLevel?: string;
+  @Column({ nullable: true }) socialActionsFrequency?: string;
+  @Column({ nullable: true }) regularityDuration?: string;
+  @Column({ nullable: true }) islamicKnowledgeLevel?: string;
+  @Column({ nullable: true }) mainIntention?: string;
 }

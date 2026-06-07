@@ -78,13 +78,31 @@ export class SyncFirebaseUserUsecase {
       updatePayload.provider = firebaseUser.firebase?.sign_in_provider;
     }
 
-    if (!this.hasValue(existing.fullName) && this.hasValue(firebaseUser.name)) {
-      updatePayload.fullName = firebaseUser.name;
+    const displayNameParts = this.splitDisplayName(firebaseUser.name);
+    if (
+      !this.hasValue(existing.firstName) &&
+      this.hasValue(displayNameParts.firstName)
+    ) {
+      updatePayload.firstName = displayNameParts.firstName;
     } else {
       this.logPreservedOrSkipped(
-        'fullName',
-        existing.fullName,
-        firebaseUser.name,
+        'firstName',
+        existing.firstName,
+        displayNameParts.firstName,
+        existing.id,
+      );
+    }
+
+    if (
+      !this.hasValue(existing.lastName) &&
+      this.hasValue(displayNameParts.lastName)
+    ) {
+      updatePayload.lastName = displayNameParts.lastName;
+    } else {
+      this.logPreservedOrSkipped(
+        'lastName',
+        existing.lastName,
+        displayNameParts.lastName,
         existing.id,
       );
     }
@@ -123,7 +141,15 @@ export class SyncFirebaseUserUsecase {
 
     this.logger.log('Local profile fields preserved during Firebase sync', {
       userId: existing.id,
-      preservedFields: ['timezone', 'city', 'country', 'latitude', 'longitude'],
+      preservedFields: [
+        'phone',
+        'city',
+        'country',
+        'timezone',
+        'latitude',
+        'longitude',
+        'ageRange',
+      ],
     });
 
     const updated = await this.users.update(existing.id, updatePayload);
@@ -139,9 +165,12 @@ export class SyncFirebaseUserUsecase {
     email: string | undefined,
     role: UserRole,
   ) {
+    const displayNameParts = this.splitDisplayName(firebaseUser.name);
     const user = await this.users.create({
       firebaseUid: firebaseUser.uid,
       email,
+      firstName: displayNameParts.firstName,
+      lastName: displayNameParts.lastName,
       fullName: this.hasValue(firebaseUser.name) ? firebaseUser.name : null,
       avatarUrl: this.hasValue(firebaseUser.picture)
         ? firebaseUser.picture
@@ -166,6 +195,21 @@ export class SyncFirebaseUserUsecase {
 
   private hasValue(value: unknown): value is string {
     return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  private splitDisplayName(displayName: unknown): {
+    firstName: string | null;
+    lastName: string | null;
+  } {
+    if (!this.hasValue(displayName)) {
+      return { firstName: null, lastName: null };
+    }
+
+    const [firstName, ...rest] = displayName.trim().split(/\s+/);
+    return {
+      firstName,
+      lastName: rest.length ? rest.join(' ') : null,
+    };
   }
 
   private logPreservedOrSkipped(

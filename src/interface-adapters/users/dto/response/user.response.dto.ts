@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { AgeRange } from '../../../../domain/users/enums/age-range.enum';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -14,7 +15,13 @@ export class UserResponseDto {
   phone?: string;
 
   @ApiPropertyOptional()
-  fullName?: string;
+  firstName?: string;
+
+  @ApiPropertyOptional()
+  lastName?: string;
+
+  @ApiPropertyOptional({ enum: AgeRange })
+  ageRange?: AgeRange | string;
 
   @ApiPropertyOptional()
   avatarUrl?: string;

@@ -1,23 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiOperation,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { AuthUsecasesProxyService } from '../../../usecases-proxy/auth/auth-usecases-proxy.service';

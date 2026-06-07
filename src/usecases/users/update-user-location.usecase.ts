@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { UserModel } from '../../domain/users/model/user.model';
 import { UsersPersistencePort } from '../../domain/users/ports/users-persistence.port';
+import { AppLoggerService } from '../../infrastructure/logger/app-logger.service';
 
 type UpdateUserLocationData = Pick<
   Partial<UserModel>,
@@ -8,7 +9,10 @@ type UpdateUserLocationData = Pick<
 >;
 
 export class UpdateUserLocationUsecase {
-  constructor(private readonly users: UsersPersistencePort) {}
+  constructor(
+    private readonly users: UsersPersistencePort,
+    private readonly logger: AppLoggerService,
+  ) {}
 
   async execute(userId: string, data: UpdateUserLocationData) {
     const existing = await this.users.findById(userId);
@@ -28,6 +32,10 @@ export class UpdateUserLocationUsecase {
     if (!updated) {
       throw new NotFoundException('User not found');
     }
+    this.logger.debug('User location updated', {
+      userId,
+      updatedFields: Object.keys(updatePayload),
+    });
     return updated;
   }
 }

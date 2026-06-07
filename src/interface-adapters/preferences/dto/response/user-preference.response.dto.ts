@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
 import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
 
 export class UserPreferenceResponseDto {
@@ -34,6 +35,36 @@ export class UserPreferenceResponseDto {
 
   @ApiProperty({ enum: PrayerMadhab, example: PrayerMadhab.SHAFI })
   prayerMadhab: PrayerMadhab;
+
+  @ApiPropertyOptional({ enum: DailyAvailableTime })
+  dailyAvailableTime?: DailyAvailableTime | string;
+
+  @ApiPropertyOptional()
+  globalPracticeLevel?: string;
+
+  @ApiPropertyOptional()
+  prayerPracticeLevel?: string;
+
+  @ApiPropertyOptional()
+  quranPracticeLevel?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  dhikrPractices?: string[];
+
+  @ApiPropertyOptional()
+  fastingPracticeLevel?: string;
+
+  @ApiPropertyOptional()
+  socialActionsFrequency?: string;
+
+  @ApiPropertyOptional()
+  regularityDuration?: string;
+
+  @ApiPropertyOptional()
+  islamicKnowledgeLevel?: string;
+
+  @ApiPropertyOptional()
+  mainIntention?: string;
 
   @ApiPropertyOptional()
   createdAt?: Date;

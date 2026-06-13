@@ -1,7 +1,22 @@
+import {
+  toSafeDateOnly,
+  toSafeIsoDateTime,
+} from '../../../common-utils/dates/date-format.util';
 import { PrayerTimeModel } from '../../../domain/prayers/model/prayer-time.model';
 
 export class PrayerResponseMapper {
   static toDto<T>(model: T): T {
+    if (Array.isArray(model)) return this.toDtoList(model) as T;
+    if (model && typeof model === 'object' && 'prayerDate' in model) {
+      const prayerLog = model as Record<string, unknown>;
+      return {
+        ...prayerLog,
+        prayerDate: toSafeDateOnly(prayerLog.prayerDate),
+        prayedAt: toSafeIsoDateTime(prayerLog.prayedAt),
+        createdAt: toSafeIsoDateTime(prayerLog.createdAt),
+        updatedAt: toSafeIsoDateTime(prayerLog.updatedAt),
+      } as T;
+    }
     return model;
   }
 
@@ -41,8 +56,8 @@ export class PrayerResponseMapper {
         minutesUntilNext: model.minutesUntilNext,
       },
       source: model.source,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
+      createdAt: toSafeIsoDateTime(model.createdAt),
+      updatedAt: toSafeIsoDateTime(model.updatedAt),
     };
   }
 

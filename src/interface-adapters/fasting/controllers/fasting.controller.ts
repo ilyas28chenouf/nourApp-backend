@@ -35,44 +35,55 @@ export class FastingController {
   @Get('recommended-days')
   @ApiOperation({ summary: 'Get recommended fasting days' })
   @ApiOkResponse({ type: [FastingRecommendedDayResponseDto] })
-  recommended(@Query('month') month?: string) {
-    return FastingResponseMapper.toDto(this.proxy.recommendedDays(month));
+  async recommended(@Query('month') month?: string) {
+    return FastingResponseMapper.toDto(await this.proxy.recommendedDays(month));
   }
   @Get('logs')
   @ApiOperation({ summary: 'Get fasting logs' })
   @ApiOkResponse({ type: [FastingLogResponseDto] })
-  logs(
+  async logs(
     @CurrentUser() user: UserModel,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return FastingResponseMapper.toDto(this.proxy.logs(user.id, from, to));
+    return FastingResponseMapper.toDto(
+      await this.proxy.logs(user.id, from, to),
+    );
   }
   @Post('logs')
   @ApiOperation({ summary: 'Create fasting log' })
   @ApiBody({ type: CreateFastingLogRequestDto })
   @ApiOkResponse({ type: FastingLogResponseDto })
-  create(
+  async create(
     @CurrentUser() user: UserModel,
     @Body() dto: CreateFastingLogRequestDto,
   ) {
-    return FastingResponseMapper.toDto(this.proxy.createLog(user.id, dto));
+    return FastingResponseMapper.toDto(
+      await this.proxy.createLog(user.id, dto),
+    );
   }
   @Patch('logs/:id')
   @ApiOperation({ summary: 'Update fasting log' })
   @ApiBody({ type: UpdateFastingLogRequestDto })
   @ApiOkResponse({ type: FastingLogResponseDto })
-  update(
+  async update(
     @CurrentUser() user: UserModel,
     @Param('id') id: string,
     @Body() dto: UpdateFastingLogRequestDto,
   ) {
-    return FastingResponseMapper.toDto(this.proxy.updateLog(user.id, id, dto));
+    return FastingResponseMapper.toDto(
+      await this.proxy.updateLog(user.id, id, dto),
+    );
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get fasting summary' })
   @ApiOkResponse({ description: 'Summary' })
-  summary(@CurrentUser() user: UserModel, @Query('period') period: string) {
-    return FastingResponseMapper.toDto(this.proxy.summary(user.id, period));
+  async summary(
+    @CurrentUser() user: UserModel,
+    @Query('period') period: string,
+  ) {
+    return FastingResponseMapper.toDto(
+      await this.proxy.summary(user.id, period),
+    );
   }
 }

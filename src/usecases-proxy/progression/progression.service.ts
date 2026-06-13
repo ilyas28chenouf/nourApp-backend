@@ -13,6 +13,10 @@ import { FastingStatus } from '../../domain/fasting/enums/fasting-status.enum';
 import { HasanatPointEventTypeormEntity } from '../../infrastructure/progression/entities/hasanat-point-event.typeorm-entity';
 import { UserBadgeTypeormEntity } from '../../infrastructure/progression/entities/user-badge.typeorm-entity';
 import { UserProgressionTypeormEntity } from '../../infrastructure/progression/entities/user-progression.typeorm-entity';
+import {
+  previousDateOnly,
+  toSafeDateOnly,
+} from '../../common-utils/dates/date-format.util';
 
 type PointInput = {
   userId: string;
@@ -361,7 +365,9 @@ export class ProgressionService {
       .orderBy('event.eventDate', 'DESC')
       .getRawMany<{ date: string }>();
 
-    const dates = rows.map((row) => row.date);
+    const dates = rows
+      .map((row) => toSafeDateOnly(row.date))
+      .filter((date): date is string => Boolean(date));
     const today = new Date().toISOString().slice(0, 10);
     let cursor = dates[0] ?? today;
     let count = 0;
@@ -369,9 +375,9 @@ export class ProgressionService {
 
     while (dateSet.has(cursor)) {
       count += 1;
-      const date = new Date(`${cursor}T00:00:00.000Z`);
-      date.setUTCDate(date.getUTCDate() - 1);
-      cursor = date.toISOString().slice(0, 10);
+      const previousDate = previousDateOnly(cursor);
+      if (!previousDate) break;
+      cursor = previousDate;
     }
 
     return {

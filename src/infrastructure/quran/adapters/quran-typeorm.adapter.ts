@@ -31,7 +31,7 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
   async updateLog(id: string, data: any) {
     const existing = await this.logs.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Quran log not found');
-    return this.logs.save({ ...existing, ...data });
+    return this.logs.save({ ...existing, ...this.stripUndefined(data) });
   }
   findGoalsByUserId(userId: string) {
     return this.goals.find({ where: { userId }, order: { createdAt: 'DESC' } });
@@ -45,7 +45,7 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
   async updateGoal(id: string, data: any) {
     const existing = await this.goals.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Quran goal not found');
-    return this.goals.save({ ...existing, ...data });
+    return this.goals.save({ ...existing, ...this.stripUndefined(data) });
   }
   async deleteGoal(id: string) {
     await this.goals.delete(id);
@@ -62,6 +62,15 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
   async updateMemorization(id: string, data: any) {
     const existing = await this.memorization.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Quran memorization not found');
-    return this.memorization.save({ ...existing, ...data });
+    return this.memorization.save({
+      ...existing,
+      ...this.stripUndefined(data),
+    });
+  }
+
+  private stripUndefined(data: Record<string, unknown>) {
+    return Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    );
   }
 }

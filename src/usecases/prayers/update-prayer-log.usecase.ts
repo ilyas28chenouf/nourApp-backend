@@ -1,3 +1,8 @@
+import {
+  optionalDateOnly,
+  optionalNullableDateTime,
+} from '../../common-utils/dates/date-format.util';
+
 export class UpdatePrayerLogUsecase {
   constructor(
     private readonly prayerLogs: import('../../domain/prayers/ports/prayer-logs-persistence.port').PrayerLogsPersistencePort,
@@ -6,6 +11,10 @@ export class UpdatePrayerLogUsecase {
     const existing = await this.prayerLogs.findById(id);
     if (!existing || existing.userId !== userId)
       throw new Error('Record not found');
-    return this.prayerLogs.update(id, data);
+    return this.prayerLogs.update(id, {
+      ...data,
+      prayerDate: optionalDateOnly(data.prayerDate, 'prayerDate'),
+      prayedAt: optionalNullableDateTime(data.prayedAt, 'prayedAt'),
+    });
   }
 }

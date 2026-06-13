@@ -30,6 +30,12 @@ export class FastingTypeormAdapter implements FastingPersistencePort {
   async updateLog(id: string, data: any) {
     const existing = await this.logs.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Fasting log not found');
-    return this.logs.save({ ...existing, ...data });
+    return this.logs.save({ ...existing, ...this.stripUndefined(data) });
+  }
+
+  private stripUndefined(data: Record<string, unknown>) {
+    return Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    );
   }
 }

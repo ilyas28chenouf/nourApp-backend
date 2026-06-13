@@ -24,13 +24,13 @@ export class DhikrLogTypeormEntity {
   @Column({ type: 'date' }) dhikrDate: string;
   @Column({ type: 'enum', enum: DhikrPeriod }) period: DhikrPeriod;
   @Column({ type: 'uuid', nullable: true })
-  dhikrItemId?: string | null;
+  dhikrItemId: string | null;
   @Column({ type: 'uuid', nullable: true })
-  categoryId?: string | null;
+  categoryId: string | null;
   @Column({ type: 'enum', enum: DhikrSessionType, nullable: true })
-  sessionType?: DhikrSessionType;
+  sessionType: DhikrSessionType | null;
   @Column({ default: 0 }) counter: number;
   @Column({ default: false }) completed: boolean;
-  @Column({ type: 'timestamptz', nullable: true }) completedAt?: Date;
-  @Column({ type: 'text', nullable: true }) notes?: string;
+  @Column({ type: 'timestamptz', nullable: true }) completedAt: Date | null;
+  @Column({ type: 'text', nullable: true }) notes: string | null;
 }

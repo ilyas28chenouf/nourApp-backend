@@ -63,7 +63,10 @@ export class DhikrTypeormAdapter implements DhikrPersistencePort {
   async updateCategory(id: string, data: any) {
     const existing = await this.categoriesRepository.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Dhikr category not found');
-    return this.categoriesRepository.save({ ...existing, ...data });
+    return this.categoriesRepository.save({
+      ...existing,
+      ...this.stripUndefined(data),
+    });
   }
   async deleteCategory(id: string) {
     const existing = await this.categoriesRepository.findOne({ where: { id } });
@@ -76,7 +79,10 @@ export class DhikrTypeormAdapter implements DhikrPersistencePort {
   async updateItem(id: string, data: any) {
     const existing = await this.itemsRepository.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Dhikr item not found');
-    return this.itemsRepository.save({ ...existing, ...data });
+    return this.itemsRepository.save({
+      ...existing,
+      ...this.stripUndefined(data),
+    });
   }
   async deleteItem(id: string) {
     const existing = await this.itemsRepository.findOne({ where: { id } });
@@ -100,6 +106,15 @@ export class DhikrTypeormAdapter implements DhikrPersistencePort {
   async updateLog(id: string, data: any) {
     const existing = await this.logsRepository.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Dhikr log not found');
-    return this.logsRepository.save({ ...existing, ...data });
+    return this.logsRepository.save({
+      ...existing,
+      ...this.stripUndefined(data),
+    });
+  }
+
+  private stripUndefined(data: Record<string, unknown>) {
+    return Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    );
   }
 }

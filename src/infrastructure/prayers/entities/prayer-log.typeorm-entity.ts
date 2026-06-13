@@ -25,11 +25,11 @@ export class PrayerLogTypeormEntity {
   @Column({ type: 'date' }) prayerDate: string;
   @Column({ type: 'enum', enum: PrayerName }) prayerName: PrayerName;
   @Column({ type: 'enum', enum: PrayerStatus }) status: PrayerStatus;
-  @Column({ type: 'timestamptz', nullable: true }) prayedAt?: Date;
+  @Column({ type: 'timestamptz', nullable: true }) prayedAt: Date | null;
   @Column({ default: false }) wasOnTime: boolean;
   @Column({ type: 'enum', enum: PrayerMode, nullable: true })
-  prayerMode?: PrayerMode;
+  prayerMode: PrayerMode | null;
   @Column({ default: false }) isSupererogatory: boolean;
   @Column({ default: false }) prayedAtMosque: boolean;
-  @Column({ type: 'text', nullable: true }) notes?: string;
+  @Column({ type: 'text', nullable: true }) notes: string | null;
 }

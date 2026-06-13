@@ -57,50 +57,55 @@ export class PrayersController {
   @ApiBadGatewayResponse({
     description: 'Unable to fetch prayer times from provider',
   })
-  methods() {
-    return PrayerResponseMapper.toDto(this.proxy.getPrayerMethods());
+  async methods() {
+    return PrayerResponseMapper.toDto(await this.proxy.getPrayerMethods());
   }
   @Get('logs')
   @ApiOperation({ summary: 'Get prayer logs' })
   @ApiOkResponse({ type: [PrayerLogResponseDto] })
-  logs(
+  async logs(
     @CurrentUser() user: UserModel,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
     return PrayerResponseMapper.toDto(
-      this.proxy.getPrayerLogs(user.id, from, to),
+      await this.proxy.getPrayerLogs(user.id, from, to),
     );
   }
   @Post('logs')
   @ApiOperation({ summary: 'Create prayer log' })
   @ApiBody({ type: CreatePrayerLogRequestDto })
   @ApiOkResponse({ type: PrayerLogResponseDto })
-  create(
+  async create(
     @CurrentUser() user: UserModel,
     @Body() dto: CreatePrayerLogRequestDto,
   ) {
-    return PrayerResponseMapper.toDto(this.proxy.createPrayerLog(user.id, dto));
+    return PrayerResponseMapper.toDto(
+      await this.proxy.createPrayerLog(user.id, dto),
+    );
   }
   @Patch('logs/:id')
   @ApiOperation({ summary: 'Update prayer log' })
   @ApiBody({ type: UpdatePrayerLogRequestDto })
   @ApiOkResponse({ type: PrayerLogResponseDto })
-  update(
+  async update(
     @CurrentUser() user: UserModel,
     @Param('id') id: string,
     @Body() dto: UpdatePrayerLogRequestDto,
   ) {
     return PrayerResponseMapper.toDto(
-      this.proxy.updatePrayerLog(user.id, id, dto),
+      await this.proxy.updatePrayerLog(user.id, id, dto),
     );
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get prayer summary' })
   @ApiOkResponse({ type: PrayerSummaryResponseDto })
-  summary(@CurrentUser() user: UserModel, @Query('period') period: string) {
+  async summary(
+    @CurrentUser() user: UserModel,
+    @Query('period') period: string,
+  ) {
     return PrayerResponseMapper.toDto(
-      this.proxy.getPrayerSummary(user.id, period),
+      await this.proxy.getPrayerSummary(user.id, period),
     );
   }
 }

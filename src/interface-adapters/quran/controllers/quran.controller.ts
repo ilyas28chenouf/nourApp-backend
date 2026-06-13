@@ -39,72 +39,79 @@ export class QuranController {
   @Get('logs')
   @ApiOperation({ summary: 'Get Quran reading logs' })
   @ApiOkResponse({ type: [QuranReadingLogResponseDto] })
-  logs(
+  async logs(
     @CurrentUser() user: UserModel,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return QuranResponseMapper.toDto(this.proxy.logs(user.id, from, to));
+    return QuranResponseMapper.toDto(await this.proxy.logs(user.id, from, to));
   }
   @Post('logs')
   @ApiOperation({ summary: 'Create Quran reading log' })
   @ApiBody({ type: CreateQuranReadingLogRequestDto })
   @ApiOkResponse({ type: QuranReadingLogResponseDto })
-  createLog(
+  async createLog(
     @CurrentUser() user: UserModel,
     @Body() dto: CreateQuranReadingLogRequestDto,
   ) {
-    return QuranResponseMapper.toDto(this.proxy.createLog(user.id, dto));
+    return QuranResponseMapper.toDto(await this.proxy.createLog(user.id, dto));
   }
   @Patch('logs/:id')
   @ApiOperation({ summary: 'Update Quran reading log' })
   @ApiBody({ type: UpdateQuranReadingLogRequestDto })
   @ApiOkResponse({ type: QuranReadingLogResponseDto })
-  updateLog(
+  async updateLog(
     @CurrentUser() user: UserModel,
     @Param('id') id: string,
     @Body() dto: UpdateQuranReadingLogRequestDto,
   ) {
-    return QuranResponseMapper.toDto(this.proxy.updateLog(user.id, id, dto));
+    return QuranResponseMapper.toDto(
+      await this.proxy.updateLog(user.id, id, dto),
+    );
   }
   @Get('goals')
   @ApiOperation({ summary: 'Get Quran reading goals' })
   @ApiOkResponse({ type: [QuranReadingGoalResponseDto] })
-  goals(@CurrentUser() user: UserModel) {
-    return QuranResponseMapper.toDto(this.proxy.goals(user.id));
+  async goals(@CurrentUser() user: UserModel) {
+    return QuranResponseMapper.toDto(await this.proxy.goals(user.id));
   }
   @Post('goals')
   @ApiOperation({ summary: 'Create Quran reading goal' })
   @ApiBody({ type: CreateQuranReadingGoalRequestDto })
   @ApiOkResponse({ type: QuranReadingGoalResponseDto })
-  createGoal(
+  async createGoal(
     @CurrentUser() user: UserModel,
     @Body() dto: CreateQuranReadingGoalRequestDto,
   ) {
-    return QuranResponseMapper.toDto(this.proxy.createGoal(user.id, dto));
+    return QuranResponseMapper.toDto(await this.proxy.createGoal(user.id, dto));
   }
   @Patch('goals/:id')
   @ApiOperation({ summary: 'Update Quran reading goal' })
   @ApiBody({ type: UpdateQuranReadingGoalRequestDto })
   @ApiOkResponse({ type: QuranReadingGoalResponseDto })
-  updateGoal(
+  async updateGoal(
     @CurrentUser() user: UserModel,
     @Param('id') id: string,
     @Body() dto: UpdateQuranReadingGoalRequestDto,
   ) {
-    return QuranResponseMapper.toDto(this.proxy.updateGoal(user.id, id, dto));
+    return QuranResponseMapper.toDto(
+      await this.proxy.updateGoal(user.id, id, dto),
+    );
   }
   @Delete('goals/:id')
   @ApiOperation({ summary: 'Delete Quran reading goal' })
   @ApiOkResponse({ description: 'Deleted' })
-  deleteGoal(@CurrentUser() user: UserModel, @Param('id') id: string) {
-    return QuranResponseMapper.toDto(this.proxy.deleteGoal(user.id, id));
+  async deleteGoal(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return QuranResponseMapper.toDto(await this.proxy.deleteGoal(user.id, id));
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get Quran summary' })
   @ApiOkResponse({ description: 'Summary' })
-  summary(@CurrentUser() user: UserModel, @Query('period') period: string) {
-    return QuranResponseMapper.toDto(this.proxy.summary(user.id, period));
+  async summary(
+    @CurrentUser() user: UserModel,
+    @Query('period') period: string,
+  ) {
+    return QuranResponseMapper.toDto(await this.proxy.summary(user.id, period));
   }
   @Get('surahs')
   @ApiOperation({ summary: 'Proxy Quran surahs from Ummah API' })

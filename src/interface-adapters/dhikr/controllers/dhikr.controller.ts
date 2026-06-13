@@ -35,46 +35,55 @@ export class DhikrController {
   @Get('items')
   @ApiOperation({ summary: 'Get dhikr items' })
   @ApiOkResponse({ type: [DhikrItemResponseDto] })
-  items(@Query('category') category?: string, @Query('period') period?: any) {
-    return DhikrResponseMapper.toDto(this.proxy.items({ category, period }));
+  async items(
+    @Query('category') category?: string,
+    @Query('period') period?: any,
+  ) {
+    return DhikrResponseMapper.toDto(
+      await this.proxy.items({ category, period }),
+    );
   }
   @Get('categories')
   @ApiOperation({ summary: 'Get dhikr categories' })
   @ApiOkResponse({ description: 'Dhikr categories' })
-  categories() {
-    return DhikrResponseMapper.toDto(this.proxy.categories());
+  async categories() {
+    return DhikrResponseMapper.toDto(await this.proxy.categories());
   }
   @Get('categories/:slug/items')
   @ApiOperation({ summary: 'Get dhikr items by category slug' })
   @ApiOkResponse({ type: [DhikrItemResponseDto] })
-  itemsByCategory(@Param('slug') slug: string) {
-    return DhikrResponseMapper.toDto(this.proxy.itemsByCategorySlug(slug));
+  async itemsByCategory(@Param('slug') slug: string) {
+    return DhikrResponseMapper.toDto(
+      await this.proxy.itemsByCategorySlug(slug),
+    );
   }
   @Get('logs')
   @ApiOperation({ summary: 'Get dhikr logs' })
   @ApiOkResponse({ type: [DhikrLogResponseDto] })
-  logs(@CurrentUser() user: UserModel, @Query('date') date?: string) {
-    return DhikrResponseMapper.toDto(this.proxy.logs(user.id, date));
+  async logs(@CurrentUser() user: UserModel, @Query('date') date?: string) {
+    return DhikrResponseMapper.toDto(await this.proxy.logs(user.id, date));
   }
   @Post('logs')
   @ApiOperation({ summary: 'Create dhikr log' })
   @ApiBody({ type: CreateDhikrLogRequestDto })
   @ApiOkResponse({ type: DhikrLogResponseDto })
-  create(
+  async create(
     @CurrentUser() user: UserModel,
     @Body() dto: CreateDhikrLogRequestDto,
   ) {
-    return DhikrResponseMapper.toDto(this.proxy.createLog(user.id, dto));
+    return DhikrResponseMapper.toDto(await this.proxy.createLog(user.id, dto));
   }
   @Patch('logs/:id')
   @ApiOperation({ summary: 'Update dhikr log' })
   @ApiBody({ type: UpdateDhikrLogRequestDto })
   @ApiOkResponse({ type: DhikrLogResponseDto })
-  update(
+  async update(
     @CurrentUser() user: UserModel,
     @Param('id') id: string,
     @Body() dto: UpdateDhikrLogRequestDto,
   ) {
-    return DhikrResponseMapper.toDto(this.proxy.updateLog(user.id, id, dto));
+    return DhikrResponseMapper.toDto(
+      await this.proxy.updateLog(user.id, id, dto),
+    );
   }
 }

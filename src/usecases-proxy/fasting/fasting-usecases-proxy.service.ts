@@ -5,10 +5,14 @@ import { GetFastingLogsUsecase } from '../../usecases/fasting/get-fasting-logs.u
 import { GetFastingSummaryUsecase } from '../../usecases/fasting/get-fasting-summary.usecase';
 import { GetRecommendedFastingDaysUsecase } from '../../usecases/fasting/get-recommended-fasting-days.usecase';
 import { UpdateFastingLogUsecase } from '../../usecases/fasting/update-fasting-log.usecase';
+import { ProgressionService } from '../progression/progression.service';
 
 @Injectable()
 export class FastingUsecasesProxyService {
-  constructor(private readonly fasting: FastingTypeormAdapter) {}
+  constructor(
+    private readonly fasting: FastingTypeormAdapter,
+    private readonly progression: ProgressionService,
+  ) {}
 
   recommendedDays(month?: string) {
     return new GetRecommendedFastingDaysUsecase(this.fasting).execute(month);
@@ -16,11 +20,22 @@ export class FastingUsecasesProxyService {
   logs(userId: string, from?: string, to?: string) {
     return new GetFastingLogsUsecase(this.fasting).execute(userId, from, to);
   }
-  createLog(userId: string, data: any) {
-    return new CreateFastingLogUsecase(this.fasting).execute(userId, data);
+  async createLog(userId: string, data: any) {
+    const log = await new CreateFastingLogUsecase(this.fasting).execute(
+      userId,
+      data,
+    );
+    await this.progression.recordFastingLog(log);
+    return log;
   }
-  updateLog(userId: string, id: string, data: any) {
-    return new UpdateFastingLogUsecase(this.fasting).execute(userId, id, data);
+  async updateLog(userId: string, id: string, data: any) {
+    const log = await new UpdateFastingLogUsecase(this.fasting).execute(
+      userId,
+      id,
+      data,
+    );
+    await this.progression.recordFastingLog(log);
+    return log;
   }
   summary(userId: string, period: string) {
     return new GetFastingSummaryUsecase(this.fasting).execute(userId, period);

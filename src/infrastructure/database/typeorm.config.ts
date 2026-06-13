@@ -7,6 +7,7 @@ import { FastingLogTypeormEntity } from '../fasting/entities/fasting-log.typeorm
 import { QuranReadingLogTypeormEntity } from '../quran/entities/quran-reading-log.typeorm-entity';
 import { QuranReadingGoalTypeormEntity } from '../quran/entities/quran-reading-goal.typeorm-entity';
 import { DhikrItemTypeormEntity } from '../dhikr/entities/dhikr-item.typeorm-entity';
+import { DhikrCategoryTypeormEntity } from '../dhikr/entities/dhikr-category.typeorm-entity';
 import { DhikrLogTypeormEntity } from '../dhikr/entities/dhikr-log.typeorm-entity';
 import { CharityLogTypeormEntity } from '../charity/entities/charity-log.typeorm-entity';
 import { MeditationLogTypeormEntity } from '../meditation/entities/meditation-log.typeorm-entity';
@@ -20,6 +21,12 @@ import { GoalProgressTypeormEntity } from '../goals/entities/goal-progress.typeo
 import { GroupTypeormEntity } from '../groups/entities/group.typeorm-entity';
 import { GroupMemberTypeormEntity } from '../groups/entities/group-member.typeorm-entity';
 import { GroupEncouragementTypeormEntity } from '../groups/entities/group-encouragement.typeorm-entity';
+import { HasanatActionRuleTypeormEntity } from '../progression/entities/hasanat-action-rule.typeorm-entity';
+import { HasanatPointEventTypeormEntity } from '../progression/entities/hasanat-point-event.typeorm-entity';
+import { UserBadgeTypeormEntity } from '../progression/entities/user-badge.typeorm-entity';
+import { UserProgressionTypeormEntity } from '../progression/entities/user-progression.typeorm-entity';
+import { QuranMemorizationProgressTypeormEntity } from '../quran/entities/quran-memorization-progress.typeorm-entity';
+import { SisterUnavailableDayTypeormEntity } from '../sisters/entities/sister-unavailable-day.typeorm-entity';
 
 export const TYPEORM_ENTITIES = [
   UserTypeormEntity,
@@ -30,6 +37,8 @@ export const TYPEORM_ENTITIES = [
   FastingLogTypeormEntity,
   QuranReadingLogTypeormEntity,
   QuranReadingGoalTypeormEntity,
+  QuranMemorizationProgressTypeormEntity,
+  DhikrCategoryTypeormEntity,
   DhikrItemTypeormEntity,
   DhikrLogTypeormEntity,
   CharityLogTypeormEntity,
@@ -44,4 +53,9 @@ export const TYPEORM_ENTITIES = [
   GroupTypeormEntity,
   GroupMemberTypeormEntity,
   GroupEncouragementTypeormEntity,
+  UserProgressionTypeormEntity,
+  HasanatPointEventTypeormEntity,
+  HasanatActionRuleTypeormEntity,
+  UserBadgeTypeormEntity,
+  SisterUnavailableDayTypeormEntity,
 ];

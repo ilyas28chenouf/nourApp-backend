@@ -5,10 +5,14 @@ import { DeleteCharityLogUsecase } from '../../usecases/charity/delete-charity-l
 import { GetCharityLogsUsecase } from '../../usecases/charity/get-charity-logs.usecase';
 import { GetCharitySummaryUsecase } from '../../usecases/charity/get-charity-summary.usecase';
 import { UpdateCharityLogUsecase } from '../../usecases/charity/update-charity-log.usecase';
+import { ProgressionService } from '../progression/progression.service';
 
 @Injectable()
 export class CharityUsecasesProxyService {
-  constructor(private readonly persistence: CharityTypeormAdapter) {}
+  constructor(
+    private readonly persistence: CharityTypeormAdapter,
+    private readonly progression: ProgressionService,
+  ) {}
 
   logs(userId: string, from?: string, to?: string) {
     return new GetCharityLogsUsecase(this.persistence).execute(
@@ -17,15 +21,22 @@ export class CharityUsecasesProxyService {
       to,
     );
   }
-  createLog(userId: string, data: any) {
-    return new CreateCharityLogUsecase(this.persistence).execute(userId, data);
+  async createLog(userId: string, data: any) {
+    const log = await new CreateCharityLogUsecase(this.persistence).execute(
+      userId,
+      data,
+    );
+    await this.progression.recordCharityLog(log);
+    return log;
   }
-  updateLog(userId: string, id: string, data: any) {
-    return new UpdateCharityLogUsecase(this.persistence).execute(
+  async updateLog(userId: string, id: string, data: any) {
+    const log = await new UpdateCharityLogUsecase(this.persistence).execute(
       userId,
       id,
       data,
     );
+    await this.progression.recordCharityLog(log);
+    return log;
   }
   deleteLog(userId: string, id: string) {
     return new DeleteCharityLogUsecase(this.persistence).execute(userId, id);

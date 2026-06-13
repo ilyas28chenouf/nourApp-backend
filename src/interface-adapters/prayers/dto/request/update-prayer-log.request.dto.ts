@@ -31,5 +31,6 @@ export class UpdatePrayerLogRequestDto {
   @IsEnum(PrayerMode)
   prayerMode?: PrayerMode;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isSupererogatory?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() prayedAtMosque?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
 }

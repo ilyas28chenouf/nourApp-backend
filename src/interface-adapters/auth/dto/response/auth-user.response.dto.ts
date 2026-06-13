@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserGender } from '../../../../domain/users/enums/user-gender.enum';
 
 export class AuthUserResponseDto {
   @ApiProperty()
@@ -24,6 +25,9 @@ export class AuthUserResponseDto {
 
   @ApiPropertyOptional()
   ageRange?: string;
+
+  @ApiPropertyOptional({ enum: UserGender })
+  gender?: UserGender | string;
 
   @ApiProperty()
   isActive: boolean;

@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CharityActionType } from '../../../domain/charity/enums/charity-action-type.enum';
 @Entity('charity_logs')
 @Index(['userId', 'charityDate'])
 export class CharityLogTypeormEntity {
@@ -24,5 +25,11 @@ export class CharityLogTypeormEntity {
   amount?: string;
   @Column({ default: 'EUR' }) currency: string;
   @Column({ nullable: true }) frequencyType?: string;
+  @Column({
+    type: 'enum',
+    enum: CharityActionType,
+    default: CharityActionType.SADAQA,
+  })
+  actionType: CharityActionType;
   @Column({ type: 'text', nullable: true }) description?: string;
 }

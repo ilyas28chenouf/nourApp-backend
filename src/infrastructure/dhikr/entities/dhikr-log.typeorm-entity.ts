@@ -1,4 +1,5 @@
 import { DhikrPeriod } from '../../../domain/dhikr/enums/dhikr-period.enum';
+import { DhikrSessionType } from '../../../domain/dhikr/enums/dhikr-session-type.enum';
 import {
   Column,
   CreateDateColumn,
@@ -22,6 +23,12 @@ export class DhikrLogTypeormEntity {
   @Column('uuid') userId: string;
   @Column({ type: 'date' }) dhikrDate: string;
   @Column({ type: 'enum', enum: DhikrPeriod }) period: DhikrPeriod;
+  @Column({ type: 'uuid', nullable: true })
+  dhikrItemId?: string | null;
+  @Column({ type: 'uuid', nullable: true })
+  categoryId?: string | null;
+  @Column({ type: 'enum', enum: DhikrSessionType, nullable: true })
+  sessionType?: DhikrSessionType;
   @Column({ default: 0 }) counter: number;
   @Column({ default: false }) completed: boolean;
   @Column({ type: 'timestamptz', nullable: true }) completedAt?: Date;

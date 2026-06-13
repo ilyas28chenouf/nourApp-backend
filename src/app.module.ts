@@ -2,6 +2,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminResourcesController } from './interface-adapters/admin/controllers/admin-resources.controller';
+import { AdminDhikrController } from './interface-adapters/admin/controllers/admin-dhikr.controller';
+import { AdminProgressionController } from './interface-adapters/admin/controllers/admin-progression.controller';
 import { AdminUsersController } from './interface-adapters/admin/controllers/admin-users.controller';
 import { AuthController } from './interface-adapters/auth/controllers/auth.controller';
 import { CharityController } from './interface-adapters/charity/controllers/charity.controller';
@@ -15,6 +17,7 @@ import { MeditationController } from './interface-adapters/meditation/controller
 import { NotificationsController } from './interface-adapters/notifications/controllers/notifications.controller';
 import { PreferencesController } from './interface-adapters/preferences/controllers/preferences.controller';
 import { PrayersController } from './interface-adapters/prayers/controllers/prayers.controller';
+import { ProgressionController } from './interface-adapters/progression/controllers/progression.controller';
 import { QuranController } from './interface-adapters/quran/controllers/quran.controller';
 import { ResourcesController } from './interface-adapters/resources/controllers/resources.controller';
 import { UsersController } from './interface-adapters/users/controllers/users.controller';
@@ -37,6 +40,7 @@ import { MeditationUsecasesProxyModule } from './usecases-proxy/meditation/medit
 import { NotificationsUsecasesProxyModule } from './usecases-proxy/notifications/notifications-usecases-proxy.module';
 import { PreferencesUsecasesProxyModule } from './usecases-proxy/preferences/preferences-usecases-proxy.module';
 import { PrayersUsecasesProxyModule } from './usecases-proxy/prayers/prayers-usecases-proxy.module';
+import { ProgressionUsecasesProxyModule } from './usecases-proxy/progression/progression-usecases-proxy.module';
 import { QuranUsecasesProxyModule } from './usecases-proxy/quran/quran-usecases-proxy.module';
 import { ResourcesUsecasesProxyModule } from './usecases-proxy/resources/resources-usecases-proxy.module';
 import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-proxy.module';
@@ -51,6 +55,7 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     UsersUsecasesProxyModule,
     PreferencesUsecasesProxyModule,
     PrayersUsecasesProxyModule,
+    ProgressionUsecasesProxyModule,
     FastingUsecasesProxyModule,
     QuranUsecasesProxyModule,
     DhikrUsecasesProxyModule,
@@ -82,6 +87,9 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     DashboardController,
     AdminUsersController,
     AdminResourcesController,
+    AdminDhikrController,
+    AdminProgressionController,
+    ProgressionController,
   ],
   providers: [
     {

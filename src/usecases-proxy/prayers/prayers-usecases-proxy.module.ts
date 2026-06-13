@@ -6,9 +6,11 @@ import { PrayerLogsTypeormAdapter } from '../../infrastructure/prayers/adapters/
 import { PrayerTimesTypeormAdapter } from '../../infrastructure/prayers/adapters/prayer-times-typeorm.adapter';
 import { UserPreferencesTypeormAdapter } from '../../infrastructure/users/adapters/user-preferences-typeorm.adapter';
 import { UsersTypeormAdapter } from '../../infrastructure/users/adapters/users-typeorm.adapter';
+import { ProgressionUsecasesProxyModule } from '../progression/progression-usecases-proxy.module';
 import { PrayersUsecasesProxyService } from './prayers-usecases-proxy.service';
 
 @Module({
+  imports: [ProgressionUsecasesProxyModule],
   providers: [
     PrayerTimesTypeormAdapter,
     PrayerLogsTypeormAdapter,

@@ -3,13 +3,18 @@ import { DataSource, Repository } from 'typeorm';
 import { QuranPersistencePort } from '../../../domain/quran/ports/quran-persistence.port';
 import { QuranReadingGoalTypeormEntity } from '../entities/quran-reading-goal.typeorm-entity';
 import { QuranReadingLogTypeormEntity } from '../entities/quran-reading-log.typeorm-entity';
+import { QuranMemorizationProgressTypeormEntity } from '../entities/quran-memorization-progress.typeorm-entity';
 @Injectable()
 export class QuranTypeormAdapter implements QuranPersistencePort {
   private readonly logs: Repository<QuranReadingLogTypeormEntity>;
   private readonly goals: Repository<QuranReadingGoalTypeormEntity>;
+  private readonly memorization: Repository<QuranMemorizationProgressTypeormEntity>;
   constructor(dataSource: DataSource) {
     this.logs = dataSource.getRepository(QuranReadingLogTypeormEntity);
     this.goals = dataSource.getRepository(QuranReadingGoalTypeormEntity);
+    this.memorization = dataSource.getRepository(
+      QuranMemorizationProgressTypeormEntity,
+    );
   }
   findLogsByUserId(userId: string) {
     return this.logs.find({
@@ -44,5 +49,19 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
   }
   async deleteGoal(id: string) {
     await this.goals.delete(id);
+  }
+  findMemorizationByUserId(userId: string) {
+    return this.memorization.find({
+      where: { userId },
+      order: { surahNumber: 'ASC', createdAt: 'DESC' },
+    });
+  }
+  createMemorization(data: any) {
+    return this.memorization.save(this.memorization.create(data) as any);
+  }
+  async updateMemorization(id: string, data: any) {
+    const existing = await this.memorization.findOne({ where: { id } });
+    if (!existing) throw new NotFoundException('Quran memorization not found');
+    return this.memorization.save({ ...existing, ...data });
   }
 }

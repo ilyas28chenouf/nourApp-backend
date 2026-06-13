@@ -10,6 +10,7 @@ import { GetPrayerMethodsUsecase } from '../../usecases/prayers/get-prayer-metho
 import { GetPrayerSummaryUsecase } from '../../usecases/prayers/get-prayer-summary.usecase';
 import { GetPrayerTimesUsecase } from '../../usecases/prayers/get-prayer-times.usecase';
 import { UpdatePrayerLogUsecase } from '../../usecases/prayers/update-prayer-log.usecase';
+import { ProgressionService } from '../progression/progression.service';
 
 @Injectable()
 export class PrayersUsecasesProxyService {
@@ -19,6 +20,7 @@ export class PrayersUsecasesProxyService {
     private readonly users: UsersTypeormAdapter,
     private readonly preferences: UserPreferencesTypeormAdapter,
     private readonly provider: UmmahPrayersClient,
+    private readonly progression: ProgressionService,
   ) {}
 
   getPrayerTimes(userId: string, date: string) {
@@ -35,11 +37,22 @@ export class PrayersUsecasesProxyService {
   getPrayerLogs(userId: string, from?: string, to?: string) {
     return new GetPrayerLogsUsecase(this.logs).execute(userId, from, to);
   }
-  createPrayerLog(userId: string, data: any) {
-    return new CreatePrayerLogUsecase(this.logs).execute(userId, data);
+  async createPrayerLog(userId: string, data: any) {
+    const log = await new CreatePrayerLogUsecase(this.logs).execute(
+      userId,
+      data,
+    );
+    await this.progression.recordPrayerLog(log);
+    return log;
   }
-  updatePrayerLog(userId: string, id: string, data: any) {
-    return new UpdatePrayerLogUsecase(this.logs).execute(userId, id, data);
+  async updatePrayerLog(userId: string, id: string, data: any) {
+    const log = await new UpdatePrayerLogUsecase(this.logs).execute(
+      userId,
+      id,
+      data,
+    );
+    await this.progression.recordPrayerLog(log);
+    return log;
   }
   getPrayerSummary(userId: string, period: string) {
     return new GetPrayerSummaryUsecase(this.logs).execute(userId, period);

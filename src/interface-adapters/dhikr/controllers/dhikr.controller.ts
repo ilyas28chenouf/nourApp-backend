@@ -35,8 +35,20 @@ export class DhikrController {
   @Get('items')
   @ApiOperation({ summary: 'Get dhikr items' })
   @ApiOkResponse({ type: [DhikrItemResponseDto] })
-  items() {
-    return DhikrResponseMapper.toDto(this.proxy.items());
+  items(@Query('category') category?: string, @Query('period') period?: any) {
+    return DhikrResponseMapper.toDto(this.proxy.items({ category, period }));
+  }
+  @Get('categories')
+  @ApiOperation({ summary: 'Get dhikr categories' })
+  @ApiOkResponse({ description: 'Dhikr categories' })
+  categories() {
+    return DhikrResponseMapper.toDto(this.proxy.categories());
+  }
+  @Get('categories/:slug/items')
+  @ApiOperation({ summary: 'Get dhikr items by category slug' })
+  @ApiOkResponse({ type: [DhikrItemResponseDto] })
+  itemsByCategory(@Param('slug') slug: string) {
+    return DhikrResponseMapper.toDto(this.proxy.itemsByCategorySlug(slug));
   }
   @Get('logs')
   @ApiOperation({ summary: 'Get dhikr logs' })

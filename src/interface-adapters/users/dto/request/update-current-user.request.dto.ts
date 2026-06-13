@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { AgeRange } from '../../../../domain/users/enums/age-range.enum';
+import { UserGender } from '../../../../domain/users/enums/user-gender.enum';
 
 export class UpdateCurrentUserRequestDto {
   @ApiPropertyOptional() @IsOptional() @IsString() firstName?: string;
@@ -12,4 +13,8 @@ export class UpdateCurrentUserRequestDto {
   @IsOptional()
   @IsEnum(AgeRange)
   ageRange?: AgeRange;
+  @ApiPropertyOptional({ enum: UserGender })
+  @IsOptional()
+  @IsEnum(UserGender)
+  gender?: UserGender;
 }

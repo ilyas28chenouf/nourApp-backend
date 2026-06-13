@@ -5,7 +5,13 @@ import { AppLoggerService } from '../../infrastructure/logger/app-logger.service
 
 type UpdateCurrentUserData = Pick<
   Partial<UserModel>,
-  'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'language' | 'ageRange'
+  | 'firstName'
+  | 'lastName'
+  | 'phone'
+  | 'avatarUrl'
+  | 'language'
+  | 'ageRange'
+  | 'gender'
 >;
 
 export class UpdateCurrentUserUsecase {
@@ -27,6 +33,7 @@ export class UpdateCurrentUserUsecase {
     if (data.avatarUrl !== undefined) updatePayload.avatarUrl = data.avatarUrl;
     if (data.language !== undefined) updatePayload.language = data.language;
     if (data.ageRange !== undefined) updatePayload.ageRange = data.ageRange;
+    if (data.gender !== undefined) updatePayload.gender = data.gender;
 
     await this.users.update(userId, updatePayload);
     const updated = await this.users.findById(userId);

@@ -22,7 +22,12 @@ export class DhikrItemTypeormEntity {
   @Column({ type: 'text' }) arabicText: string;
   @Column({ type: 'text', nullable: true }) translation?: string;
   @Column({ type: 'text', nullable: true }) transliteration?: string;
+  @Column({ type: 'uuid', nullable: true })
+  categoryId?: string | null;
   @Column({ type: 'enum', enum: DhikrCategory }) category: DhikrCategory;
+  @Column({ nullable: true }) sourceName?: string;
+  @Column({ nullable: true }) sourceReference?: string;
   @Column({ default: 1 }) recommendedCount: number;
+  @Column({ default: 0 }) sortOrder: number;
   @Column({ default: true }) isActive: boolean;
 }

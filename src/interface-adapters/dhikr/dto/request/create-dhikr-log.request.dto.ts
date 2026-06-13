@@ -12,9 +12,16 @@ import {
   Min,
 } from 'class-validator';
 import { DhikrPeriod } from '../../../../domain/dhikr/enums/dhikr-period.enum';
+import { DhikrSessionType } from '../../../../domain/dhikr/enums/dhikr-session-type.enum';
 export class CreateDhikrLogRequestDto {
   @ApiProperty() @IsDateString() dhikrDate: string;
   @ApiProperty({ enum: DhikrPeriod }) @IsEnum(DhikrPeriod) period: DhikrPeriod;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() dhikrItemId?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() categoryId?: string;
+  @ApiPropertyOptional({ enum: DhikrSessionType })
+  @IsOptional()
+  @IsEnum(DhikrSessionType)
+  sessionType?: DhikrSessionType;
   @ApiPropertyOptional() @IsOptional() @IsInt() counter?: number;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() completed?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsDateString() completedAt?: string;

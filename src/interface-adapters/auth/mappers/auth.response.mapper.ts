@@ -11,6 +11,7 @@ export class AuthResponseMapper {
       role: model.role,
       language: model.language,
       ageRange: model.ageRange,
+      gender: model.gender,
       isActive: model.isActive,
       lastLoginAt: model.lastLoginAt,
       createdAt: model.createdAt,

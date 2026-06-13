@@ -14,6 +14,7 @@ export class UserResponseMapper {
       role: model.role,
       language: model.language,
       ageRange: model.ageRange,
+      gender: model.gender,
       timezone: model.timezone,
       city: model.city,
       country: model.country,

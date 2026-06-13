@@ -13,6 +13,17 @@ export class ResourcesUsecasesProxyService {
   list() {
     return new GetResourcesUsecase(this.resources).execute();
   }
+  async daily() {
+    const resources = await new GetResourcesUsecase(this.resources).execute();
+    return {
+      verseOfTheDay:
+        resources.find((resource: any) => resource.type === 'VERSE') ?? null,
+      hadithOfTheDay:
+        resources.find((resource: any) => resource.type === 'HADITH') ?? null,
+      wisdomOfTheDay:
+        resources.find((resource: any) => resource.type === 'WISDOM') ?? null,
+    };
+  }
   get(id: string) {
     return new GetResourceByIdUsecase(this.resources).execute(id);
   }

@@ -35,6 +35,12 @@ export class ResourcesController {
   list() {
     return ResourceResponseMapper.toDto(this.proxy.list());
   }
+  @Get('daily')
+  @ApiOperation({ summary: 'Get verse, hadith and wisdom of the day' })
+  @ApiOkResponse({ description: 'Daily resources' })
+  daily() {
+    return ResourceResponseMapper.toDto(this.proxy.daily());
+  }
   @Get(':id')
   @ApiOperation({ summary: 'Get resource by id' })
   @ApiOkResponse({ type: ResourceResponseDto })

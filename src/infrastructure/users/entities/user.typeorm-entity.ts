@@ -1,4 +1,5 @@
 import { UserRole } from '../../../domain/users/enums/user-role.enum';
+import { UserGender } from '../../../domain/users/enums/user-gender.enum';
 import {
   Column,
   CreateDateColumn,
@@ -26,6 +27,12 @@ export class UserTypeormEntity {
   @Column({ nullable: true }) firstName?: string;
   @Column({ nullable: true }) lastName?: string;
   @Column({ nullable: true }) ageRange?: string;
+  @Column({
+    type: 'enum',
+    enum: UserGender,
+    default: UserGender.NOT_SPECIFIED,
+  })
+  gender: UserGender;
   @Column({ nullable: true }) fullName?: string;
   @Column({ nullable: true }) avatarUrl?: string;
   @Column({ nullable: true }) provider?: string;

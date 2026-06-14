@@ -6,4 +6,5 @@ export interface DhikrPersistencePort {
   findLogById(id: string): Promise<DhikrLogModel | null>;
   createLog(data: Partial<DhikrLogModel>): Promise<DhikrLogModel>;
   updateLog(id: string, data: Partial<DhikrLogModel>): Promise<DhikrLogModel>;
+  deleteLog(id: string): Promise<void>;
 }

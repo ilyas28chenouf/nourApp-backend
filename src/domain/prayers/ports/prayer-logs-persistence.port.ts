@@ -7,4 +7,5 @@ export interface PrayerLogsPersistencePort {
   findById(id: string): Promise<PrayerLogModel | null>;
   create(data: Partial<PrayerLogModel>): Promise<PrayerLogModel>;
   update(id: string, data: Partial<PrayerLogModel>): Promise<PrayerLogModel>;
+  delete(id: string): Promise<void>;
 }

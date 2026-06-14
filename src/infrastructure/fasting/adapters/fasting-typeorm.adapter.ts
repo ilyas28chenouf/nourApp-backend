@@ -32,6 +32,9 @@ export class FastingTypeormAdapter implements FastingPersistencePort {
     if (!existing) throw new NotFoundException('Fasting log not found');
     return this.logs.save({ ...existing, ...this.stripUndefined(data) });
   }
+  async deleteLog(id: string) {
+    await this.logs.delete(id);
+  }
 
   private stripUndefined(data: Record<string, unknown>) {
     return Object.fromEntries(

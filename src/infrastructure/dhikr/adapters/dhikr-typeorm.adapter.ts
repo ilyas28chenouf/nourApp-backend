@@ -111,6 +111,9 @@ export class DhikrTypeormAdapter implements DhikrPersistencePort {
       ...this.stripUndefined(data),
     });
   }
+  async deleteLog(id: string) {
+    await this.logsRepository.delete(id);
+  }
 
   private stripUndefined(data: Record<string, unknown>) {
     return Object.fromEntries(

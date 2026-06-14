@@ -27,6 +27,9 @@ import { UserBadgeTypeormEntity } from '../progression/entities/user-badge.typeo
 import { UserProgressionTypeormEntity } from '../progression/entities/user-progression.typeorm-entity';
 import { QuranMemorizationProgressTypeormEntity } from '../quran/entities/quran-memorization-progress.typeorm-entity';
 import { SisterUnavailableDayTypeormEntity } from '../sisters/entities/sister-unavailable-day.typeorm-entity';
+import { AdditionalPrayerLogTypeormEntity } from '../prayers/entities/additional-prayer-log.typeorm-entity';
+import { WomenPeriodLogTypeormEntity } from '../women/entities/women-period-log.typeorm-entity';
+import { DiaryEntryTypeormEntity } from '../diary/entities/diary-entry.typeorm-entity';
 
 export const TYPEORM_ENTITIES = [
   UserTypeormEntity,
@@ -58,4 +61,7 @@ export const TYPEORM_ENTITIES = [
   HasanatActionRuleTypeormEntity,
   UserBadgeTypeormEntity,
   SisterUnavailableDayTypeormEntity,
+  AdditionalPrayerLogTypeormEntity,
+  WomenPeriodLogTypeormEntity,
+  DiaryEntryTypeormEntity,
 ];

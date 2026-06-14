@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
 import { QuranTypeormAdapter } from '../../infrastructure/quran/adapters/quran-typeorm.adapter';
 import { UmmahQuranProviderService } from '../../infrastructure/external-apis/ummah/ummah-quran-provider.service';
 import { CreateQuranReadingGoalUsecase } from '../../usecases/quran/create-quran-reading-goal.usecase';
@@ -38,6 +39,19 @@ export class QuranUsecasesProxyService {
     );
     await this.progression.recordQuranReadingLog(log);
     return log;
+  }
+  async deleteLog(userId: string, id: string) {
+    const existing = await this.quran.findLogById(id);
+    if (!existing || existing.userId !== userId)
+      throw new Error('Record not found');
+    await this.quran.deleteLog(id);
+    await this.progression.reverseEventsForLog(
+      userId,
+      HasanatSourceType.QURAN_READING,
+      id,
+      existing.readingDate,
+    );
+    return { deleted: true };
   }
   goals(userId: string) {
     return new GetQuranReadingGoalsUsecase(this.quran).execute(userId);

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { DashboardTotalsDto } from './dashboard-totals.dto';
 
 export class DashboardTodayResponseDto {
   @ApiProperty()
@@ -9,4 +10,7 @@ export class DashboardTodayResponseDto {
 
   @ApiProperty()
   generatedAt: Date;
+
+  @ApiProperty({ type: DashboardTotalsDto })
+  totals: DashboardTotalsDto;
 }

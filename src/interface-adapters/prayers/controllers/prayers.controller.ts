@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -21,8 +22,11 @@ import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { PrayersUsecasesProxyService } from '../../../usecases-proxy/prayers/prayers-usecases-proxy.service';
+import { CreateAdditionalPrayerLogRequestDto } from '../dto/request/create-additional-prayer-log.request.dto';
 import { CreatePrayerLogRequestDto } from '../dto/request/create-prayer-log.request.dto';
+import { UpdateAdditionalPrayerLogRequestDto } from '../dto/request/update-additional-prayer-log.request.dto';
 import { UpdatePrayerLogRequestDto } from '../dto/request/update-prayer-log.request.dto';
+import { AdditionalPrayerLogResponseDto } from '../dto/response/additional-prayer-log.response.dto';
 import { PrayerLogResponseDto } from '../dto/response/prayer-log.response.dto';
 import { PrayerMethodsResponseDto } from '../dto/response/prayer-methods.response.dto';
 import { PrayerSummaryResponseDto } from '../dto/response/prayer-summary.response.dto';
@@ -34,6 +38,67 @@ import { PrayerResponseMapper } from '../mappers/prayer.response.mapper';
 @Controller('prayers')
 export class PrayersController {
   constructor(private readonly proxy: PrayersUsecasesProxyService) {}
+  @Get('additional')
+  @ApiOperation({ summary: 'Get additional prayer logs' })
+  @ApiOkResponse({ type: [AdditionalPrayerLogResponseDto] })
+  async additional(
+    @CurrentUser() user: UserModel,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.listAdditional(user.id, from, to),
+    );
+  }
+
+  @Post('additional')
+  @ApiOperation({ summary: 'Create additional prayer log' })
+  @ApiBody({ type: CreateAdditionalPrayerLogRequestDto })
+  @ApiOkResponse({ type: AdditionalPrayerLogResponseDto })
+  async createAdditional(
+    @CurrentUser() user: UserModel,
+    @Body() dto: CreateAdditionalPrayerLogRequestDto,
+  ) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.createAdditional(user.id, dto),
+    );
+  }
+
+  @Get('additional/:id')
+  @ApiOperation({ summary: 'Get additional prayer log by id' })
+  @ApiOkResponse({ type: AdditionalPrayerLogResponseDto })
+  async getAdditional(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.getAdditional(user.id, id),
+    );
+  }
+
+  @Patch('additional/:id')
+  @ApiOperation({ summary: 'Update additional prayer log' })
+  @ApiBody({ type: UpdateAdditionalPrayerLogRequestDto })
+  @ApiOkResponse({ type: AdditionalPrayerLogResponseDto })
+  async updateAdditional(
+    @CurrentUser() user: UserModel,
+    @Param('id') id: string,
+    @Body() dto: UpdateAdditionalPrayerLogRequestDto,
+  ) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.updateAdditional(user.id, id, dto),
+    );
+  }
+
+  @Delete('additional/:id')
+  @ApiOperation({ summary: 'Delete additional prayer log' })
+  @ApiOkResponse({ description: 'Deleted' })
+  async deleteAdditional(
+    @CurrentUser() user: UserModel,
+    @Param('id') id: string,
+  ) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.deleteAdditional(user.id, id),
+    );
+  }
+
   @Get('times')
   @ApiOperation({ summary: 'Get prayer times for date' })
   @ApiQuery({ name: 'date', example: '2026-06-02' })
@@ -95,6 +160,14 @@ export class PrayersController {
   ) {
     return PrayerResponseMapper.toDto(
       await this.proxy.updatePrayerLog(user.id, id, dto),
+    );
+  }
+  @Delete('logs/:id')
+  @ApiOperation({ summary: 'Delete prayer log' })
+  @ApiOkResponse({ description: 'Deleted' })
+  async delete(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return PrayerResponseMapper.toDto(
+      await this.proxy.deletePrayerLog(user.id, id),
     );
   }
   @Get('summary')

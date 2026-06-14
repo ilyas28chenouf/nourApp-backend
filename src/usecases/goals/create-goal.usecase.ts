@@ -5,8 +5,9 @@ export class CreateGoalUsecase {
   execute(userId: string, data: any) {
     return this.persistence.create({
       ...data,
-      ownerUserId: data.groupId ? undefined : userId,
-      isGroupGoal: Boolean(data.groupId),
+      ownerUserId: userId,
+      groupId: null,
+      isGroupGoal: false,
       isActive: true,
     });
   }

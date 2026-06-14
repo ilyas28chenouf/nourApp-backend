@@ -21,6 +21,10 @@ import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { GroupsUsecasesProxyService } from '../../../usecases-proxy/groups/groups-usecases-proxy.service';
+import { GoalsUsecasesProxyService } from '../../../usecases-proxy/goals/goals-usecases-proxy.service';
+import { CreateGroupGoalRequestDto } from '../../goals/dto/request/create-group-goal.request.dto';
+import { GoalResponseDto } from '../../goals/dto/response/goal.response.dto';
+import { GoalResponseMapper } from '../../goals/mappers/goal.response.mapper';
 import { CreateGroupEncouragementRequestDto } from '../dto/request/create-group-encouragement.request.dto';
 import { CreateGroupRequestDto } from '../dto/request/create-group.request.dto';
 import { JoinGroupRequestDto } from '../dto/request/join-group.request.dto';
@@ -34,7 +38,10 @@ import { GroupResponseMapper } from '../mappers/group.response.mapper';
 @ProtectedApi()
 @Controller('groups')
 export class GroupsController {
-  constructor(private readonly proxy: GroupsUsecasesProxyService) {}
+  constructor(
+    private readonly proxy: GroupsUsecasesProxyService,
+    private readonly goalsProxy: GoalsUsecasesProxyService,
+  ) {}
   @Post()
   @ApiOperation({ summary: 'Create group' })
   @ApiBody({ type: CreateGroupRequestDto })
@@ -101,6 +108,28 @@ export class GroupsController {
   @ApiOkResponse({ type: [GroupProgressResponseDto] })
   progress(@CurrentUser() user: UserModel, @Param('id') id: string) {
     return GroupResponseMapper.toDto(this.proxy.progress(user.id, id));
+  }
+  @Get(':id/goals')
+  @ApiOperation({ summary: 'Get group goals' })
+  @ApiOkResponse({ type: [GoalResponseDto] })
+  async goals(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return GoalResponseMapper.toDto(
+      await this.goalsProxy.listGroupGoals(user.id, id),
+    );
+  }
+
+  @Post(':id/goals')
+  @ApiOperation({ summary: 'Create group goal' })
+  @ApiBody({ type: CreateGroupGoalRequestDto })
+  @ApiOkResponse({ type: GoalResponseDto })
+  async createGoal(
+    @CurrentUser() user: UserModel,
+    @Param('id') id: string,
+    @Body() dto: CreateGroupGoalRequestDto,
+  ) {
+    return GoalResponseMapper.toDto(
+      await this.goalsProxy.createGroupGoal(user.id, id, dto),
+    );
   }
   @Post(':id/encouragements')
   @ApiOperation({ summary: 'Create group encouragement' })

@@ -8,6 +8,7 @@ export interface QuranPersistencePort {
     id: string,
     data: Partial<QuranReadingLogModel>,
   ): Promise<QuranReadingLogModel>;
+  deleteLog(id: string): Promise<void>;
   findGoalsByUserId(userId: string): Promise<any[]>;
   findGoalById(id: string): Promise<any | null>;
   createGoal(data: any): Promise<any>;

@@ -8,6 +8,7 @@ import { AdminUsersController } from './interface-adapters/admin/controllers/adm
 import { AuthController } from './interface-adapters/auth/controllers/auth.controller';
 import { CharityController } from './interface-adapters/charity/controllers/charity.controller';
 import { DashboardController } from './interface-adapters/dashboard/controllers/dashboard.controller';
+import { DiaryController } from './interface-adapters/diary/controllers/diary.controller';
 import { DhikrController } from './interface-adapters/dhikr/controllers/dhikr.controller';
 import { FastingController } from './interface-adapters/fasting/controllers/fasting.controller';
 import { GoalsController } from './interface-adapters/goals/controllers/goals.controller';
@@ -21,6 +22,7 @@ import { ProgressionController } from './interface-adapters/progression/controll
 import { QuranController } from './interface-adapters/quran/controllers/quran.controller';
 import { ResourcesController } from './interface-adapters/resources/controllers/resources.controller';
 import { UsersController } from './interface-adapters/users/controllers/users.controller';
+import { WomenController } from './interface-adapters/women/controllers/women.controller';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { FirebaseModule } from './infrastructure/firebase/firebase.module';
 import { HttpExceptionLoggingFilter } from './infrastructure/logger/http-exception-logging.filter';
@@ -31,6 +33,7 @@ import { AdminUsecasesProxyModule } from './usecases-proxy/admin/admin-usecases-
 import { AuthUsecasesProxyModule } from './usecases-proxy/auth/auth-usecases-proxy.module';
 import { CharityUsecasesProxyModule } from './usecases-proxy/charity/charity-usecases-proxy.module';
 import { DashboardUsecasesProxyModule } from './usecases-proxy/dashboard/dashboard-usecases-proxy.module';
+import { DiaryUsecasesProxyModule } from './usecases-proxy/diary/diary-usecases-proxy.module';
 import { DhikrUsecasesProxyModule } from './usecases-proxy/dhikr/dhikr-usecases-proxy.module';
 import { FastingUsecasesProxyModule } from './usecases-proxy/fasting/fasting-usecases-proxy.module';
 import { GoalsUsecasesProxyModule } from './usecases-proxy/goals/goals-usecases-proxy.module';
@@ -44,6 +47,7 @@ import { ProgressionUsecasesProxyModule } from './usecases-proxy/progression/pro
 import { QuranUsecasesProxyModule } from './usecases-proxy/quran/quran-usecases-proxy.module';
 import { ResourcesUsecasesProxyModule } from './usecases-proxy/resources/resources-usecases-proxy.module';
 import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-proxy.module';
+import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-proxy.module';
 
 @Module({
   imports: [
@@ -67,6 +71,8 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     GoalsUsecasesProxyModule,
     GroupsUsecasesProxyModule,
     DashboardUsecasesProxyModule,
+    WomenUsecasesProxyModule,
+    DiaryUsecasesProxyModule,
     AdminUsecasesProxyModule,
   ],
   controllers: [
@@ -85,6 +91,8 @@ import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-
     GoalsController,
     GroupsController,
     DashboardController,
+    WomenController,
+    DiaryController,
     AdminUsersController,
     AdminResourcesController,
     AdminDhikrController,

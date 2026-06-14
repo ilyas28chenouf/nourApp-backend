@@ -13,7 +13,13 @@ export class GoalsTypeormAdapter implements GoalsPersistencePort {
   }
   findByOwnerUserId(ownerUserId: string) {
     return this.goals.find({
-      where: { ownerUserId },
+      where: { ownerUserId, isGroupGoal: false },
+      order: { createdAt: 'DESC' },
+    }) as any;
+  }
+  findByGroupId(groupId: string) {
+    return this.goals.find({
+      where: { groupId, isGroupGoal: true },
       order: { createdAt: 'DESC' },
     }) as any;
   }

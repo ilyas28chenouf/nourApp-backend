@@ -14,7 +14,7 @@ import {
 import { ReadingPeriod } from '../../../../domain/quran/enums/reading-period.enum';
 export class CreateQuranReadingLogRequestDto {
   @ApiProperty() @IsDateString() readingDate: string;
-  @ApiPropertyOptional() @IsOptional() @IsInt() pagesCount?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pagesCount?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() surahName?: string;
   @ApiPropertyOptional() @IsOptional() @IsInt() surahNumber?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() ayahFrom?: number;

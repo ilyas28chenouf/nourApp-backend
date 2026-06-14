@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
 import { DhikrTypeormAdapter } from '../../infrastructure/dhikr/adapters/dhikr-typeorm.adapter';
 import { CreateDhikrLogUsecase } from '../../usecases/dhikr/create-dhikr-log.usecase';
 import { GetDhikrItemsUsecase } from '../../usecases/dhikr/get-dhikr-items.usecase';
@@ -59,5 +60,18 @@ export class DhikrUsecasesProxyService {
     );
     await this.progression.recordDhikrLog(log);
     return log;
+  }
+  async deleteLog(userId: string, id: string) {
+    const existing = await this.dhikr.findLogById(id);
+    if (!existing || existing.userId !== userId)
+      throw new Error('Record not found');
+    await this.dhikr.deleteLog(id);
+    await this.progression.reverseEventsForLog(
+      userId,
+      HasanatSourceType.DHIKR,
+      id,
+      existing.dhikrDate,
+    );
+    return { deleted: true };
   }
 }

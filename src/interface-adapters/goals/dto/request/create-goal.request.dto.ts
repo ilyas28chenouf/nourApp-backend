@@ -3,13 +3,9 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
-  Max,
-  Min,
 } from 'class-validator';
 import { GoalFrequency } from '../../../../domain/goals/enums/goal-frequency.enum';
 import { GoalType } from '../../../../domain/goals/enums/goal-type.enum';
@@ -24,5 +20,4 @@ export class CreateGoalRequestDto {
   frequency: GoalFrequency;
   @ApiProperty() @IsDateString() startDate: string;
   @ApiPropertyOptional() @IsOptional() @IsDateString() endDate?: string;
-  @ApiPropertyOptional() @IsOptional() @IsUUID() groupId?: string;
 }

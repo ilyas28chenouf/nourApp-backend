@@ -245,6 +245,36 @@ export class ProgressionService {
     });
   }
 
+  async setAdditionalPrayerReward(input: {
+    userId: string;
+    prayerDate: string;
+    prayerTime: string;
+    eligible: boolean;
+  }) {
+    const time = String(input.prayerTime).toUpperCase();
+    await this.upsertPointEvent({
+      userId: input.userId,
+      sourceType: HasanatSourceType.PRAYER,
+      sourceId: null,
+      actionKey: `additional_prayer:${time}:${input.userId}:${input.prayerDate}`,
+      points: input.eligible ? 40 : 0,
+      eventDate: input.prayerDate,
+      metadata: {
+        prayerTime: time,
+        rewardType: 'additional_prayer',
+      },
+    });
+  }
+
+  async reverseEventsForLog(
+    userId: string,
+    sourceType: HasanatSourceType,
+    sourceId: string,
+    eventDate: string,
+  ) {
+    await this.reverseEventsForSource(userId, sourceType, sourceId, eventDate);
+  }
+
   async getEventsForDate(userId: string, date: string) {
     return this.events.find({
       where: { userId, eventDate: date },

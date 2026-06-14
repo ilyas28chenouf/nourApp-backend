@@ -26,6 +26,9 @@ export class PrayerLogsTypeormAdapter implements PrayerLogsPersistencePort {
     if (!existing) throw new NotFoundException('Prayer log not found');
     return this.repository.save({ ...existing, ...this.stripUndefined(data) });
   }
+  async delete(id: string) {
+    await this.repository.delete(id);
+  }
 
   private stripUndefined(data: Record<string, unknown>) {
     return Object.fromEntries(

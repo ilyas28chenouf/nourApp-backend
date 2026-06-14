@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
 import { FastingTypeormAdapter } from '../../infrastructure/fasting/adapters/fasting-typeorm.adapter';
 import { CreateFastingLogUsecase } from '../../usecases/fasting/create-fasting-log.usecase';
 import { GetFastingLogsUsecase } from '../../usecases/fasting/get-fasting-logs.usecase';
@@ -36,6 +37,19 @@ export class FastingUsecasesProxyService {
     );
     await this.progression.recordFastingLog(log);
     return log;
+  }
+  async deleteLog(userId: string, id: string) {
+    const existing = await this.fasting.findLogById(id);
+    if (!existing || existing.userId !== userId)
+      throw new Error('Record not found');
+    await this.fasting.deleteLog(id);
+    await this.progression.reverseEventsForLog(
+      userId,
+      HasanatSourceType.FASTING,
+      id,
+      existing.fastingDate,
+    );
+    return { deleted: true };
   }
   summary(userId: string, period: string) {
     return new GetFastingSummaryUsecase(this.fasting).execute(userId, period);

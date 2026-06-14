@@ -69,6 +69,12 @@ export class QuranController {
       await this.proxy.updateLog(user.id, id, dto),
     );
   }
+  @Delete('logs/:id')
+  @ApiOperation({ summary: 'Delete Quran reading log' })
+  @ApiOkResponse({ description: 'Deleted' })
+  async deleteLog(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return QuranResponseMapper.toDto(await this.proxy.deleteLog(user.id, id));
+  }
   @Get('goals')
   @ApiOperation({ summary: 'Get Quran reading goals' })
   @ApiOkResponse({ type: [QuranReadingGoalResponseDto] })

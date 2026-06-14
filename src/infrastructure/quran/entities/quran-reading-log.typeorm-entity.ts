@@ -21,7 +21,8 @@ export class QuranReadingLogTypeormEntity {
 
   @Column('uuid') userId: string;
   @Column({ type: 'date' }) readingDate: string;
-  @Column({ default: 0 }) pagesCount: number;
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0 })
+  pagesCount: number;
   @Column({ nullable: true }) surahName?: string;
   @Column({ nullable: true }) surahNumber?: number;
   @Column({ nullable: true }) ayahFrom?: number;

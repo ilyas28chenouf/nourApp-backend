@@ -9,4 +9,5 @@ export interface FastingPersistencePort {
     id: string,
     data: Partial<FastingLogModel>,
   ): Promise<FastingLogModel>;
+  deleteLog(id: string): Promise<void>;
 }

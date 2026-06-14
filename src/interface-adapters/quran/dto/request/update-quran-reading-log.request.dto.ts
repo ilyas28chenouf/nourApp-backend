@@ -13,6 +13,6 @@ import {
 } from 'class-validator';
 export class UpdateQuranReadingLogRequestDto {
   @ApiPropertyOptional() @IsOptional() @IsDateString() readingDate?: string;
-  @ApiPropertyOptional() @IsOptional() @IsInt() pagesCount?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pagesCount?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
 }

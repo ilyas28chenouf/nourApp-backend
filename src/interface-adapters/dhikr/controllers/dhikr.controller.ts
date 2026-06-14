@@ -86,4 +86,10 @@ export class DhikrController {
       await this.proxy.updateLog(user.id, id, dto),
     );
   }
+  @Delete('logs/:id')
+  @ApiOperation({ summary: 'Delete dhikr log' })
+  @ApiOkResponse({ description: 'Deleted' })
+  async delete(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return DhikrResponseMapper.toDto(await this.proxy.deleteLog(user.id, id));
+  }
 }

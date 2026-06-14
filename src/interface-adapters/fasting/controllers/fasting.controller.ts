@@ -75,6 +75,12 @@ export class FastingController {
       await this.proxy.updateLog(user.id, id, dto),
     );
   }
+  @Delete('logs/:id')
+  @ApiOperation({ summary: 'Delete fasting log' })
+  @ApiOkResponse({ description: 'Deleted' })
+  async delete(@CurrentUser() user: UserModel, @Param('id') id: string) {
+    return FastingResponseMapper.toDto(await this.proxy.deleteLog(user.id, id));
+  }
   @Get('summary')
   @ApiOperation({ summary: 'Get fasting summary' })
   @ApiOkResponse({ description: 'Summary' })

@@ -33,6 +33,9 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
     if (!existing) throw new NotFoundException('Quran log not found');
     return this.logs.save({ ...existing, ...this.stripUndefined(data) });
   }
+  async deleteLog(id: string) {
+    await this.logs.delete(id);
+  }
   findGoalsByUserId(userId: string) {
     return this.goals.find({ where: { userId }, order: { createdAt: 'DESC' } });
   }

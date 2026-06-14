@@ -34,7 +34,9 @@ export class DashboardController {
   @ApiOperation({ summary: 'Get today dashboard' })
   @ApiOkResponse({ type: DashboardTodayResponseDto })
   today(@CurrentUser() user: UserModel) {
-    return DashboardResponseMapper.toDto(this.proxy.today(user.id));
+    return DashboardResponseMapper.toDto(
+      this.proxy.today(user.id, user.timezone),
+    );
   }
   @Get('weekly')
   @ApiOperation({ summary: 'Get weekly dashboard' })

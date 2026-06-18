@@ -9,7 +9,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 @Entity('scheduled_notifications')
-@Index(['userId', 'scheduledAt'])
+@Index(['userId'])
+@Index(['status'])
+@Index(['scheduledAt'])
+@Index(['dedupeKey'], { unique: true, where: '"dedupeKey" IS NOT NULL' })
 export class ScheduledNotificationTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,5 +35,18 @@ export class ScheduledNotificationTypeormEntity {
     default: NotificationStatus.PENDING,
   })
   status: NotificationStatus;
+
+  @Column('uuid', { nullable: true })
+  contentId?: string | null;
+
+  @Column({ nullable: true })
+  fcmMessageId?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  failureReason?: string | null;
+
   @Column({ type: 'jsonb', nullable: true }) metadata?: Record<string, unknown>;
+
+  @Column({ nullable: true })
+  dedupeKey?: string | null;
 }

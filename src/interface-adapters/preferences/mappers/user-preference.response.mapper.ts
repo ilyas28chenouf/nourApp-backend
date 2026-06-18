@@ -13,6 +13,9 @@ export class UserPreferenceResponseMapper {
       quranNotificationsEnabled: model.quranNotificationsEnabled,
       encouragementNotificationsEnabled:
         model.encouragementNotificationsEnabled,
+      dailyReminderEnabled: model.dailyReminderEnabled,
+      dailyReminderTime: model.dailyReminderTime,
+      dailyReminderCycleStartDate: model.dailyReminderCycleStartDate,
       prayerCalculationMethod: model.prayerCalculationMethod,
       prayerMadhab: model.prayerMadhab,
       dailyAvailableTime: model.dailyAvailableTime,

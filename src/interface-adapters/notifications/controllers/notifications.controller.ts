@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -16,13 +7,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { NotificationsUsecasesProxyService } from '../../../usecases-proxy/notifications/notifications-usecases-proxy.service';
+import { PreferencesUsecasesProxyService } from '../../../usecases-proxy/preferences/preferences-usecases-proxy.service';
 import { UpdatePreferencesRequestDto } from '../../preferences/dto/request/update-preferences.request.dto';
+import { UserPreferenceResponseDto } from '../../preferences/dto/response/user-preference.response.dto';
+import { UserPreferenceResponseMapper } from '../../preferences/mappers/user-preference.response.mapper';
 import { RegisterDeviceTokenRequestDto } from '../dto/request/register-device-token.request.dto';
+import { DeviceTokenResponseDto } from '../dto/response/device-token.response.dto';
 import { ScheduledNotificationResponseDto } from '../dto/response/scheduled-notification.response.dto';
 import { NotificationResponseMapper } from '../mappers/notification.response.mapper';
 @ApiTags('Notifications')
@@ -30,39 +23,55 @@ import { NotificationResponseMapper } from '../mappers/notification.response.map
 @ProtectedApi()
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly proxy: NotificationsUsecasesProxyService) {}
+  constructor(
+    private readonly proxy: NotificationsUsecasesProxyService,
+    private readonly preferencesProxy: PreferencesUsecasesProxyService,
+  ) {}
+
   @Post('device-token')
   @ApiOperation({ summary: 'Register device token' })
   @ApiBody({ type: RegisterDeviceTokenRequestDto })
-  @ApiOkResponse({ description: 'Device token' })
-  register(
+  @ApiOkResponse({ type: DeviceTokenResponseDto })
+  async register(
     @CurrentUser() user: UserModel,
     @Body() dto: RegisterDeviceTokenRequestDto,
   ) {
-    return NotificationResponseMapper.toDto(
-      this.proxy.registerDeviceToken(user.id, dto),
+    return NotificationResponseMapper.toDeviceTokenDto(
+      await this.proxy.registerDeviceToken(user.id, dto),
     );
   }
+
   @Get('scheduled')
   @ApiOperation({ summary: 'Get scheduled notifications' })
   @ApiOkResponse({ type: [ScheduledNotificationResponseDto] })
-  scheduled(@CurrentUser() user: UserModel) {
-    return NotificationResponseMapper.toDto(this.proxy.scheduled(user.id));
+  async scheduled(
+    @CurrentUser() user: UserModel,
+    @Query('limit') limit?: string,
+  ) {
+    return NotificationResponseMapper.toScheduledDtoList(
+      await this.proxy.scheduled(user.id, limit ? Number(limit) : undefined),
+    );
   }
+
   @Patch('preferences')
   @ApiOperation({ summary: 'Update notification preferences' })
   @ApiBody({ type: UpdatePreferencesRequestDto })
-  @ApiOkResponse({ description: 'Preferences updated' })
-  preferences(
+  @ApiOkResponse({ type: UserPreferenceResponseDto })
+  async preferences(
     @CurrentUser() user: UserModel,
     @Body() dto: UpdatePreferencesRequestDto,
   ) {
-    return { userId: user.id, ...dto };
+    return UserPreferenceResponseMapper.toDto(
+      await this.preferencesProxy.updateUserPreferences(user.id, dto),
+    );
   }
+
   @Post('test')
   @ApiOperation({ summary: 'Send test notification' })
   @ApiOkResponse({ type: ScheduledNotificationResponseDto })
-  test(@CurrentUser() user: UserModel, @Body() dto: any) {
-    return NotificationResponseMapper.toDto(this.proxy.sendTest(user.id, dto));
+  async test(@CurrentUser() user: UserModel) {
+    return NotificationResponseMapper.toScheduledDto(
+      await this.proxy.sendTest(user.id),
+    );
   }
 }

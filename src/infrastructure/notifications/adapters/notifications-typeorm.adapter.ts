@@ -1,20 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, LessThanOrEqual, Repository } from 'typeorm';
+import { NotificationStatus } from '../../../domain/notifications/enums/notification-status.enum';
 import { NotificationsPersistencePort } from '../../../domain/notifications/ports/notifications-persistence.port';
+import { DailyReminderContentTypeormEntity } from '../entities/daily-reminder-content.typeorm-entity';
 import { DeviceTokenTypeormEntity } from '../entities/device-token.typeorm-entity';
 import { ScheduledNotificationTypeormEntity } from '../entities/scheduled-notification.typeorm-entity';
 @Injectable()
 export class NotificationsTypeormAdapter implements NotificationsPersistencePort {
   private readonly tokens: Repository<DeviceTokenTypeormEntity>;
   private readonly scheduled: Repository<ScheduledNotificationTypeormEntity>;
+  private readonly dailyContents: Repository<DailyReminderContentTypeormEntity>;
   constructor(dataSource: DataSource) {
     this.tokens = dataSource.getRepository(DeviceTokenTypeormEntity);
     this.scheduled = dataSource.getRepository(
       ScheduledNotificationTypeormEntity,
     );
+    this.dailyContents = dataSource.getRepository(
+      DailyReminderContentTypeormEntity,
+    );
   }
-  findDeviceToken(userId: string, token: string) {
-    return this.tokens.findOne({ where: { userId, token } }) as any;
+  findDeviceTokenByToken(token: string) {
+    return this.tokens.findOne({ where: { token } }) as any;
   }
   createDeviceToken(data: any) {
     return this.tokens.save(this.tokens.create(data) as any) as any;
@@ -24,13 +30,55 @@ export class NotificationsTypeormAdapter implements NotificationsPersistencePort
     if (!existing) throw new NotFoundException('Device token not found');
     return this.tokens.save({ ...existing, ...data });
   }
-  findScheduled(userId: string) {
+  findActiveDeviceTokensByUser(userId: string) {
+    return this.tokens.find({
+      where: { userId, isActive: true },
+      order: { lastSeenAt: 'DESC' },
+    }) as any;
+  }
+  async deactivateDeviceToken(id: string) {
+    await this.tokens.update({ id }, { isActive: false });
+  }
+  findScheduled(userId: string, limit = 100) {
     return this.scheduled.find({
       where: { userId },
-      order: { scheduledAt: 'ASC' },
+      order: { scheduledAt: 'DESC' },
+      take: limit,
     });
   }
   createScheduled(data: any) {
     return this.scheduled.save(this.scheduled.create(data) as any) as any;
+  }
+  async updateScheduled(id: string, data: any) {
+    const existing = await this.scheduled.findOne({ where: { id } });
+    if (!existing)
+      throw new NotFoundException('Scheduled notification not found');
+    await this.scheduled.update({ id }, data);
+    return (await this.scheduled.findOne({ where: { id } })) as any;
+  }
+  findDueScheduled(limit: number) {
+    return this.scheduled.find({
+      where: {
+        status: NotificationStatus.PENDING,
+        scheduledAt: LessThanOrEqual(new Date()),
+      },
+      order: { scheduledAt: 'ASC' },
+      take: limit,
+    }) as any;
+  }
+  findScheduledByDedupeKey(dedupeKey: string) {
+    return this.scheduled.findOne({ where: { dedupeKey } }) as any;
+  }
+  updateScheduledStatus(
+    id: string,
+    status: NotificationStatus,
+    data: any = {},
+  ) {
+    return this.updateScheduled(id, { ...data, status });
+  }
+  findDailyReminderContentByCycleDay(cycleDay: number) {
+    return this.dailyContents.findOne({
+      where: { cycleDay, isActive: true },
+    });
   }
 }

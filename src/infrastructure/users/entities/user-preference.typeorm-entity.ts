@@ -25,6 +25,10 @@ export class UserPreferenceTypeormEntity {
   @Column({ default: true }) dhikrNotificationsEnabled: boolean;
   @Column({ default: true }) quranNotificationsEnabled: boolean;
   @Column({ default: true }) encouragementNotificationsEnabled: boolean;
+  @Column({ default: true }) dailyReminderEnabled: boolean;
+  @Column({ default: '09:00' }) dailyReminderTime: string;
+  @Column({ type: 'date', nullable: true })
+  dailyReminderCycleStartDate?: string;
   @Column({ default: 'Algeria' }) prayerCalculationMethod: string;
   @Column({ default: 'Shafi' }) prayerMadhab: string;
   @Column({ nullable: true }) dailyAvailableTime?: string;

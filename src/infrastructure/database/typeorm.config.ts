@@ -16,6 +16,7 @@ import { LearningItemTypeormEntity } from '../learning/entities/learning-item.ty
 import { UserLearningProgressTypeormEntity } from '../learning/entities/user-learning-progress.typeorm-entity';
 import { DeviceTokenTypeormEntity } from '../notifications/entities/device-token.typeorm-entity';
 import { ScheduledNotificationTypeormEntity } from '../notifications/entities/scheduled-notification.typeorm-entity';
+import { DailyReminderContentTypeormEntity } from '../notifications/entities/daily-reminder-content.typeorm-entity';
 import { GoalTypeormEntity } from '../goals/entities/goal.typeorm-entity';
 import { GoalProgressTypeormEntity } from '../goals/entities/goal-progress.typeorm-entity';
 import { GroupTypeormEntity } from '../groups/entities/group.typeorm-entity';
@@ -51,6 +52,7 @@ export const TYPEORM_ENTITIES = [
   UserLearningProgressTypeormEntity,
   DeviceTokenTypeormEntity,
   ScheduledNotificationTypeormEntity,
+  DailyReminderContentTypeormEntity,
   GoalTypeormEntity,
   GoalProgressTypeormEntity,
   GroupTypeormEntity,

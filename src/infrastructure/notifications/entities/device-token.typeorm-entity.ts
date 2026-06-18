@@ -7,8 +7,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-@Entity('device_tokens')
-@Index(['userId', 'token'], { unique: true })
+@Entity('notification_device_tokens')
+@Index(['userId'])
+@Index(['token'], { unique: true })
+@Index(['isActive'])
 export class DeviceTokenTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -19,8 +21,26 @@ export class DeviceTokenTypeormEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @Column('uuid') userId: string;
-  @Column() token: string;
+  @Column('uuid')
+  userId: string;
+
+  @Column()
+  token: string;
+
   @Column({ type: 'enum', enum: DevicePlatform }) platform: DevicePlatform;
-  @Column({ default: true }) isActive: boolean;
+
+  @Column({ default: 'FCM' })
+  provider: 'FCM';
+
+  @Column({ nullable: true })
+  deviceId?: string | null;
+
+  @Column({ nullable: true })
+  appVersion?: string | null;
+
+  @Column({ default: true })
+  isActive: boolean;
+
+  @Column({ type: 'timestamptz', default: () => 'now()' })
+  lastSeenAt: Date;
 }

@@ -17,10 +17,10 @@ export class ScheduledNotificationResponseDto {
   body: string;
 
   @ApiProperty()
-  scheduledAt: Date;
+  scheduledAt: string;
 
   @ApiPropertyOptional()
-  sentAt?: Date;
+  sentAt?: string;
 
   @ApiProperty()
   status: string;
@@ -29,8 +29,8 @@ export class ScheduledNotificationResponseDto {
   metadata?: Record<string, unknown>;
 
   @ApiPropertyOptional()
-  createdAt?: Date;
+  createdAt?: string;
 
   @ApiPropertyOptional()
-  updatedAt?: Date;
+  updatedAt?: string;
 }

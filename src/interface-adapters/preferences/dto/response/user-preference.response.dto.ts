@@ -30,6 +30,15 @@ export class UserPreferenceResponseDto {
   @ApiProperty()
   encouragementNotificationsEnabled: boolean;
 
+  @ApiProperty()
+  dailyReminderEnabled: boolean;
+
+  @ApiProperty({ example: '09:00' })
+  dailyReminderTime: string;
+
+  @ApiPropertyOptional()
+  dailyReminderCycleStartDate?: string;
+
   @ApiProperty({ example: 'Algeria' })
   prayerCalculationMethod: string;
 

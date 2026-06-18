@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AdminResourcesController } from './interface-adapters/admin/controllers/admin-resources.controller';
 import { AdminDhikrController } from './interface-adapters/admin/controllers/admin-dhikr.controller';
 import { AdminProgressionController } from './interface-adapters/admin/controllers/admin-progression.controller';
@@ -52,6 +53,7 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     FirebaseModule,
     LoggerModule,

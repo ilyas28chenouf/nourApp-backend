@@ -8,6 +8,9 @@ export interface UserPreferenceModel {
   dhikrNotificationsEnabled: boolean;
   quranNotificationsEnabled: boolean;
   encouragementNotificationsEnabled: boolean;
+  dailyReminderEnabled: boolean;
+  dailyReminderTime: string;
+  dailyReminderCycleStartDate?: string | null;
   prayerCalculationMethod: string;
   prayerMadhab: string;
   dailyAvailableTime?: string | null;

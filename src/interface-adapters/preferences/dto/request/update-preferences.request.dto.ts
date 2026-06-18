@@ -6,6 +6,7 @@ import {
   IsIn,
   IsNotEmpty,
   IsOptional,
+  Matches,
   IsString,
 } from 'class-validator';
 import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
@@ -57,6 +58,19 @@ export class UpdatePreferencesRequestDto {
   @IsOptional()
   @IsBoolean()
   encouragementNotificationsEnabled?: boolean;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  dailyReminderEnabled?: boolean;
+
+  @ApiPropertyOptional({ example: '09:00', default: '09:00' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'dailyReminderTime must be in HH:mm format',
+  })
+  dailyReminderTime?: string;
 
   @ApiPropertyOptional({ example: 'Algeria' })
   @IsOptional()

@@ -4,7 +4,11 @@ export interface DeviceTokenModel {
   userId: string;
   token: string;
   platform: DevicePlatform;
+  provider: 'FCM';
+  deviceId?: string | null;
+  appVersion?: string | null;
   isActive: boolean;
+  lastSeenAt: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

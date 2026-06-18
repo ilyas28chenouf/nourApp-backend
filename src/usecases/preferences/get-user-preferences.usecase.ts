@@ -9,6 +9,8 @@ export class GetUserPreferencesUsecase {
         language: 'fr',
         prayerCalculationMethod: 'Algeria',
         prayerMadhab: 'Shafi',
+        dailyReminderEnabled: true,
+        dailyReminderTime: '09:00',
       })
     );
   }

@@ -24,6 +24,8 @@ export class UpdateUserPreferencesUsecase {
       'dhikrNotificationsEnabled',
       'quranNotificationsEnabled',
       'encouragementNotificationsEnabled',
+      'dailyReminderEnabled',
+      'dailyReminderTime',
       'prayerCalculationMethod',
       'prayerMadhab',
       'dailyAvailableTime',

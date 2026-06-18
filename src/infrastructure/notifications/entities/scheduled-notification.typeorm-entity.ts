@@ -25,10 +25,10 @@ export class ScheduledNotificationTypeormEntity {
 
   @Column('uuid') userId: string;
   @Column({ type: 'enum', enum: NotificationType }) type: NotificationType;
-  @Column() title: string;
+  @Column({ type: 'varchar', length: 255 }) title: string;
   @Column({ type: 'text' }) body: string;
   @Column({ type: 'timestamptz' }) scheduledAt: Date;
-  @Column({ type: 'timestamptz', nullable: true }) sentAt?: Date;
+  @Column({ type: 'timestamptz', nullable: true }) sentAt?: Date | null;
   @Column({
     type: 'enum',
     enum: NotificationStatus,
@@ -39,14 +39,14 @@ export class ScheduledNotificationTypeormEntity {
   @Column('uuid', { nullable: true })
   contentId?: string | null;
 
-  @Column({ nullable: true })
-  fcmMessageId?: string | null;
+@Column({ type: 'varchar', length: 255, nullable: true })
+fcmMessageId?: string | null;
 
   @Column({ type: 'text', nullable: true })
   failureReason?: string | null;
 
   @Column({ type: 'jsonb', nullable: true }) metadata?: Record<string, unknown>;
 
-  @Column({ nullable: true })
-  dedupeKey?: string | null;
+@Column({ type: 'varchar', length: 255, nullable: true })
+dedupeKey?: string | null;
 }

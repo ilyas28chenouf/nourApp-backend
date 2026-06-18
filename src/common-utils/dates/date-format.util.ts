@@ -111,3 +111,40 @@ export function previousDateOnly(value: unknown): string | null {
   date.setUTCDate(date.getUTCDate() - 1);
   return toSafeDateOnly(date);
 }
+
+export function todayDateOnly(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function diffDateOnlyInDays(to: string, from: string): number {
+  const toDate = parseDateOnlyToUtcDate(to);
+  const fromDate = parseDateOnlyToUtcDate(from);
+  return Math.round((toDate.getTime() - fromDate.getTime()) / 86400000);
+}
+
+export function isDateOnlyInRange(
+  date: string,
+  startDate: string,
+  endDate?: string | null,
+): boolean {
+  return date >= startDate && (!endDate || date <= endDate);
+}
+
+export function eachDateOnlyBetween(from: string, to: string): string[] {
+  const dates: string[] = [];
+  const current = parseDateOnlyToUtcDate(from);
+  const end = parseDateOnlyToUtcDate(to);
+
+  while (current.getTime() <= end.getTime()) {
+    dates.push(current.toISOString().slice(0, 10));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
+  return dates;
+}
+
+function parseDateOnlyToUtcDate(value: string): Date {
+  const dateOnly = requireDateOnly(value, 'date');
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}

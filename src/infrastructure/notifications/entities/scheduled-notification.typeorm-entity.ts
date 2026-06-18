@@ -39,14 +39,14 @@ export class ScheduledNotificationTypeormEntity {
   @Column('uuid', { nullable: true })
   contentId?: string | null;
 
-@Column({ type: 'varchar', length: 255, nullable: true })
-fcmMessageId?: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  fcmMessageId?: string | null;
 
   @Column({ type: 'text', nullable: true })
   failureReason?: string | null;
 
   @Column({ type: 'jsonb', nullable: true }) metadata?: Record<string, unknown>;
 
-@Column({ type: 'varchar', length: 255, nullable: true })
-dedupeKey?: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  dedupeKey?: string | null;
 }

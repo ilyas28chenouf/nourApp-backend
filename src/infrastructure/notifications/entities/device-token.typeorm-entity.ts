@@ -24,20 +24,23 @@ export class DeviceTokenTypeormEntity {
   @Column('uuid')
   userId: string;
 
-@Column({ type: 'text' })
-token: string;
+  @Column({ type: 'text' })
+  token: string;
 
-@Column({ type: 'varchar', length: 20, default: 'FCM' })
-provider: 'FCM';
+  @Column({ type: 'enum', enum: DevicePlatform })
+  platform: DevicePlatform;
 
-@Column({ type: 'varchar', length: 255, nullable: true })
-deviceId?: string | null;
+  @Column({ type: 'varchar', length: 20, default: 'FCM' })
+  provider: 'FCM';
 
-@Column({ type: 'varchar', length: 50, nullable: true })
-appVersion?: string | null;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  deviceId?: string | null;
 
-@Column({ type: 'boolean', default: true })
-isActive: boolean;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  appVersion?: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
 
   @Column({ type: 'timestamptz', default: () => 'now()' })
   lastSeenAt: Date;

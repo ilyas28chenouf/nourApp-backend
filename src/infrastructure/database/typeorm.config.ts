@@ -30,6 +30,8 @@ import { QuranMemorizationProgressTypeormEntity } from '../quran/entities/quran-
 import { SisterUnavailableDayTypeormEntity } from '../sisters/entities/sister-unavailable-day.typeorm-entity';
 import { AdditionalPrayerLogTypeormEntity } from '../prayers/entities/additional-prayer-log.typeorm-entity';
 import { WomenPeriodLogTypeormEntity } from '../women/entities/women-period-log.typeorm-entity';
+import { WomenProgramActivityLogTypeormEntity } from '../women/entities/women-program-activity-log.typeorm-entity';
+import { WomenProgramCycleTypeormEntity } from '../women/entities/women-program-cycle.typeorm-entity';
 import { DiaryEntryTypeormEntity } from '../diary/entities/diary-entry.typeorm-entity';
 
 export const TYPEORM_ENTITIES = [
@@ -65,5 +67,7 @@ export const TYPEORM_ENTITIES = [
   SisterUnavailableDayTypeormEntity,
   AdditionalPrayerLogTypeormEntity,
   WomenPeriodLogTypeormEntity,
+  WomenProgramCycleTypeormEntity,
+  WomenProgramActivityLogTypeormEntity,
   DiaryEntryTypeormEntity,
 ];

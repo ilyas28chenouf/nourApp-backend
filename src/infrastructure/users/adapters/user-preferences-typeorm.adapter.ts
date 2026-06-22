@@ -24,7 +24,12 @@ export class UserPreferencesTypeormAdapter implements UserPreferencesPersistence
     const existing = await this.repository.findOne({ where: { id } });
     if (!existing) throw new NotFoundException('Preferences not found');
     const updatePayload = Object.fromEntries(
-      Object.entries(data).filter(([, value]) => value !== undefined),
+      Object.entries(data)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [
+          key,
+          key === 'dhikrPractices' && Array.isArray(value) ? [...value] : value,
+        ]),
     ) as Partial<UserPreferenceTypeormEntity>;
     await this.repository.update({ id }, updatePayload);
     return (await this.repository.findOne({

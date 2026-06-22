@@ -32,6 +32,10 @@ export class UpdateOnboardingPreferencesUsecase {
         .filter((field) => data[field] !== undefined)
         .map((field) => [field, data[field]]),
     );
+    this.logger.debug('Onboarding preferences sanitized update payload', {
+      userId,
+      updatePayload,
+    });
     const updated = await this.preferences.update(pref.id, updatePayload);
     this.logger.debug('Onboarding preferences updated', {
       userId,

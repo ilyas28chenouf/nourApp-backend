@@ -9,6 +9,7 @@ import {
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
+import { AppLoggerService } from '../../../infrastructure/logger/app-logger.service';
 import { PreferencesUsecasesProxyService } from '../../../usecases-proxy/preferences/preferences-usecases-proxy.service';
 import { UpdateOnboardingPreferencesRequestDto } from '../dto/request/update-onboarding-preferences.request.dto';
 import { UpdatePreferencesRequestDto } from '../dto/request/update-preferences.request.dto';
@@ -19,7 +20,10 @@ import { UserPreferenceResponseMapper } from '../mappers/user-preference.respons
 @ProtectedApi()
 @Controller('preferences')
 export class PreferencesController {
-  constructor(private readonly proxy: PreferencesUsecasesProxyService) {}
+  constructor(
+    private readonly proxy: PreferencesUsecasesProxyService,
+    private readonly logger: AppLoggerService,
+  ) {}
   @Get('me')
   @ApiOperation({ summary: 'Get current user preferences' })
   @ApiOkResponse({ type: UserPreferenceResponseDto })
@@ -49,8 +53,20 @@ export class PreferencesController {
     @CurrentUser() user: UserModel,
     @Body() dto: UpdateOnboardingPreferencesRequestDto,
   ) {
-    return UserPreferenceResponseMapper.toDto(
-      await this.proxy.updateOnboardingPreferences(user.id, dto),
-    );
+    this.logger.debug('Onboarding preferences incoming DTO', {
+      userId: user.id,
+      dto,
+    });
+    const updated = await this.proxy.updateOnboardingPreferences(user.id, dto);
+    this.logger.debug('Onboarding preferences saved entity before response', {
+      userId: user.id,
+      saved: updated,
+    });
+    const response = UserPreferenceResponseMapper.toDto(updated);
+    this.logger.debug('Onboarding preferences response DTO', {
+      userId: user.id,
+      response,
+    });
+    return response;
   }
 }

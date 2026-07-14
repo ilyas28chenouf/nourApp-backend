@@ -12,13 +12,20 @@ async function bootstrap() {
   const globalPrefix = configService.get<string>('APP_GLOBAL_PREFIX', 'api');
   const swaggerPath = configService.get<string>('SWAGGER_PATH', 'api/docs');
   const corsOrigin = configService.get<string>('CORS_ORIGIN', '*');
+  const adminCorsOrigin = 'https://admin.qassidine.com';
 
   app.setGlobalPrefix(globalPrefix);
   app.enableCors({
     origin:
       corsOrigin === '*'
         ? true
-        : corsOrigin.split(',').map((origin) => origin.trim()),
+        : Array.from(
+            new Set(
+              [...corsOrigin.split(','), adminCorsOrigin].map((origin) =>
+                origin.trim().replace(/\/$/, ''),
+              ),
+            ),
+          ),
     credentials: true,
   });
   app.useGlobalPipes(
@@ -42,4 +49,4 @@ async function bootstrap() {
 
   await app.listen(Number(configService.get<string>('APP_PORT', '3000')));
 }
-bootstrap();
+void bootstrap();

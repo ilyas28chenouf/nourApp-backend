@@ -33,6 +33,10 @@ import { WomenPeriodLogTypeormEntity } from '../women/entities/women-period-log.
 import { WomenProgramActivityLogTypeormEntity } from '../women/entities/women-program-activity-log.typeorm-entity';
 import { WomenProgramCycleTypeormEntity } from '../women/entities/women-program-cycle.typeorm-entity';
 import { DiaryEntryTypeormEntity } from '../diary/entities/diary-entry.typeorm-entity';
+import { HadithCollectionTypeormEntity } from '../hadith/entities/hadith-collection.typeorm-entity';
+import { HadithItemTypeormEntity } from '../hadith/entities/hadith-item.typeorm-entity';
+import { TafsirCollectionTypeormEntity } from '../tafsir/entities/tafsir-collection.typeorm-entity';
+import { TafsirItemTypeormEntity } from '../tafsir/entities/tafsir-item.typeorm-entity';
 
 export const TYPEORM_ENTITIES = [
   UserTypeormEntity,
@@ -70,4 +74,8 @@ export const TYPEORM_ENTITIES = [
   WomenProgramCycleTypeormEntity,
   WomenProgramActivityLogTypeormEntity,
   DiaryEntryTypeormEntity,
+  HadithCollectionTypeormEntity,
+  HadithItemTypeormEntity,
+  TafsirCollectionTypeormEntity,
+  TafsirItemTypeormEntity,
 ];

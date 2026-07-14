@@ -4,8 +4,10 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminResourcesController } from './interface-adapters/admin/controllers/admin-resources.controller';
 import { AdminDhikrController } from './interface-adapters/admin/controllers/admin-dhikr.controller';
+import { AdminHadithController } from './interface-adapters/admin/controllers/admin-hadith.controller';
 import { AdminProgressionController } from './interface-adapters/admin/controllers/admin-progression.controller';
 import { AdminUsersController } from './interface-adapters/admin/controllers/admin-users.controller';
+import { AdminTafsirController } from './interface-adapters/admin/controllers/admin-tafsir.controller';
 import { AuthController } from './interface-adapters/auth/controllers/auth.controller';
 import { CharityController } from './interface-adapters/charity/controllers/charity.controller';
 import { DashboardController } from './interface-adapters/dashboard/controllers/dashboard.controller';
@@ -14,6 +16,7 @@ import { DhikrController } from './interface-adapters/dhikr/controllers/dhikr.co
 import { FastingController } from './interface-adapters/fasting/controllers/fasting.controller';
 import { GoalsController } from './interface-adapters/goals/controllers/goals.controller';
 import { GroupsController } from './interface-adapters/groups/controllers/groups.controller';
+import { HadithController } from './interface-adapters/hadith/controllers/hadith.controller';
 import { LearningController } from './interface-adapters/learning/controllers/learning.controller';
 import { MeditationController } from './interface-adapters/meditation/controllers/meditation.controller';
 import { NotificationsController } from './interface-adapters/notifications/controllers/notifications.controller';
@@ -22,6 +25,7 @@ import { PrayersController } from './interface-adapters/prayers/controllers/pray
 import { ProgressionController } from './interface-adapters/progression/controllers/progression.controller';
 import { QuranController } from './interface-adapters/quran/controllers/quran.controller';
 import { ResourcesController } from './interface-adapters/resources/controllers/resources.controller';
+import { TafsirController } from './interface-adapters/tafsir/controllers/tafsir.controller';
 import { UsersController } from './interface-adapters/users/controllers/users.controller';
 import { WomenController } from './interface-adapters/women/controllers/women.controller';
 import { DatabaseModule } from './infrastructure/database/database.module';
@@ -39,6 +43,7 @@ import { DhikrUsecasesProxyModule } from './usecases-proxy/dhikr/dhikr-usecases-
 import { FastingUsecasesProxyModule } from './usecases-proxy/fasting/fasting-usecases-proxy.module';
 import { GoalsUsecasesProxyModule } from './usecases-proxy/goals/goals-usecases-proxy.module';
 import { GroupsUsecasesProxyModule } from './usecases-proxy/groups/groups-usecases-proxy.module';
+import { HadithUsecasesProxyModule } from './usecases-proxy/hadith/hadith-usecases-proxy.module';
 import { LearningUsecasesProxyModule } from './usecases-proxy/learning/learning-usecases-proxy.module';
 import { MeditationUsecasesProxyModule } from './usecases-proxy/meditation/meditation-usecases-proxy.module';
 import { NotificationsUsecasesProxyModule } from './usecases-proxy/notifications/notifications-usecases-proxy.module';
@@ -47,6 +52,7 @@ import { PrayersUsecasesProxyModule } from './usecases-proxy/prayers/prayers-use
 import { ProgressionUsecasesProxyModule } from './usecases-proxy/progression/progression-usecases-proxy.module';
 import { QuranUsecasesProxyModule } from './usecases-proxy/quran/quran-usecases-proxy.module';
 import { ResourcesUsecasesProxyModule } from './usecases-proxy/resources/resources-usecases-proxy.module';
+import { TafsirUsecasesProxyModule } from './usecases-proxy/tafsir/tafsir-usecases-proxy.module';
 import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-proxy.module';
 import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-proxy.module';
 
@@ -64,6 +70,8 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
     ProgressionUsecasesProxyModule,
     FastingUsecasesProxyModule,
     QuranUsecasesProxyModule,
+    HadithUsecasesProxyModule,
+    TafsirUsecasesProxyModule,
     DhikrUsecasesProxyModule,
     CharityUsecasesProxyModule,
     MeditationUsecasesProxyModule,
@@ -84,6 +92,8 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
     PrayersController,
     FastingController,
     QuranController,
+    HadithController,
+    TafsirController,
     DhikrController,
     CharityController,
     MeditationController,
@@ -98,6 +108,8 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
     AdminUsersController,
     AdminResourcesController,
     AdminDhikrController,
+    AdminHadithController,
+    AdminTafsirController,
     AdminProgressionController,
     ProgressionController,
   ],

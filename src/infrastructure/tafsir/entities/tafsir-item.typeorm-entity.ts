@@ -1,6 +1,6 @@
 import {
-  Column,
   Check,
+  Column,
   CreateDateColumn,
   Entity,
   Index,
@@ -28,34 +28,61 @@ export class TafsirItemTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({
+    type: 'uuid',
+  })
   collectionId: string;
 
-  @Column({ type: 'integer' })
+  @Column({
+    type: 'integer',
+  })
   surahNumber: number;
 
-  @Column({ type: 'integer' })
+  @Column({
+    type: 'integer',
+  })
   ayahNumber: number;
 
-  @Column({ nullable: true })
-  surahName?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  surahName: string | null;
 
-  @Column({ nullable: true })
-  title?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  title: string | null;
 
-  @Column({ type: 'text' })
+  @Column({
+    type: 'text',
+  })
   content: string;
 
-  @Column({ nullable: true })
-  sourceReference?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  sourceReference: string | null;
 
-  @Column({ default: true })
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
   isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({
+    type: 'timestamptz',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
+  @UpdateDateColumn({
+    type: 'timestamptz',
+  })
   updatedAt: Date;
 
   @ManyToOne(
@@ -65,6 +92,8 @@ export class TafsirItemTypeormEntity {
       onDelete: 'RESTRICT',
     },
   )
-  @JoinColumn({ name: 'collectionId' })
-  collection?: TafsirCollectionTypeormEntity;
+  @JoinColumn({
+    name: 'collectionId',
+  })
+  collection: TafsirCollectionTypeormEntity;
 }

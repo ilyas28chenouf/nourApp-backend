@@ -1,6 +1,6 @@
 import {
-  Column,
   Check,
+  Column,
   CreateDateColumn,
   Entity,
   Index,
@@ -17,44 +17,84 @@ export class HadithCollectionTypeormEntity {
   id: string;
 
   @Index('UQ_hadith_collections_key', { unique: true })
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 100,
+  })
   key: string;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   name: string;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   arabicName: string;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   author: string;
 
-  @Column({ nullable: true })
-  reliability?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
+  reliability: string | null;
 
-  @Column({ type: 'text', nullable: true })
-  description?: string | null;
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  description: string | null;
 
-  @Column({ nullable: true })
-  sourceName?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  sourceName: string | null;
 
-  @Column({ nullable: true })
-  sourceUrl?: string | null;
+  @Column({
+    type: 'varchar',
+    length: 2048,
+    nullable: true,
+  })
+  sourceUrl: string | null;
 
-  @Column({ default: 0 })
+  @Column({
+    type: 'integer',
+    default: 0,
+  })
   sortOrder: number;
 
-  @Column({ default: true })
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
   isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({
+    type: 'timestamptz',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
+  @UpdateDateColumn({
+    type: 'timestamptz',
+  })
   updatedAt: Date;
 
-  @OneToMany(() => HadithItemTypeormEntity, (item) => item.collection)
-  items?: HadithItemTypeormEntity[];
+  @OneToMany(
+    () => HadithItemTypeormEntity,
+    (item) => item.collection,
+  )
+  items: HadithItemTypeormEntity[];
 
   totalHadiths?: number;
 }

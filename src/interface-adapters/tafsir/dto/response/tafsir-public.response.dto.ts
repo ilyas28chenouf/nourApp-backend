@@ -65,8 +65,7 @@ export class TafsirItemsResponseDto extends TafsirCollectionsResponseDto {
       language: 'ar',
       page: 1,
       limit: 20,
-      total: 20,
-      total_pages: 1,
+      has_next_page: true,
       tafsirs: [tafsirItemExample],
     },
   })

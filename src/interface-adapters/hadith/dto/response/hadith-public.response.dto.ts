@@ -65,8 +65,7 @@ export class HadithItemsResponseDto extends HadithCollectionsResponseDto {
       collection_name: 'Sahih al-Bukhari',
       page: 1,
       limit: 10,
-      total: 100,
-      total_pages: 10,
+      has_next_page: true,
       hadiths: [hadithItemExample],
     },
   })

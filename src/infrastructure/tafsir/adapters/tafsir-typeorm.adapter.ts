@@ -59,9 +59,9 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
   }
 
   findCollectionByKey(key: string, activeOnly = false) {
-    return this.collectionQuery(activeOnly)
-      .andWhere('collection.key = :key', { key })
-      .getOne();
+    return this.collections.findOne({
+      where: activeOnly ? { key, isActive: true } : { key },
+    });
   }
 
   async createCollection(data: Partial<TafsirCollectionTypeormEntity>) {
@@ -143,14 +143,19 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
       });
     }
 
-    const [items, total] = await query
+    const items = await query
       .orderBy('item.surahNumber', 'ASC')
       .addOrderBy('item.ayahNumber', 'ASC')
       .skip((filters.page - 1) * filters.limit)
       .take(filters.limit)
-      .getManyAndCount();
+      .getMany();
 
-    return this.paginate(items, filters.page, filters.limit, total);
+    return {
+      items,
+      page: filters.page,
+      limit: filters.limit,
+      hasNextPage: items.length === filters.limit,
+    };
   }
 
   findItemById(id: string) {

@@ -1,4 +1,7 @@
-import { PaginatedResult } from '../../../domain/shared/model/paginated-result.model';
+import {
+  PaginatedResult,
+  UncountedPaginatedResult,
+} from '../../../domain/shared/model/paginated-result.model';
 import { TafsirCollectionModel } from '../../../domain/tafsir/model/tafsir-collection.model';
 import { TafsirItemModel } from '../../../domain/tafsir/model/tafsir-item.model';
 
@@ -39,7 +42,7 @@ export class TafsirResponseMapper {
 
   static items(
     collection: TafsirCollectionModel,
-    result: PaginatedResult<TafsirItemModel>,
+    result: UncountedPaginatedResult<TafsirItemModel>,
     now = new Date(),
   ) {
     return {
@@ -51,8 +54,7 @@ export class TafsirResponseMapper {
         language: collection.language,
         page: result.page,
         limit: result.limit,
-        total: result.total,
-        total_pages: result.totalPages,
+        has_next_page: result.hasNextPage,
         tafsirs: result.items.map((item) => this.item(collection, item)),
       },
       timestamp: now.toISOString(),

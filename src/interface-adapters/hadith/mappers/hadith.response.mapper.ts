@@ -1,6 +1,9 @@
 import { HadithCollectionModel } from '../../../domain/hadith/model/hadith-collection.model';
 import { HadithItemModel } from '../../../domain/hadith/model/hadith-item.model';
-import { PaginatedResult } from '../../../domain/shared/model/paginated-result.model';
+import {
+  PaginatedResult,
+  UncountedPaginatedResult,
+} from '../../../domain/shared/model/paginated-result.model';
 
 export class HadithResponseMapper {
   static collections(
@@ -39,7 +42,7 @@ export class HadithResponseMapper {
 
   static items(
     collection: HadithCollectionModel,
-    result: PaginatedResult<HadithItemModel>,
+    result: UncountedPaginatedResult<HadithItemModel>,
     now = new Date(),
   ) {
     return {
@@ -50,8 +53,7 @@ export class HadithResponseMapper {
         collection_name: collection.name,
         page: result.page,
         limit: result.limit,
-        total: result.total,
-        total_pages: result.totalPages,
+        has_next_page: result.hasNextPage,
         hadiths: result.items.map((item) => this.item(collection, item)),
       },
       timestamp: now.toISOString(),

@@ -155,14 +155,13 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
         (item) => item.hadithNumber === filters.hadithNumber,
       );
     }
-    const total = items.length;
     const start = (filters.page - 1) * filters.limit;
+    const pagedItems = items.slice(start, start + filters.limit);
     return {
-      items: items.slice(start, start + filters.limit),
+      items: pagedItems,
       page: filters.page,
       limit: filters.limit,
-      total,
-      totalPages: Math.ceil(total / filters.limit),
+      hasNextPage: pagedItems.length === filters.limit,
     };
   }
 
@@ -329,8 +328,7 @@ describe('Hadith management use cases', () => {
     expect(response.data).toMatchObject({
       page: 2,
       limit: 2,
-      total: 3,
-      total_pages: 2,
+      has_next_page: false,
     });
     expect(response.data.hadiths).toHaveLength(1);
   });

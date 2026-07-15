@@ -94,8 +94,7 @@ describe('Tafsir management use cases', () => {
       items: [item],
       page: 1,
       limit: 20,
-      total: 1,
-      totalPages: 1,
+      hasNextPage: false,
     });
     const usecase = new GetPublicTafsirUsecase(persistence);
 
@@ -123,7 +122,7 @@ describe('Tafsir management use cases', () => {
       true,
     ]);
     expect(collections.items[0].totalTafsirs).toBe(1);
-    expect(response.data.total_pages).toBe(1);
+    expect(response.data.has_next_page).toBe(false);
     expect(response.data.tafsirs[0].id).toBe('ibn-kathir-1-1');
   });
 });

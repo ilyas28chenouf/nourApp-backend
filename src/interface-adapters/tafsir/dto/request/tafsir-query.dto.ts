@@ -16,20 +16,25 @@ function optionalBoolean(value: unknown) {
 }
 
 export class AdminTafsirCollectionsQueryDto {
-  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: 'integer', default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  page = 1;
+  page: number = 1;
 
-  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    type: 'integer',
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
-  limit = 20;
+  limit: number = 10;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -49,27 +54,32 @@ export class AdminTafsirCollectionsQueryDto {
 }
 
 export class AdminTafsirItemsQueryDto {
-  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: 'integer', default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  page = 1;
+  page: number = 1;
 
-  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    type: 'integer',
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
-  limit = 20;
+  limit: number = 10;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: 114 })
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 114 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -77,7 +87,7 @@ export class AdminTafsirItemsQueryDto {
   @Max(114)
   surahNumber?: number;
 
-  @ApiPropertyOptional({ minimum: 1 })
+  @ApiPropertyOptional({ type: 'integer', minimum: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -92,27 +102,32 @@ export class AdminTafsirItemsQueryDto {
 }
 
 export class PublicTafsirItemsQueryDto {
-  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: 'integer', default: 1, minimum: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  page = 1;
+  page: number = 1;
 
-  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    type: 'integer',
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)
-  limit = 20;
+  limit: number = 10;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: 114 })
+  @ApiPropertyOptional({ type: 'integer', minimum: 1, maximum: 114 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -120,7 +135,7 @@ export class PublicTafsirItemsQueryDto {
   @Max(114)
   surahNumber?: number;
 
-  @ApiPropertyOptional({ minimum: 1 })
+  @ApiPropertyOptional({ type: 'integer', minimum: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

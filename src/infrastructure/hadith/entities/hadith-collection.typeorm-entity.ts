@@ -90,10 +90,7 @@ export class HadithCollectionTypeormEntity {
   })
   updatedAt: Date;
 
-  @OneToMany(
-    () => HadithItemTypeormEntity,
-    (item) => item.collection,
-  )
+  @OneToMany(() => HadithItemTypeormEntity, (item) => item.collection)
   items: HadithItemTypeormEntity[];
 
   totalHadiths?: number;

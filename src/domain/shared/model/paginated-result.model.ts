@@ -6,7 +6,7 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
-export interface UncountedPaginatedResult<T> {
+export interface PublicPaginatedResult<T> {
   items: T[];
   page: number;
   limit: number;

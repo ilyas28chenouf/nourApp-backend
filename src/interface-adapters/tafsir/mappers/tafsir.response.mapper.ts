@@ -1,6 +1,6 @@
 import {
   PaginatedResult,
-  UncountedPaginatedResult,
+  PublicPaginatedResult,
 } from '../../../domain/shared/model/paginated-result.model';
 import { TafsirCollectionModel } from '../../../domain/tafsir/model/tafsir-collection.model';
 import { TafsirItemModel } from '../../../domain/tafsir/model/tafsir-item.model';
@@ -42,7 +42,7 @@ export class TafsirResponseMapper {
 
   static items(
     collection: TafsirCollectionModel,
-    result: UncountedPaginatedResult<TafsirItemModel>,
+    result: PublicPaginatedResult<TafsirItemModel>,
     now = new Date(),
   ) {
     return {

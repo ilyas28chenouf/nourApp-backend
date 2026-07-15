@@ -2,7 +2,7 @@ import { HadithCollectionModel } from '../../../domain/hadith/model/hadith-colle
 import { HadithItemModel } from '../../../domain/hadith/model/hadith-item.model';
 import {
   PaginatedResult,
-  UncountedPaginatedResult,
+  PublicPaginatedResult,
 } from '../../../domain/shared/model/paginated-result.model';
 
 export class HadithResponseMapper {
@@ -42,7 +42,7 @@ export class HadithResponseMapper {
 
   static items(
     collection: HadithCollectionModel,
-    result: UncountedPaginatedResult<HadithItemModel>,
+    result: PublicPaginatedResult<HadithItemModel>,
     now = new Date(),
   ) {
     return {

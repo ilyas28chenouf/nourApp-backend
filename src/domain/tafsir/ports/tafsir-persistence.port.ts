@@ -1,6 +1,6 @@
 import {
   PaginatedResult,
-  UncountedPaginatedResult,
+  PublicPaginatedResult,
 } from '../../shared/model/paginated-result.model';
 import { TafsirCollectionModel } from '../model/tafsir-collection.model';
 import { TafsirItemModel } from '../model/tafsir-item.model';
@@ -46,8 +46,13 @@ export interface TafsirPersistencePort {
   listItems(
     collectionId: string,
     filters: TafsirItemFilters,
-    activeOnly?: boolean,
-  ): Promise<UncountedPaginatedResult<TafsirItemModel>>;
+    activeOnly: true,
+  ): Promise<PublicPaginatedResult<TafsirItemModel>>;
+  listItems(
+    collectionId: string,
+    filters: TafsirItemFilters,
+    activeOnly?: false,
+  ): Promise<PaginatedResult<TafsirItemModel>>;
   findItemById(id: string): Promise<TafsirItemModel | null>;
   findItemByLocation(
     collectionId: string,

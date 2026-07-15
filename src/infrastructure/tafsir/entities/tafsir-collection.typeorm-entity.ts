@@ -90,10 +90,7 @@ export class TafsirCollectionTypeormEntity {
   })
   updatedAt: Date;
 
-  @OneToMany(
-    () => TafsirItemTypeormEntity,
-    (item) => item.collection,
-  )
+  @OneToMany(() => TafsirItemTypeormEntity, (item) => item.collection)
   items: TafsirItemTypeormEntity[];
 
   totalTafsirs?: number;

@@ -64,7 +64,7 @@ export class TafsirItemsResponseDto extends TafsirCollectionsResponseDto {
       collection_name: 'Tafsir Ibn Kathir',
       language: 'ar',
       page: 1,
-      limit: 20,
+      limit: 10,
       has_next_page: true,
       tafsirs: [tafsirItemExample],
     },

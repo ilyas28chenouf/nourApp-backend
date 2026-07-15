@@ -1,6 +1,6 @@
 import {
   PaginatedResult,
-  UncountedPaginatedResult,
+  PublicPaginatedResult,
 } from '../../shared/model/paginated-result.model';
 import { HadithCollectionModel } from '../model/hadith-collection.model';
 import { HadithItemModel } from '../model/hadith-item.model';
@@ -45,8 +45,13 @@ export interface HadithPersistencePort {
   listItems(
     collectionId: string,
     filters: HadithItemFilters,
-    activeOnly?: boolean,
-  ): Promise<UncountedPaginatedResult<HadithItemModel>>;
+    activeOnly: true,
+  ): Promise<PublicPaginatedResult<HadithItemModel>>;
+  listItems(
+    collectionId: string,
+    filters: HadithItemFilters,
+    activeOnly?: false,
+  ): Promise<PaginatedResult<HadithItemModel>>;
   findItemById(id: string): Promise<HadithItemModel | null>;
   findItemByNumber(
     collectionId: string,

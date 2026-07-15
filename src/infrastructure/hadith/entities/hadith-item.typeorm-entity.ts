@@ -13,10 +13,7 @@ import {
 import { HadithCollectionTypeormEntity } from './hadith-collection.typeorm-entity';
 
 @Entity('hadith_items')
-@Unique('UQ_hadith_items_collection_number', [
-  'collectionId',
-  'hadithNumber',
-])
+@Unique('UQ_hadith_items_collection_number', ['collectionId', 'hadithNumber'])
 @Index('IDX_hadith_items_collection_id', ['collectionId'])
 @Index('IDX_hadith_items_hadith_number', ['hadithNumber'])
 @Index('IDX_hadith_items_grade', ['grade'])

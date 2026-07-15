@@ -1,9 +1,15 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import {
+  PaginatedResult,
+  PublicPaginatedResult,
+} from '../../../domain/shared/model/paginated-result.model';
+import { TafsirItemModel } from '../../../domain/tafsir/model/tafsir-item.model';
 import {
   TafsirCollectionFilters,
   TafsirItemFilters,
@@ -23,6 +29,10 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
   }
 
   async listCollections(filters: TafsirCollectionFilters, activeOnly = false) {
+    const { page, limit, skip } = this.pagination(
+      filters,
+      activeOnly ? Number.MAX_SAFE_INTEGER : 100,
+    );
     const query = this.collectionQuery(activeOnly);
 
     if (!activeOnly && filters.isActive !== undefined) {
@@ -45,11 +55,11 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
     const [items, total] = await query
       .orderBy('collection.sortOrder', 'ASC')
       .addOrderBy('collection.createdAt', 'DESC')
-      .skip((filters.page - 1) * filters.limit)
-      .take(filters.limit)
+      .skip(skip)
+      .take(limit)
       .getManyAndCount();
 
-    return this.paginate(items, filters.page, filters.limit, total);
+    return this.paginate(items, page, limit, total);
   }
 
   findCollectionById(id: string) {
@@ -110,11 +120,24 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
     });
   }
 
+  listItems(
+    collectionId: string,
+    filters: TafsirItemFilters,
+    activeOnly: true,
+  ): Promise<PublicPaginatedResult<TafsirItemModel>>;
+  listItems(
+    collectionId: string,
+    filters: TafsirItemFilters,
+    activeOnly?: false,
+  ): Promise<PaginatedResult<TafsirItemModel>>;
   async listItems(
     collectionId: string,
     filters: TafsirItemFilters,
     activeOnly = false,
-  ) {
+  ): Promise<
+    PaginatedResult<TafsirItemModel> | PublicPaginatedResult<TafsirItemModel>
+  > {
+    const { page, limit, skip } = this.pagination(filters);
     const query = this.items
       .createQueryBuilder('item')
       .where('item.collectionId = :collectionId', { collectionId });
@@ -143,19 +166,24 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
       });
     }
 
-    const items = await query
+    const paginatedQuery = query
       .orderBy('item.surahNumber', 'ASC')
       .addOrderBy('item.ayahNumber', 'ASC')
-      .skip((filters.page - 1) * filters.limit)
-      .take(filters.limit)
-      .getMany();
+      .skip(skip)
+      .take(limit);
 
-    return {
-      items,
-      page: filters.page,
-      limit: filters.limit,
-      hasNextPage: items.length === filters.limit,
-    };
+    if (activeOnly) {
+      const items = await paginatedQuery.getMany();
+      return {
+        items,
+        page,
+        limit,
+        hasNextPage: items.length === limit,
+      };
+    }
+
+    const [items, total] = await paginatedQuery.getManyAndCount();
+    return this.paginate(items, page, limit, total);
   }
 
   findItemById(id: string) {
@@ -224,6 +252,36 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
             })
         : undefined,
     );
+  }
+
+  private pagination(
+    filters: { page: number; limit: number },
+    maximumLimit = 100,
+  ) {
+    const page = this.toNumber(filters.page);
+    const limit = this.toNumber(filters.limit);
+
+    if (!Number.isInteger(page) || page < 1) {
+      throw new BadRequestException('page must be a positive integer');
+    }
+    if (!Number.isInteger(limit) || limit < 1 || limit > maximumLimit) {
+      throw new BadRequestException('limit must be between 1 and 100');
+    }
+
+    const skip = (page - 1) * limit;
+    if (!Number.isSafeInteger(skip) || skip < 0) {
+      throw new BadRequestException('page must be a positive integer');
+    }
+
+    return { page, limit, skip };
+  }
+
+  private toNumber(value: unknown) {
+    try {
+      return Number(value);
+    } catch {
+      return Number.NaN;
+    }
   }
 
   private paginate<T>(items: T[], page: number, limit: number, total: number) {

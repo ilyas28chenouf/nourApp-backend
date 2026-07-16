@@ -9,7 +9,10 @@ import {
   PaginatedResult,
   PublicPaginatedResult,
 } from '../../../domain/shared/model/paginated-result.model';
-import { TafsirItemModel } from '../../../domain/tafsir/model/tafsir-item.model';
+import {
+  TafsirItemModel,
+  TafsirPublicListItemModel,
+} from '../../../domain/tafsir/model/tafsir-item.model';
 import {
   TafsirCollectionFilters,
   TafsirItemFilters,
@@ -70,7 +73,7 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
 
   findCollectionByKey(key: string, activeOnly = false) {
     return this.collections.findOne({
-      where: activeOnly ? { key, isActive: true } : { key },
+      where: activeOnly ? { key, isActive: true, published: true } : { key },
     });
   }
 
@@ -120,31 +123,16 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
     });
   }
 
-  listItems(
-    collectionId: string,
-    filters: TafsirItemFilters,
-    activeOnly: true,
-  ): Promise<PublicPaginatedResult<TafsirItemModel>>;
-  listItems(
-    collectionId: string,
-    filters: TafsirItemFilters,
-    activeOnly?: false,
-  ): Promise<PaginatedResult<TafsirItemModel>>;
   async listItems(
     collectionId: string,
     filters: TafsirItemFilters,
-    activeOnly = false,
-  ): Promise<
-    PaginatedResult<TafsirItemModel> | PublicPaginatedResult<TafsirItemModel>
-  > {
+  ): Promise<PaginatedResult<TafsirItemModel>> {
     const { page, limit, skip } = this.pagination(filters);
     const query = this.items
       .createQueryBuilder('item')
       .where('item.collectionId = :collectionId', { collectionId });
 
-    if (activeOnly) {
-      query.andWhere('item.isActive = true');
-    } else if (filters.isActive !== undefined) {
+    if (filters.isActive !== undefined) {
       query.andWhere('item.isActive = :isActive', {
         isActive: filters.isActive,
       });
@@ -166,24 +154,61 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
       });
     }
 
-    const paginatedQuery = query
+    const [items, total] = await query
       .orderBy('item.surahNumber', 'ASC')
       .addOrderBy('item.ayahNumber', 'ASC')
       .skip(skip)
-      .take(limit);
+      .take(limit)
+      .getManyAndCount();
 
-    if (activeOnly) {
-      const items = await paginatedQuery.getMany();
-      return {
-        items,
-        page,
-        limit,
-        hasNextPage: items.length === limit,
-      };
+    return this.paginate(items, page, limit, total);
+  }
+
+  async listPublicItems(
+    collectionId: string,
+    filters: TafsirItemFilters,
+  ): Promise<PublicPaginatedResult<TafsirPublicListItemModel>> {
+    const { page, limit, skip } = this.pagination(filters);
+    const query = this.items
+      .createQueryBuilder('item')
+      .select('item.surahNumber', 'surahNumber')
+      .addSelect('item.ayahNumber', 'ayahNumber')
+      .addSelect('item.surahName', 'surahName')
+      .addSelect('item.title', 'title')
+      .addSelect('item.sourceReference', 'sourceReference')
+      .where('item.collectionId = :collectionId', { collectionId })
+      .andWhere('item.isActive = true');
+
+    if (filters.search) {
+      query.andWhere(
+        '(item.content ILIKE :search OR item.title ILIKE :search OR item.surahName ILIKE :search OR item.sourceReference ILIKE :search)',
+        { search: `%${filters.search}%` },
+      );
+    }
+    if (filters.surahNumber !== undefined) {
+      query.andWhere('item.surahNumber = :surahNumber', {
+        surahNumber: filters.surahNumber,
+      });
+    }
+    if (filters.ayahNumber !== undefined) {
+      query.andWhere('item.ayahNumber = :ayahNumber', {
+        ayahNumber: filters.ayahNumber,
+      });
     }
 
-    const [items, total] = await paginatedQuery.getManyAndCount();
-    return this.paginate(items, page, limit, total);
+    const rows = await query
+      .orderBy('item.surahNumber', 'ASC')
+      .addOrderBy('item.ayahNumber', 'ASC')
+      .skip(skip)
+      .take(limit + 1)
+      .getRawMany<TafsirPublicListItemModel>();
+
+    return {
+      items: rows.slice(0, limit),
+      page,
+      limit,
+      hasNextPage: rows.length > limit,
+    };
   }
 
   findItemById(id: string) {
@@ -239,7 +264,11 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
 
   private collectionQuery(activeOnly: boolean) {
     const query = this.collections.createQueryBuilder('collection');
-    if (activeOnly) query.where('collection.isActive = true');
+    if (activeOnly) {
+      query
+        .where('collection.isActive = true')
+        .andWhere('collection.published = true');
+    }
 
     return query.loadRelationCountAndMap(
       'collection.totalTafsirs',

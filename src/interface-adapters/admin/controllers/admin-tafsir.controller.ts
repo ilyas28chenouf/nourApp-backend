@@ -31,6 +31,10 @@ import {
 } from '../../tafsir/dto/request/tafsir-query.dto';
 import { UpdateTafsirCollectionRequestDto } from '../../tafsir/dto/request/update-tafsir-collection.request.dto';
 import { UpdateTafsirItemRequestDto } from '../../tafsir/dto/request/update-tafsir-item.request.dto';
+import {
+  AdminTafsirCollectionResponseDto,
+  AdminTafsirCollectionsResponseDto,
+} from '../../tafsir/dto/response/tafsir-admin.response.dto';
 
 const conflictExample = {
   statusCode: 409,
@@ -47,6 +51,7 @@ const collectionResponseExample = {
   language: 'ar',
   sortOrder: 1,
   isActive: true,
+  published: true,
   createdAt: '2026-07-14T12:00:00.000Z',
   updatedAt: '2026-07-14T12:00:00.000Z',
 };
@@ -74,24 +79,13 @@ export class AdminTafsirController {
   @ApiOperation({ summary: 'List Tafsir collections for administration' })
   @ApiOkResponse({
     description: 'Paginated collections with database item totals',
-    schema: {
-      example: {
-        items: [
-          {
-            id: 'c3139fa9-fe15-4a06-b788-a67d4e91dac3',
-            key: 'ibn-kathir',
-            name: 'Tafsir Ibn Kathir',
-            author: 'Ibn Kathir',
-            language: 'ar',
-            totalTafsirs: 20,
-            isActive: true,
-          },
-        ],
-        page: 1,
-        limit: 20,
-        total: 1,
-        totalPages: 1,
-      },
+    type: AdminTafsirCollectionsResponseDto,
+    example: {
+      items: [{ ...collectionResponseExample, totalTafsirs: 20 }],
+      page: 1,
+      limit: 20,
+      total: 1,
+      totalPages: 1,
     },
   })
   listCollections(@Query() query: AdminTafsirCollectionsQueryDto) {
@@ -102,7 +96,8 @@ export class AdminTafsirController {
   @ApiOperation({ summary: 'Create a Tafsir collection' })
   @ApiCreatedResponse({
     description: 'Tafsir collection created',
-    schema: { example: collectionResponseExample },
+    type: AdminTafsirCollectionResponseDto,
+    example: collectionResponseExample,
   })
   @ApiBadRequestResponse({ description: 'Invalid collection payload' })
   @ApiConflictResponse({ schema: { example: conflictExample } })
@@ -112,7 +107,11 @@ export class AdminTafsirController {
 
   @Get('collections/:id')
   @ApiOperation({ summary: 'Get a Tafsir collection by internal UUID' })
-  @ApiOkResponse({ description: 'Tafsir collection with item total' })
+  @ApiOkResponse({
+    description: 'Tafsir collection with item total',
+    type: AdminTafsirCollectionResponseDto,
+    example: { ...collectionResponseExample, totalTafsirs: 20 },
+  })
   @ApiNotFoundResponse({ description: 'Tafsir collection not found' })
   getCollection(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.proxy.getCollection(id);
@@ -120,7 +119,11 @@ export class AdminTafsirController {
 
   @Patch('collections/:id')
   @ApiOperation({ summary: 'Update a Tafsir collection' })
-  @ApiOkResponse({ description: 'Tafsir collection updated' })
+  @ApiOkResponse({
+    description: 'Tafsir collection updated',
+    type: AdminTafsirCollectionResponseDto,
+    example: { ...collectionResponseExample, published: false },
+  })
   @ApiConflictResponse({ schema: { example: conflictExample } })
   updateCollection(
     @Param('id', new ParseUUIDPipe()) id: string,

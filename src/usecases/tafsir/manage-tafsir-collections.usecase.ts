@@ -23,7 +23,11 @@ export class ManageTafsirCollectionsUsecase {
     if (key && (await this.persistence.findCollectionByKey(key))) {
       throw new ConflictException('Tafsir collection key already exists');
     }
-    return this.persistence.createCollection({ ...data, key });
+    return this.persistence.createCollection({
+      ...data,
+      key,
+      published: data.published ?? true,
+    });
   }
 
   async update(id: string, data: Partial<TafsirCollectionModel>) {
@@ -35,9 +39,11 @@ export class ManageTafsirCollectionsUsecase {
         throw new ConflictException('Tafsir collection key already exists');
       }
     }
+    const { published, ...changes } = data;
     return this.persistence.updateCollection(id, {
-      ...data,
+      ...changes,
       ...(key ? { key } : {}),
+      ...(published !== undefined ? { published } : {}),
     });
   }
 

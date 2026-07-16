@@ -20,10 +20,9 @@ export class GetPublicHadithUsecase {
 
   async listItems(key: string, filters: HadithItemFilters) {
     const collection = await this.getCollection(key);
-    const result = await this.persistence.listItems(
+    const result = await this.persistence.listPublicItems(
       collection.id,
       filters,
-      true,
     );
     return { collection, result };
   }

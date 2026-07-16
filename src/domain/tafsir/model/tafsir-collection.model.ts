@@ -10,6 +10,7 @@ export interface TafsirCollectionModel {
   sourceUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
+  published: boolean;
   totalTafsirs?: number;
   createdAt: Date;
   updatedAt: Date;

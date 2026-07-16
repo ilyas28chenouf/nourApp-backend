@@ -5,7 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
-import { HadithItemModel } from '../../../domain/hadith/model/hadith-item.model';
+import {
+  HadithItemModel,
+  HadithPublicListItemModel,
+} from '../../../domain/hadith/model/hadith-item.model';
 import {
   PaginatedResult,
   PublicPaginatedResult,
@@ -65,7 +68,7 @@ export class HadithTypeormAdapter implements HadithPersistencePort {
 
   findCollectionByKey(key: string, activeOnly = false) {
     return this.collections.findOne({
-      where: activeOnly ? { key, isActive: true } : { key },
+      where: activeOnly ? { key, isActive: true, published: true } : { key },
     });
   }
 
@@ -115,31 +118,16 @@ export class HadithTypeormAdapter implements HadithPersistencePort {
     });
   }
 
-  listItems(
-    collectionId: string,
-    filters: HadithItemFilters,
-    activeOnly: true,
-  ): Promise<PublicPaginatedResult<HadithItemModel>>;
-  listItems(
-    collectionId: string,
-    filters: HadithItemFilters,
-    activeOnly?: false,
-  ): Promise<PaginatedResult<HadithItemModel>>;
   async listItems(
     collectionId: string,
     filters: HadithItemFilters,
-    activeOnly = false,
-  ): Promise<
-    PaginatedResult<HadithItemModel> | PublicPaginatedResult<HadithItemModel>
-  > {
+  ): Promise<PaginatedResult<HadithItemModel>> {
     const { page, limit, skip } = this.pagination(filters);
     const query = this.items
       .createQueryBuilder('item')
       .where('item.collectionId = :collectionId', { collectionId });
 
-    if (activeOnly) {
-      query.andWhere('item.isActive = true');
-    } else if (filters.isActive !== undefined) {
+    if (filters.isActive !== undefined) {
       query.andWhere('item.isActive = :isActive', {
         isActive: filters.isActive,
       });
@@ -159,23 +147,57 @@ export class HadithTypeormAdapter implements HadithPersistencePort {
       });
     }
 
-    const paginatedQuery = query
+    const [items, total] = await query
       .orderBy('item.hadithNumber', 'ASC')
       .skip(skip)
-      .take(limit);
+      .take(limit)
+      .getManyAndCount();
 
-    if (activeOnly) {
-      const items = await paginatedQuery.getMany();
-      return {
-        items,
-        page,
-        limit,
-        hasNextPage: items.length === limit,
-      };
+    return this.paginate(items, page, limit, total);
+  }
+
+  async listPublicItems(
+    collectionId: string,
+    filters: HadithItemFilters,
+  ): Promise<PublicPaginatedResult<HadithPublicListItemModel>> {
+    const { page, limit, skip } = this.pagination(filters);
+    const query = this.items
+      .createQueryBuilder('item')
+      .select('item.hadithNumber', 'hadithNumber')
+      .addSelect('item.grade', 'grade')
+      .addSelect('item.narrator', 'narrator')
+      .addSelect('item.chapter', 'chapter')
+      .addSelect('item.sourceReference', 'sourceReference')
+      .where('item.collectionId = :collectionId', { collectionId })
+      .andWhere('item.isActive = true');
+
+    if (filters.search) {
+      query.andWhere(
+        '(item.arabic ILIKE :search OR item.english ILIKE :search OR item.french ILIKE :search OR item.narrator ILIKE :search OR item.chapter ILIKE :search)',
+        { search: `%${filters.search}%` },
+      );
+    }
+    if (filters.grade) {
+      query.andWhere('item.grade ILIKE :grade', { grade: filters.grade });
+    }
+    if (filters.hadithNumber !== undefined) {
+      query.andWhere('item.hadithNumber = :hadithNumber', {
+        hadithNumber: filters.hadithNumber,
+      });
     }
 
-    const [items, total] = await paginatedQuery.getManyAndCount();
-    return this.paginate(items, page, limit, total);
+    const rows = await query
+      .orderBy('item.hadithNumber', 'ASC')
+      .skip(skip)
+      .take(limit + 1)
+      .getRawMany<HadithPublicListItemModel>();
+
+    return {
+      items: rows.slice(0, limit),
+      page,
+      limit,
+      hasNextPage: rows.length > limit,
+    };
   }
 
   findItemById(id: string) {
@@ -230,7 +252,11 @@ export class HadithTypeormAdapter implements HadithPersistencePort {
 
   private collectionQuery(activeOnly: boolean) {
     const query = this.collections.createQueryBuilder('collection');
-    if (activeOnly) query.where('collection.isActive = true');
+    if (activeOnly) {
+      query
+        .where('collection.isActive = true')
+        .andWhere('collection.published = true');
+    }
 
     return query.loadRelationCountAndMap(
       'collection.totalHadiths',

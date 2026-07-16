@@ -13,3 +13,11 @@ export interface HadithItemModel {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface HadithPublicListItemModel {
+  hadithNumber: number;
+  grade?: string | null;
+  narrator?: string | null;
+  chapter?: string | null;
+  sourceReference?: string | null;
+}

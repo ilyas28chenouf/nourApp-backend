@@ -3,7 +3,10 @@ import {
   PublicPaginatedResult,
 } from '../../shared/model/paginated-result.model';
 import { TafsirCollectionModel } from '../model/tafsir-collection.model';
-import { TafsirItemModel } from '../model/tafsir-item.model';
+import {
+  TafsirItemModel,
+  TafsirPublicListItemModel,
+} from '../model/tafsir-item.model';
 
 export const TAFSIR_PERSISTENCE_PORT = Symbol('TAFSIR_PERSISTENCE_PORT');
 
@@ -46,13 +49,11 @@ export interface TafsirPersistencePort {
   listItems(
     collectionId: string,
     filters: TafsirItemFilters,
-    activeOnly: true,
-  ): Promise<PublicPaginatedResult<TafsirItemModel>>;
-  listItems(
+  ): Promise<PaginatedResult<TafsirItemModel>>;
+  listPublicItems(
     collectionId: string,
     filters: TafsirItemFilters,
-    activeOnly?: false,
-  ): Promise<PaginatedResult<TafsirItemModel>>;
+  ): Promise<PublicPaginatedResult<TafsirPublicListItemModel>>;
   findItemById(id: string): Promise<TafsirItemModel | null>;
   findItemByLocation(
     collectionId: string,

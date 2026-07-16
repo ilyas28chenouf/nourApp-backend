@@ -1,6 +1,9 @@
 import { ConflictException } from '@nestjs/common';
 import { HadithCollectionModel } from '../../domain/hadith/model/hadith-collection.model';
-import { HadithItemModel } from '../../domain/hadith/model/hadith-item.model';
+import {
+  HadithItemModel,
+  HadithPublicListItemModel,
+} from '../../domain/hadith/model/hadith-item.model';
 import {
   HadithCollectionFilters,
   HadithItemFilters,
@@ -16,12 +19,14 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
   items: HadithItemModel[] = [];
   private sequence = 0;
 
-  async listCollections(filters: HadithCollectionFilters, activeOnly = false) {
+  async listCollections(filters: HadithCollectionFilters, publicOnly = false) {
     await Promise.resolve();
     let collections = this.collections.filter(
-      (collection) => !activeOnly || collection.isActive,
+      (collection) =>
+        !publicOnly || (collection.isActive && collection.published),
     );
-    if (!activeOnly && filters.isActive !== undefined) {
+
+    if (!publicOnly && filters.isActive !== undefined) {
       collections = collections.filter(
         (collection) => collection.isActive === filters.isActive,
       );
@@ -37,6 +42,7 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
         ].some((value) => value.toLowerCase().includes(search)),
       );
     }
+
     const total = collections.length;
     const start = (filters.page - 1) * filters.limit;
     const paged = collections
@@ -46,9 +52,10 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
         totalHadiths: this.items.filter(
           (item) =>
             item.collectionId === collection.id &&
-            (!activeOnly || item.isActive),
+            (!publicOnly || item.isActive),
         ).length,
       }));
+
     return {
       items: paged,
       page: filters.page,
@@ -71,10 +78,11 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
       : null;
   }
 
-  async findCollectionByKey(key: string, activeOnly = false) {
+  async findCollectionByKey(key: string, publicOnly = false) {
     await Promise.resolve();
     const collection = this.collections.find(
-      (item) => item.key === key && (!activeOnly || item.isActive),
+      (item) =>
+        item.key === key && (!publicOnly || (item.isActive && item.published)),
     );
     return collection
       ? {
@@ -82,7 +90,7 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
           totalHadiths: this.items.filter(
             (item) =>
               item.collectionId === collection.id &&
-              (!activeOnly || item.isActive),
+              (!publicOnly || item.isActive),
           ).length,
         }
       : null;
@@ -103,6 +111,7 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
       sourceUrl: data.sourceUrl ?? null,
       sortOrder: data.sortOrder ?? 0,
       isActive: data.isActive ?? true,
+      published: data.published ?? true,
       createdAt: now,
       updatedAt: now,
     };
@@ -134,46 +143,44 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
     ).length;
   }
 
-  async listItems(
-    collectionId: string,
-    filters: HadithItemFilters,
-    activeOnly = false,
-  ) {
+  async listItems(collectionId: string, filters: HadithItemFilters) {
     await Promise.resolve();
-    let items = this.items.filter(
-      (item) =>
-        item.collectionId === collectionId && (!activeOnly || item.isActive),
-    );
-    if (!activeOnly && filters.isActive !== undefined) {
+    let items = this.filteredItems(collectionId, filters, false);
+    if (filters.isActive !== undefined) {
       items = items.filter((item) => item.isActive === filters.isActive);
     }
-    if (filters.grade) {
-      items = items.filter((item) => item.grade === filters.grade);
-    }
-    if (filters.hadithNumber !== undefined) {
-      items = items.filter(
-        (item) => item.hadithNumber === filters.hadithNumber,
-      );
-    }
+
     const total = items.length;
     const start = (filters.page - 1) * filters.limit;
-    const pagedItems = items.slice(start, start + filters.limit);
-
-    if (!activeOnly) {
-      return {
-        items: pagedItems,
-        page: filters.page,
-        limit: filters.limit,
-        total,
-        totalPages: Math.ceil(total / filters.limit),
-      };
-    }
-
     return {
-      items: pagedItems,
+      items: items.slice(start, start + filters.limit),
       page: filters.page,
       limit: filters.limit,
-      hasNextPage: pagedItems.length === filters.limit,
+      total,
+      totalPages: Math.ceil(total / filters.limit),
+    };
+  }
+
+  async listPublicItems(collectionId: string, filters: HadithItemFilters) {
+    await Promise.resolve();
+    const items = this.filteredItems(collectionId, filters, true);
+    const start = (filters.page - 1) * filters.limit;
+    const rows = items.slice(start, start + filters.limit + 1);
+    const publicItems: HadithPublicListItemModel[] = rows
+      .slice(0, filters.limit)
+      .map((item) => ({
+        hadithNumber: item.hadithNumber,
+        grade: item.grade,
+        narrator: item.narrator,
+        chapter: item.chapter,
+        sourceReference: item.sourceReference,
+      }));
+
+    return {
+      items: publicItems,
+      page: filters.page,
+      limit: filters.limit,
+      hasNextPage: rows.length > filters.limit,
     };
   }
 
@@ -235,6 +242,38 @@ class InMemoryHadithPersistence implements HadithPersistencePort {
     await Promise.resolve();
     this.items = this.items.filter((item) => item.id !== id);
   }
+
+  private filteredItems(
+    collectionId: string,
+    filters: HadithItemFilters,
+    activeOnly: boolean,
+  ) {
+    let items = this.items.filter(
+      (item) =>
+        item.collectionId === collectionId && (!activeOnly || item.isActive),
+    );
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      items = items.filter((item) =>
+        [
+          item.arabic,
+          item.english,
+          item.french,
+          item.narrator,
+          item.chapter,
+        ].some((value) => value?.toLowerCase().includes(search)),
+      );
+    }
+    if (filters.grade) {
+      items = items.filter((item) => item.grade === filters.grade);
+    }
+    if (filters.hadithNumber !== undefined) {
+      items = items.filter(
+        (item) => item.hadithNumber === filters.hadithNumber,
+      );
+    }
+    return items;
+  }
 }
 
 describe('Hadith management use cases', () => {
@@ -250,13 +289,18 @@ describe('Hadith management use cases', () => {
     publicHadith = new GetPublicHadithUsecase(persistence);
   });
 
-  async function createCollection(isActive = true) {
+  async function createCollection(
+    key = 'bukhari',
+    isActive = true,
+    published?: boolean,
+  ) {
     return collections.create({
-      key: 'bukhari',
+      key,
       name: 'Sahih al-Bukhari',
       arabicName: 'صحيح البخاري',
       author: 'Imam Bukhari',
       isActive,
+      ...(published !== undefined ? { published } : {}),
     });
   }
 
@@ -264,15 +308,49 @@ describe('Hadith management use cases', () => {
     await expect(createCollection()).resolves.toMatchObject({
       key: 'bukhari',
       isActive: true,
+      published: true,
     });
-
     await expect(createCollection()).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('stores explicit published values and defaults omitted published to true', async () => {
+    const published = await createCollection('published', true, true);
+    const unpublished = await createCollection('unpublished', true, false);
+    const defaulted = await createCollection('defaulted');
+
+    expect(published.published).toBe(true);
+    expect(unpublished.published).toBe(false);
+    expect(defaulted.published).toBe(true);
+  });
+
+  it('updates published from true to false and from false to true', async () => {
+    const initiallyPublished = await createCollection('first', true, true);
+    const initiallyUnpublished = await createCollection('second', true, false);
+
+    await expect(
+      collections.update(initiallyPublished.id, { published: false }),
+    ).resolves.toMatchObject({ published: false });
+    await expect(
+      collections.update(initiallyUnpublished.id, { published: true }),
+    ).resolves.toMatchObject({ published: true });
+  });
+
+  it('includes published in admin collection list and detail results', async () => {
+    const collection = await createCollection('unpublished', true, false);
+    const list = await collections.list({ page: 1, limit: 10 });
+    const detail = await collections.get(collection.id);
+
+    expect(list.items[0]).toHaveProperty('published', false);
+    expect(detail).toHaveProperty('published', false);
   });
 
   it('creates a Hadith item and rejects a duplicate number', async () => {
     const collection = await createCollection();
     await expect(
-      items.create(collection.id, { hadithNumber: 1, arabic: 'حديث صحيح' }),
+      items.create(collection.id, {
+        hadithNumber: 1,
+        arabic: 'حديث صحيح',
+      }),
     ).resolves.toMatchObject({
       collectionId: collection.id,
       hadithNumber: 1,
@@ -283,23 +361,18 @@ describe('Hadith management use cases', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('returns only active public content and actual active totals', async () => {
+  it('returns only active and published public content with active totals', async () => {
     const collection = await createCollection();
-    await collections.create({
-      key: 'inactive',
-      name: 'Inactive',
-      arabicName: 'غير نشط',
-      author: 'Author',
-      isActive: false,
-    });
+    await createCollection('inactive', false);
+    await createCollection('unpublished', true, false);
     await items.create(collection.id, {
       hadithNumber: 1,
-      arabic: 'نشط',
+      arabic: 'Active',
       isActive: true,
     });
     await items.create(collection.id, {
       hadithNumber: 2,
-      arabic: 'غير نشط',
+      arabic: 'Inactive',
       isActive: false,
     });
 
@@ -322,12 +395,53 @@ describe('Hadith management use cases', () => {
     expect(response.data.total_hadiths).toBe(1);
   });
 
+  it('omits body text from public lists and keeps it in detail and admin results', async () => {
+    const collection = await createCollection();
+    const item = await items.create(collection.id, {
+      hadithNumber: 1,
+      arabic: 'Full Arabic body',
+      english: 'Full English body',
+      french: 'Full French body',
+      grade: 'Sahih',
+      narrator: 'Narrator',
+    });
+
+    const list = await publicHadith.listItems(collection.key, {
+      page: 1,
+      limit: 10,
+    });
+    const listResponse = HadithResponseMapper.items(
+      list.collection,
+      list.result,
+    );
+    const detail = await publicHadith.getItem(collection.key, 1);
+    const detailResponse = HadithResponseMapper.itemDetail(
+      detail.collection,
+      detail.item,
+    );
+    const adminPage = await items.list(collection.id, {
+      page: 1,
+      limit: 10,
+    });
+
+    expect(listResponse.data.hadiths[0]).not.toHaveProperty('arabic');
+    expect(listResponse.data.hadiths[0]).not.toHaveProperty('english');
+    expect(listResponse.data.hadiths[0]).not.toHaveProperty('french');
+    expect(listResponse.data.hadiths[0]).not.toHaveProperty('content');
+    expect(detailResponse.data.arabic).toBe(item.arabic);
+    expect(detailResponse.data.english).toBe(item.english);
+    expect(detailResponse.data.french).toBe(item.french);
+    expect(adminPage.items[0].arabic).toBe(item.arabic);
+    expect(adminPage.items[0].english).toBe(item.english);
+    expect(adminPage.items[0].french).toBe(item.french);
+  });
+
   it('returns correct pagination metadata', async () => {
     const collection = await createCollection();
     for (let number = 1; number <= 3; number += 1) {
       await items.create(collection.id, {
         hadithNumber: number,
-        arabic: `حديث ${number}`,
+        arabic: `Hadith ${number}`,
       });
     }
 
@@ -355,9 +469,36 @@ describe('Hadith management use cases', () => {
     });
   });
 
+  it('preserves public search and grade filters', async () => {
+    const collection = await createCollection();
+    await items.create(collection.id, {
+      hadithNumber: 1,
+      arabic: 'Intentions',
+      grade: 'Sahih',
+    });
+    await items.create(collection.id, {
+      hadithNumber: 2,
+      arabic: 'Charity',
+      grade: 'Hasan',
+    });
+
+    const { result } = await publicHadith.listItems(collection.key, {
+      page: 1,
+      limit: 10,
+      search: 'intentions',
+      grade: 'Sahih',
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].hadithNumber).toBe(1);
+  });
+
   it('prevents deletion of a non-empty collection', async () => {
     const collection = await createCollection();
-    await items.create(collection.id, { hadithNumber: 1, arabic: 'حديث' });
+    await items.create(collection.id, {
+      hadithNumber: 1,
+      arabic: 'Hadith',
+    });
 
     await expect(collections.delete(collection.id)).rejects.toBeInstanceOf(
       ConflictException,

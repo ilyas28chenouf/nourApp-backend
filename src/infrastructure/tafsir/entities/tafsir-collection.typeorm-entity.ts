@@ -80,6 +80,13 @@ export class TafsirCollectionTypeormEntity {
   })
   isActive: boolean;
 
+  @Column({
+    name: 'published',
+    type: 'boolean',
+    default: true,
+  })
+  published: boolean;
+
   @CreateDateColumn({
     type: 'timestamptz',
   })

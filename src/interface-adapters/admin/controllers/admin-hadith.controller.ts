@@ -29,6 +29,10 @@ import {
 } from '../../hadith/dto/request/hadith-query.dto';
 import { UpdateHadithCollectionRequestDto } from '../../hadith/dto/request/update-hadith-collection.request.dto';
 import { UpdateHadithItemRequestDto } from '../../hadith/dto/request/update-hadith-item.request.dto';
+import {
+  AdminHadithCollectionResponseDto,
+  AdminHadithCollectionsResponseDto,
+} from '../../hadith/dto/response/hadith-admin.response.dto';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import { Roles } from '../../shared/decorators/roles.decorator';
 
@@ -47,6 +51,7 @@ const collectionResponseExample = {
   reliability: 'Sahih',
   sortOrder: 1,
   isActive: true,
+  published: true,
   createdAt: '2026-07-14T12:00:00.000Z',
   updatedAt: '2026-07-14T12:00:00.000Z',
 };
@@ -73,24 +78,13 @@ export class AdminHadithController {
   @ApiOperation({ summary: 'List Hadith collections for administration' })
   @ApiOkResponse({
     description: 'Paginated collections with database item totals',
-    schema: {
-      example: {
-        items: [
-          {
-            id: '98b1c08e-f642-42d0-8969-79ad0f822890',
-            key: 'bukhari',
-            name: 'Sahih al-Bukhari',
-            arabicName: 'صحيح البخاري',
-            author: 'Imam Bukhari',
-            totalHadiths: 100,
-            isActive: true,
-          },
-        ],
-        page: 1,
-        limit: 20,
-        total: 1,
-        totalPages: 1,
-      },
+    type: AdminHadithCollectionsResponseDto,
+    example: {
+      items: [{ ...collectionResponseExample, totalHadiths: 100 }],
+      page: 1,
+      limit: 20,
+      total: 1,
+      totalPages: 1,
     },
   })
   listCollections(@Query() query: AdminHadithCollectionsQueryDto) {
@@ -101,7 +95,8 @@ export class AdminHadithController {
   @ApiOperation({ summary: 'Create a Hadith collection' })
   @ApiCreatedResponse({
     description: 'Hadith collection created',
-    schema: { example: collectionResponseExample },
+    type: AdminHadithCollectionResponseDto,
+    example: collectionResponseExample,
   })
   @ApiBadRequestResponse({ description: 'Invalid collection payload' })
   @ApiConflictResponse({ schema: { example: conflictExample } })
@@ -111,7 +106,11 @@ export class AdminHadithController {
 
   @Get('collections/:id')
   @ApiOperation({ summary: 'Get a Hadith collection by internal UUID' })
-  @ApiOkResponse({ description: 'Hadith collection with item total' })
+  @ApiOkResponse({
+    description: 'Hadith collection with item total',
+    type: AdminHadithCollectionResponseDto,
+    example: { ...collectionResponseExample, totalHadiths: 100 },
+  })
   @ApiNotFoundResponse({ description: 'Hadith collection not found' })
   getCollection(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.proxy.getCollection(id);
@@ -119,7 +118,11 @@ export class AdminHadithController {
 
   @Patch('collections/:id')
   @ApiOperation({ summary: 'Update a Hadith collection' })
-  @ApiOkResponse({ description: 'Hadith collection updated' })
+  @ApiOkResponse({
+    description: 'Hadith collection updated',
+    type: AdminHadithCollectionResponseDto,
+    example: { ...collectionResponseExample, published: false },
+  })
   @ApiConflictResponse({ schema: { example: conflictExample } })
   updateCollection(
     @Param('id', new ParseUUIDPipe()) id: string,

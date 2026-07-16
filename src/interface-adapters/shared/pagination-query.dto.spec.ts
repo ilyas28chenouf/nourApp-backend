@@ -144,6 +144,71 @@ describe('Tafsir and Hadith pagination OpenAPI schemas', () => {
       );
     },
   );
+
+  it('documents published in collection requests and admin responses', () => {
+    for (const schemaName of [
+      'CreateHadithCollectionRequestDto',
+      'CreateTafsirCollectionRequestDto',
+    ]) {
+      const schema = componentSchema(document, schemaName);
+      expect(schema.properties?.published).toMatchObject({
+        type: 'boolean',
+        default: true,
+      });
+      expect(schema.required ?? []).not.toContain('published');
+    }
+
+    for (const schemaName of [
+      'UpdateHadithCollectionRequestDto',
+      'UpdateTafsirCollectionRequestDto',
+    ]) {
+      const schema = componentSchema(document, schemaName);
+      expect(schema.properties?.published).toMatchObject({
+        type: 'boolean',
+        default: true,
+      });
+      expect(schema.required ?? []).not.toContain('published');
+    }
+
+    expect(
+      componentSchema(document, 'AdminHadithCollectionResponseDto').properties
+        ?.published,
+    ).toMatchObject({ type: 'boolean', example: true });
+    expect(
+      componentSchema(document, 'AdminTafsirCollectionResponseDto').properties
+        ?.published,
+    ).toMatchObject({ type: 'boolean', example: true });
+  });
+
+  it('documents lightweight list items separately from full detail items', () => {
+    const hadithList = componentSchema(
+      document,
+      'HadithItemListResponseDto',
+    ).properties;
+    const hadithDetail = componentSchema(
+      document,
+      'HadithItemDetailResponseDto',
+    ).properties;
+    const tafsirList = componentSchema(
+      document,
+      'TafsirItemListResponseDto',
+    ).properties;
+    const tafsirDetail = componentSchema(
+      document,
+      'TafsirItemDetailResponseDto',
+    ).properties;
+
+    expect(hadithList).not.toHaveProperty('arabic');
+    expect(hadithList).not.toHaveProperty('english');
+    expect(hadithList).not.toHaveProperty('french');
+    expect(hadithList).not.toHaveProperty('content');
+    expect(hadithDetail).toHaveProperty('arabic');
+    expect(hadithDetail).toHaveProperty('english');
+    expect(hadithDetail).toHaveProperty('french');
+
+    expect(tafsirList).not.toHaveProperty('content');
+    expect(tafsirDetail).toHaveProperty('content');
+  });
 });
 
 function querySchema(
@@ -161,4 +226,12 @@ function querySchema(
   }
 
   return parameter.schema;
+}
+
+function componentSchema(document: OpenAPIObject, name: string) {
+  const schema = document.components?.schemas?.[name];
+  if (!schema || '$ref' in schema) {
+    throw new Error(`Missing component schema ${name}`);
+  }
+  return schema;
 }

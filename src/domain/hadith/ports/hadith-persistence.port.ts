@@ -3,7 +3,10 @@ import {
   PublicPaginatedResult,
 } from '../../shared/model/paginated-result.model';
 import { HadithCollectionModel } from '../model/hadith-collection.model';
-import { HadithItemModel } from '../model/hadith-item.model';
+import {
+  HadithItemModel,
+  HadithPublicListItemModel,
+} from '../model/hadith-item.model';
 
 export const HADITH_PERSISTENCE_PORT = Symbol('HADITH_PERSISTENCE_PORT');
 
@@ -45,13 +48,11 @@ export interface HadithPersistencePort {
   listItems(
     collectionId: string,
     filters: HadithItemFilters,
-    activeOnly: true,
-  ): Promise<PublicPaginatedResult<HadithItemModel>>;
-  listItems(
+  ): Promise<PaginatedResult<HadithItemModel>>;
+  listPublicItems(
     collectionId: string,
     filters: HadithItemFilters,
-    activeOnly?: false,
-  ): Promise<PaginatedResult<HadithItemModel>>;
+  ): Promise<PublicPaginatedResult<HadithPublicListItemModel>>;
   findItemById(id: string): Promise<HadithItemModel | null>;
   findItemByNumber(
     collectionId: string,

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -8,6 +9,7 @@ import {
   IsUrl,
   Matches,
 } from 'class-validator';
+import { preserveInputValue } from '../../../shared/transforms/preserve-input-value.transform';
 
 export class CreateTafsirCollectionRequestDto {
   @ApiProperty({ example: 'ibn-kathir', pattern: '^[a-z0-9-]+$' })
@@ -63,4 +65,15 @@ export class CreateTafsirCollectionRequestDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({
+    type: Boolean,
+    default: true,
+    example: true,
+    description: 'Controls whether the collection is published to clients.',
+  })
+  @Transform(preserveInputValue)
+  @IsOptional()
+  @IsBoolean()
+  published?: boolean;
 }

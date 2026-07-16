@@ -1,5 +1,8 @@
 import { HadithCollectionModel } from '../../../domain/hadith/model/hadith-collection.model';
-import { HadithItemModel } from '../../../domain/hadith/model/hadith-item.model';
+import {
+  HadithItemModel,
+  HadithPublicListItemModel,
+} from '../../../domain/hadith/model/hadith-item.model';
 import {
   PaginatedResult,
   PublicPaginatedResult,
@@ -42,7 +45,7 @@ export class HadithResponseMapper {
 
   static items(
     collection: HadithCollectionModel,
-    result: PublicPaginatedResult<HadithItemModel>,
+    result: PublicPaginatedResult<HadithPublicListItemModel>,
     now = new Date(),
   ) {
     return {
@@ -54,7 +57,7 @@ export class HadithResponseMapper {
         page: result.page,
         limit: result.limit,
         has_next_page: result.hasNextPage,
-        hadiths: result.items.map((item) => this.item(collection, item)),
+        hadiths: result.items.map((item) => this.listItem(collection, item)),
       },
       timestamp: now.toISOString(),
     };
@@ -99,6 +102,22 @@ export class HadithResponseMapper {
       arabic: item.arabic,
       english: item.english ?? null,
       french: item.french ?? null,
+      grade: item.grade ?? null,
+      narrator: item.narrator ?? null,
+      chapter: item.chapter ?? null,
+      source_reference: item.sourceReference ?? null,
+    };
+  }
+
+  private static listItem(
+    collection: HadithCollectionModel,
+    item: HadithPublicListItemModel,
+  ) {
+    return {
+      id: `${collection.key}-${item.hadithNumber}`,
+      collection: collection.key,
+      collection_name: collection.name,
+      hadithnumber: item.hadithNumber,
       grade: item.grade ?? null,
       narrator: item.narrator ?? null,
       chapter: item.chapter ?? null,

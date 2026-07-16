@@ -10,6 +10,7 @@ export interface HadithCollectionModel {
   sourceUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
+  published: boolean;
   totalHadiths?: number;
   createdAt: Date;
   updatedAt: Date;

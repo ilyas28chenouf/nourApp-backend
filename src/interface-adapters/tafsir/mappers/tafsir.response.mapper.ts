@@ -3,7 +3,10 @@ import {
   PublicPaginatedResult,
 } from '../../../domain/shared/model/paginated-result.model';
 import { TafsirCollectionModel } from '../../../domain/tafsir/model/tafsir-collection.model';
-import { TafsirItemModel } from '../../../domain/tafsir/model/tafsir-item.model';
+import {
+  TafsirItemModel,
+  TafsirPublicListItemModel,
+} from '../../../domain/tafsir/model/tafsir-item.model';
 
 export class TafsirResponseMapper {
   static collections(
@@ -42,7 +45,7 @@ export class TafsirResponseMapper {
 
   static items(
     collection: TafsirCollectionModel,
-    result: PublicPaginatedResult<TafsirItemModel>,
+    result: PublicPaginatedResult<TafsirPublicListItemModel>,
     now = new Date(),
   ) {
     return {
@@ -55,7 +58,7 @@ export class TafsirResponseMapper {
         page: result.page,
         limit: result.limit,
         has_next_page: result.hasNextPage,
-        tafsirs: result.items.map((item) => this.item(collection, item)),
+        tafsirs: result.items.map((item) => this.publicItem(collection, item)),
       },
       timestamp: now.toISOString(),
     };
@@ -102,6 +105,23 @@ export class TafsirResponseMapper {
       ayah_number: item.ayahNumber,
       title: item.title ?? null,
       content: item.content,
+      source_reference: item.sourceReference ?? null,
+    };
+  }
+
+  private static publicItem(
+    collection: TafsirCollectionModel,
+    item: TafsirPublicListItemModel,
+  ) {
+    return {
+      id: `${collection.key}-${item.surahNumber}-${item.ayahNumber}`,
+      collection: collection.key,
+      collection_name: collection.name,
+      language: collection.language,
+      surah_number: item.surahNumber,
+      surah_name: item.surahName ?? null,
+      ayah_number: item.ayahNumber,
+      title: item.title ?? null,
       source_reference: item.sourceReference ?? null,
     };
   }

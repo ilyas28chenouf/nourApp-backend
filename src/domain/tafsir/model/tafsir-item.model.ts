@@ -11,3 +11,11 @@ export interface TafsirItemModel {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface TafsirPublicListItemModel {
+  surahNumber: number;
+  ayahNumber: number;
+  surahName?: string | null;
+  title?: string | null;
+  sourceReference?: string | null;
+}

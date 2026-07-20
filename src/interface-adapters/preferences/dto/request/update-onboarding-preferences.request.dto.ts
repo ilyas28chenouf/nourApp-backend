@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsIn,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
 
 export const GLOBAL_PRACTICE_LEVELS = [
@@ -10,20 +16,17 @@ export const GLOBAL_PRACTICE_LEVELS = [
   'R\u00e9gulier',
   'La plupart du temps',
   'Intensif',
-  'Chaque jour, combin\u00e9',
 ];
 
 export const PRAYER_PRACTICE_LEVELS = [
   'Aucune',
   'Je veux m\u2019y mettre',
   '1\u20132 / jour',
-  'Fajr ou quelques-unes',
   '3\u20134 / jour',
-  'La majorit\u00e9',
   '5 / jour',
   '\u00c0 l\u2019heure',
-  '5 + nuit',
-  'Tahajjud, rawatib',
+  'En groupe',
+  'Pri\u00e8res sunnah/sur\u00e9rogatoires',
 ];
 
 export const QURAN_PRACTICE_LEVELS = [
@@ -32,10 +35,10 @@ export const QURAN_PRACTICE_LEVELS = [
   'Quelques pages',
   'Sans r\u00e9gularit\u00e9',
   '1\u20135 pages / jour',
-  'Habitude',
-  '1 hizb+ / jour',
-  'Lecture + hifz',
-  'Hifz actif',
+  'R\u00e9gulier',
+  'Au moins 1 Hizb',
+  'Lecture + M\u00e9morisation',
+  'M\u00e9morisation active',
   'M\u00e9morisation + r\u00e9vision',
 ];
 
@@ -44,31 +47,29 @@ export const DHIKR_PRACTICES = [
   'Adhkar du soir \u2014 Masa\u2019',
   'Tasbih apr\u00e8s la pri\u00e8re \u00d733',
   'Dhikr libre',
-  'Salawat',
+  'Dhikr r\u00e9gulier et programm\u00e9',
   'Peu ou pas de dhikr',
   'Je veux d\u00e9velopper cette pratique',
 ];
 
 export const FASTING_PRACTICE_LEVELS = [
   'Ramadan seul',
-  'Pas hors Ramadan',
   'Parfois lundi / jeudi',
   'De temps en temps',
   'R\u00e9gulier lundi / jeudi',
   'Chaque semaine',
-  'Je\u00fbnes vari\u00e9s',
-  'Arafat, Achoura\u2026',
+  'Autres jours de je\u00fbne Sunnah / sur\u00e9rogatoires (Arafat, Achoura\u2026)',
 ];
 
 export const SOCIAL_ACTIONS_FREQUENCIES = [
   'Rarement',
-  'Tr\u00e8s peu ou pas encore',
+  'Pas encore',
   '1 fois / 3 mois',
   'Grandes occasions',
   'Quelques fois / mois',
-  'Quand l\u2019occasion se pr\u00e9sente',
+  'Quand l\u2019opportunit\u00e9 se pr\u00e9sente',
   'Chaque semaine',
-  'Dans mon rythme',
+  'Selon mes disponibilit\u00e9s',
 ];
 
 export const REGULARITY_DURATIONS = [
@@ -86,25 +87,23 @@ export const ISLAMIC_KNOWLEDGE_LEVELS = [
   'D\u00e9butant',
   'Je d\u00e9couvre les bases',
   'Interm\u00e9diaire',
-  'Piliers, sunnas, hadiths',
   'Avanc\u00e9',
-  'Fiqh, tafsir, sira',
   '\u00c9rudit',
   'Formation islamique',
 ];
 
 export const MAIN_INTENTIONS = [
-  'R\u00e9gulariser les pri\u00e8res',
-  'Atteindre les 5 pri\u00e8res par jour',
-  'Progresser avec le Coran',
-  'Lire et m\u00e9moriser',
-  'Dhikr quotidien',
-  'Structurer les invocations',
-  '\u00c9quilibre global',
-  'Toutes les pratiques',
-  'Amour avec Allah',
-  'Renforcer la relation spirituelle',
+  'Assiduit\u00e9 dans les pri\u00e8res',
+  'Effectuer les 5 pri\u00e8res par jour',
+  'Progresser dans la lecture du Coran',
+  'Progresser dans la m\u00e9morisation du Coran',
+  'Invocations quotidiennes',
+  'Je\u00fbnes r\u00e9guliers',
+  'Approfondissement des adorations',
+  'Constance dans la pratique',
+  '\u00c9quilibre et \u00e9panouissement spirituel',
 ];
+
 
 export class UpdateOnboardingPreferencesRequestDto {
   @ApiPropertyOptional({
@@ -116,11 +115,13 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsEnum(DailyAvailableTime)
   dailyAvailableTime?: DailyAvailableTime;
 
+
   @ApiPropertyOptional({ enum: GLOBAL_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
   @IsIn(GLOBAL_PRACTICE_LEVELS)
   globalPracticeLevel?: string;
+
 
   @ApiPropertyOptional({ enum: PRAYER_PRACTICE_LEVELS })
   @IsOptional()
@@ -128,18 +129,24 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(PRAYER_PRACTICE_LEVELS)
   prayerPracticeLevel?: string;
 
+
   @ApiPropertyOptional({ enum: QURAN_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
   @IsIn(QURAN_PRACTICE_LEVELS)
   quranPracticeLevel?: string;
 
-  @ApiPropertyOptional({ enum: DHIKR_PRACTICES, isArray: true })
+
+  @ApiPropertyOptional({
+    enum: DHIKR_PRACTICES,
+    isArray: true,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @IsIn(DHIKR_PRACTICES, { each: true })
   dhikrPractices?: string[];
+
 
   @ApiPropertyOptional({ enum: FASTING_PRACTICE_LEVELS })
   @IsOptional()
@@ -147,11 +154,13 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(FASTING_PRACTICE_LEVELS)
   fastingPracticeLevel?: string;
 
+
   @ApiPropertyOptional({ enum: SOCIAL_ACTIONS_FREQUENCIES })
   @IsOptional()
   @IsString()
   @IsIn(SOCIAL_ACTIONS_FREQUENCIES)
   socialActionsFrequency?: string;
+
 
   @ApiPropertyOptional({ enum: REGULARITY_DURATIONS })
   @IsOptional()
@@ -159,15 +168,21 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(REGULARITY_DURATIONS)
   regularityDuration?: string;
 
+
   @ApiPropertyOptional({ enum: ISLAMIC_KNOWLEDGE_LEVELS })
   @IsOptional()
   @IsString()
   @IsIn(ISLAMIC_KNOWLEDGE_LEVELS)
   islamicKnowledgeLevel?: string;
 
-  @ApiPropertyOptional({ enum: MAIN_INTENTIONS })
+
+  @ApiPropertyOptional({
+    enum: MAIN_INTENTIONS,
+    isArray: true,
+  })
   @IsOptional()
-  @IsString()
-  @IsIn(MAIN_INTENTIONS)
-  mainIntention?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(MAIN_INTENTIONS, { each: true })
+  mainIntention?: string[];
 }

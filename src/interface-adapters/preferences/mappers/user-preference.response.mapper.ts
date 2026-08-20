@@ -2,6 +2,12 @@ import { UserPreferenceModel } from '../../../domain/users/model/user-preference
 
 export class UserPreferenceResponseMapper {
   static toDto(model: UserPreferenceModel) {
+    const mainIntentions =
+      model.mainIntentions && model.mainIntentions.length > 0
+        ? model.mainIntentions
+        : model.mainIntention
+          ? [model.mainIntention]
+          : [];
     return {
       id: model.id,
       userId: model.userId,
@@ -11,6 +17,7 @@ export class UserPreferenceResponseMapper {
       fastingNotificationsEnabled: model.fastingNotificationsEnabled,
       dhikrNotificationsEnabled: model.dhikrNotificationsEnabled,
       quranNotificationsEnabled: model.quranNotificationsEnabled,
+      activityNotificationsEnabled: model.activityNotificationsEnabled,
       encouragementNotificationsEnabled:
         model.encouragementNotificationsEnabled,
       dailyReminderEnabled: model.dailyReminderEnabled,
@@ -27,7 +34,8 @@ export class UserPreferenceResponseMapper {
       socialActionsFrequency: model.socialActionsFrequency,
       regularityDuration: model.regularityDuration,
       islamicKnowledgeLevel: model.islamicKnowledgeLevel,
-      mainIntention: model.mainIntention,
+      mainIntention: model.mainIntention ?? mainIntentions[0] ?? null,
+      mainIntentions,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

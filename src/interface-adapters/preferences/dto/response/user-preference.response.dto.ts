@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
+import { NEW_DAILY_AVAILABLE_TIMES } from '../../../../domain/preferences/enums/daily-available-time.enum';
+import { MainIntention } from '../../../../domain/preferences/enums/main-intention.enum';
 import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
 
 export class UserPreferenceResponseDto {
@@ -28,12 +29,15 @@ export class UserPreferenceResponseDto {
   quranNotificationsEnabled: boolean;
 
   @ApiProperty()
+  activityNotificationsEnabled: boolean;
+
+  @ApiProperty({ deprecated: true })
   encouragementNotificationsEnabled: boolean;
 
   @ApiProperty()
   dailyReminderEnabled: boolean;
 
-  @ApiProperty({ example: '09:00' })
+  @ApiProperty({ example: '09:00', deprecated: true })
   dailyReminderTime: string;
 
   @ApiPropertyOptional()
@@ -45,8 +49,8 @@ export class UserPreferenceResponseDto {
   @ApiProperty({ enum: PrayerMadhab, example: PrayerMadhab.SHAFI })
   prayerMadhab: PrayerMadhab;
 
-  @ApiPropertyOptional({ enum: DailyAvailableTime })
-  dailyAvailableTime?: DailyAvailableTime | string;
+  @ApiPropertyOptional({ enum: NEW_DAILY_AVAILABLE_TIMES })
+  dailyAvailableTime?: string;
 
   @ApiPropertyOptional()
   globalPracticeLevel?: string;
@@ -72,8 +76,11 @@ export class UserPreferenceResponseDto {
   @ApiPropertyOptional()
   islamicKnowledgeLevel?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ deprecated: true })
   mainIntention?: string;
+
+  @ApiPropertyOptional({ enum: MainIntention, isArray: true })
+  mainIntentions?: string[];
 
   @ApiPropertyOptional()
   createdAt?: Date;

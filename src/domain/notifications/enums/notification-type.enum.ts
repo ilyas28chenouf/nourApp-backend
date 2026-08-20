@@ -5,6 +5,7 @@ export enum NotificationType {
   FASTING = 'FASTING',
   DHIKR = 'DHIKR',
   QURAN = 'QURAN',
+  ACTIVITY = 'ACTIVITY',
   ENCOURAGEMENT = 'ENCOURAGEMENT',
   TEST = 'TEST',
 }

@@ -28,6 +28,9 @@ export class PrayerLogResponseDto {
   @ApiProperty()
   isSupererogatory: boolean;
 
+  @ApiProperty()
+  prayedAtMosque: boolean;
+
   @ApiPropertyOptional()
   notes?: string;
 

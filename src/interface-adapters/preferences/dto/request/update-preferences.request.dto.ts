@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -9,10 +10,15 @@ import {
   Matches,
   IsString,
 } from 'class-validator';
-import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
+import {
+  ACCEPTED_DAILY_AVAILABLE_TIMES,
+  NEW_DAILY_AVAILABLE_TIMES,
+} from '../../../../domain/preferences/enums/daily-available-time.enum';
 import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
 import {
   DHIKR_PRACTICES,
+  ACCEPTED_MAIN_INTENTIONS,
+  ACCEPTED_QURAN_PRACTICE_LEVELS,
   FASTING_PRACTICE_LEVELS,
   GLOBAL_PRACTICE_LEVELS,
   ISLAMIC_KNOWLEDGE_LEVELS,
@@ -54,7 +60,16 @@ export class UpdatePreferencesRequestDto {
   @IsBoolean()
   quranNotificationsEnabled?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  activityNotificationsEnabled?: boolean;
+
+  @ApiPropertyOptional({
+    deprecated: true,
+    description:
+      'Retained for older clients; v1.6 does not generate encouragement notifications.',
+  })
   @IsOptional()
   @IsBoolean()
   encouragementNotificationsEnabled?: boolean;
@@ -64,7 +79,13 @@ export class UpdatePreferencesRequestDto {
   @IsBoolean()
   dailyReminderEnabled?: boolean;
 
-  @ApiPropertyOptional({ example: '09:00', default: '09:00' })
+  @ApiPropertyOptional({
+    example: '09:00',
+    default: '09:00',
+    deprecated: true,
+    description:
+      'Legacy fixed-time preference; v1.6 schedules the daily reminder after Fajr.',
+  })
   @IsOptional()
   @IsString()
   @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
@@ -84,13 +105,13 @@ export class UpdatePreferencesRequestDto {
   prayerMadhab?: PrayerMadhab;
 
   @ApiPropertyOptional({
-    enum: DailyAvailableTime,
+    enum: NEW_DAILY_AVAILABLE_TIMES,
     description:
-      '5\u201315 min: Pri\u00e8re + adhkars; 15\u201330 min: Pri\u00e8re + Coran + dhikr; 30\u201360 min: Programme complet; + 1 heure: Tahajjud, hifz',
+      'New v1.6 selections. Legacy values remain readable and accepted for compatibility.',
   })
   @IsOptional()
-  @IsEnum(DailyAvailableTime)
-  dailyAvailableTime?: DailyAvailableTime;
+  @IsIn(ACCEPTED_DAILY_AVAILABLE_TIMES)
+  dailyAvailableTime?: string;
 
   @ApiPropertyOptional({ enum: GLOBAL_PRACTICE_LEVELS })
   @IsOptional()
@@ -107,7 +128,7 @@ export class UpdatePreferencesRequestDto {
   @ApiPropertyOptional({ enum: QURAN_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
-  @IsIn(QURAN_PRACTICE_LEVELS)
+  @IsIn(ACCEPTED_QURAN_PRACTICE_LEVELS)
   quranPracticeLevel?: string;
 
   @ApiPropertyOptional({ enum: DHIKR_PRACTICES, isArray: true })
@@ -141,9 +162,23 @@ export class UpdatePreferencesRequestDto {
   @IsIn(ISLAMIC_KNOWLEDGE_LEVELS)
   islamicKnowledgeLevel?: string;
 
-  @ApiPropertyOptional({ enum: MAIN_INTENTIONS })
+  @ApiPropertyOptional({ enum: MAIN_INTENTIONS, isArray: true })
   @IsOptional()
-  @IsString()
-  @IsIn(MAIN_INTENTIONS)
-  mainIntention?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(ACCEPTED_MAIN_INTENTIONS, { each: true })
+  mainIntentions?: string[];
+
+  @ApiPropertyOptional({
+    enum: MAIN_INTENTIONS,
+    isArray: true,
+    deprecated: true,
+    description: 'Legacy key; scalar and array payloads remain accepted.',
+  })
+  @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(ACCEPTED_MAIN_INTENTIONS, { each: true })
+  mainIntention?: string[];
 }

@@ -76,6 +76,25 @@ export class NotificationsTypeormAdapter implements NotificationsPersistencePort
   ) {
     return this.updateScheduled(id, { ...data, status });
   }
+  async deletePendingGeneratedForUser(userId: string) {
+    await this.scheduled
+      .createQueryBuilder()
+      .delete()
+      .where('"userId" = :userId', { userId })
+      .andWhere('"status" = :status', { status: NotificationStatus.PENDING })
+      .andWhere(
+        '("dedupeKey" LIKE :prayer OR "dedupeKey" LIKE :fasting OR "dedupeKey" LIKE :dhikr OR "dedupeKey" LIKE :quran OR "dedupeKey" LIKE :activity OR "dedupeKey" LIKE :daily)',
+        {
+          prayer: 'prayer:%',
+          fasting: 'fasting:%',
+          dhikr: 'dhikr:%',
+          quran: 'quran:%',
+          activity: 'activity:%',
+          daily: 'daily-reminder:%',
+        },
+      )
+      .execute();
+  }
   findDailyReminderContentByCycleDay(cycleDay: number) {
     return this.dailyContents.findOne({
       where: { cycleDay, isActive: true },

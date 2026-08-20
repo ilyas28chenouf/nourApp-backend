@@ -1,4 +1,5 @@
 import { QuranReadingLogModel } from '../model/quran-reading-log.model';
+import { QuranMemorizationProgressModel } from '../model/quran-memorization-progress.model';
 export const QURAN_PERSISTENCE_PORT = Symbol('QURAN_PERSISTENCE_PORT');
 export interface QuranPersistencePort {
   findLogsByUserId(userId: string): Promise<QuranReadingLogModel[]>;
@@ -14,4 +15,7 @@ export interface QuranPersistencePort {
   createGoal(data: any): Promise<any>;
   updateGoal(id: string, data: any): Promise<any>;
   deleteGoal(id: string): Promise<void>;
+  findMemorizationByUserId(
+    userId: string,
+  ): Promise<QuranMemorizationProgressModel[]>;
 }

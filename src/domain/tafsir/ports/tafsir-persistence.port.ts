@@ -7,6 +7,7 @@ import {
   TafsirItemModel,
   TafsirPublicListItemModel,
 } from '../model/tafsir-item.model';
+import { TafsirProgressModel } from '../model/tafsir-progress.model';
 
 export const TAFSIR_PERSISTENCE_PORT = Symbol('TAFSIR_PERSISTENCE_PORT');
 
@@ -67,4 +68,13 @@ export interface TafsirPersistencePort {
     data: Partial<TafsirItemModel>,
   ): Promise<TafsirItemModel>;
   deleteItem(id: string): Promise<void>;
+  findProgressByUserId(userId: string): Promise<TafsirProgressModel[]>;
+  findProgressById(id: string): Promise<TafsirProgressModel | null>;
+  createProgress(
+    data: Partial<TafsirProgressModel>,
+  ): Promise<TafsirProgressModel>;
+  updateProgress(
+    id: string,
+    data: Partial<TafsirProgressModel>,
+  ): Promise<TafsirProgressModel>;
 }

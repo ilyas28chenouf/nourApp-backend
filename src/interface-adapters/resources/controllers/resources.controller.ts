@@ -22,6 +22,7 @@ import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { ResourcesUsecasesProxyService } from '../../../usecases-proxy/resources/resources-usecases-proxy.service';
 import { ResourceResponseDto } from '../dto/response/resource.response.dto';
+import { DailyResourcesResponseDto } from '../dto/response/daily-resources.response.dto';
 import { ResourceResponseMapper } from '../mappers/resource.response.mapper';
 @ApiTags('Resources')
 @ApiBearerAuth()
@@ -37,9 +38,9 @@ export class ResourcesController {
   }
   @Get('daily')
   @ApiOperation({ summary: 'Get verse, hadith and wisdom of the day' })
-  @ApiOkResponse({ description: 'Daily resources' })
-  daily() {
-    return ResourceResponseMapper.toDto(this.proxy.daily());
+  @ApiOkResponse({ type: DailyResourcesResponseDto })
+  async daily() {
+    return ResourceResponseMapper.toDto(await this.proxy.daily());
   }
   @Get(':id')
   @ApiOperation({ summary: 'Get resource by id' })

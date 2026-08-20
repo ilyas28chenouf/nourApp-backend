@@ -37,6 +37,9 @@ import { HadithCollectionTypeormEntity } from '../hadith/entities/hadith-collect
 import { HadithItemTypeormEntity } from '../hadith/entities/hadith-item.typeorm-entity';
 import { TafsirCollectionTypeormEntity } from '../tafsir/entities/tafsir-collection.typeorm-entity';
 import { TafsirItemTypeormEntity } from '../tafsir/entities/tafsir-item.typeorm-entity';
+import { TafsirProgressTypeormEntity } from '../tafsir/entities/tafsir-progress.typeorm-entity';
+import { AsmaAlHusnaNameTypeormEntity } from '../asma-al-husna/entities/asma-al-husna-name.typeorm-entity';
+import { AsmaAlHusnaTranslationTypeormEntity } from '../asma-al-husna/entities/asma-al-husna-translation.typeorm-entity';
 
 export const TYPEORM_ENTITIES = [
   UserTypeormEntity,
@@ -78,4 +81,7 @@ export const TYPEORM_ENTITIES = [
   HadithItemTypeormEntity,
   TafsirCollectionTypeormEntity,
   TafsirItemTypeormEntity,
+  TafsirProgressTypeormEntity,
+  AsmaAlHusnaNameTypeormEntity,
+  AsmaAlHusnaTranslationTypeormEntity,
 ];

@@ -1,3 +1,5 @@
+import { CharityActionType } from '../enums/charity-action-type.enum';
+
 export interface CharityLogModel {
   id: string;
   userId: string;
@@ -5,6 +7,7 @@ export interface CharityLogModel {
   amount?: string | number | null;
   currency: string;
   frequencyType?: string | null;
+  actionType: CharityActionType;
   description?: string | null;
   createdAt?: Date;
   updatedAt?: Date;

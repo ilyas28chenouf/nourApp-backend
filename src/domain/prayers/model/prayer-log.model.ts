@@ -11,6 +11,7 @@ export interface PrayerLogModel {
   wasOnTime: boolean;
   prayerMode?: PrayerMode | null;
   isSupererogatory: boolean;
+  prayedAtMosque: boolean;
   notes?: string | null;
   createdAt?: Date;
   updatedAt?: Date;

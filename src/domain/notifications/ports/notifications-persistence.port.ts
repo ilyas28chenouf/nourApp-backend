@@ -33,4 +33,5 @@ export interface NotificationsPersistencePort {
     status: NotificationStatus,
     data?: Partial<ScheduledNotificationModel>,
   ): Promise<ScheduledNotificationModel>;
+  deletePendingGeneratedForUser(userId: string): Promise<void>;
 }

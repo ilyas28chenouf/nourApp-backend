@@ -9,17 +9,20 @@ import { TafsirTypeormAdapter } from '../../infrastructure/tafsir/adapters/tafsi
 import { GetPublicTafsirUsecase } from '../../usecases/tafsir/get-public-tafsir.usecase';
 import { ManageTafsirCollectionsUsecase } from '../../usecases/tafsir/manage-tafsir-collections.usecase';
 import { ManageTafsirItemsUsecase } from '../../usecases/tafsir/manage-tafsir-items.usecase';
+import { ManageTafsirProgressUsecase } from '../../usecases/tafsir/manage-tafsir-progress.usecase';
 
 @Injectable()
 export class TafsirUsecasesProxyService {
   private readonly collections: ManageTafsirCollectionsUsecase;
   private readonly items: ManageTafsirItemsUsecase;
   private readonly publicTafsir: GetPublicTafsirUsecase;
+  private readonly progress: ManageTafsirProgressUsecase;
 
   constructor(persistence: TafsirTypeormAdapter) {
     this.collections = new ManageTafsirCollectionsUsecase(persistence);
     this.items = new ManageTafsirItemsUsecase(persistence);
     this.publicTafsir = new GetPublicTafsirUsecase(persistence);
+    this.progress = new ManageTafsirProgressUsecase(persistence);
   }
 
   listCollections(filters: TafsirCollectionFilters) {
@@ -76,5 +79,17 @@ export class TafsirUsecasesProxyService {
 
   getPublicItem(key: string, surahNumber: number, ayahNumber: number) {
     return this.publicTafsir.getItem(key, surahNumber, ayahNumber);
+  }
+
+  listProgress(userId: string, from?: string, to?: string) {
+    return this.progress.list(userId, from, to);
+  }
+
+  createProgress(userId: string, data: Record<string, any>) {
+    return this.progress.create(userId, data);
+  }
+
+  updateProgress(userId: string, id: string, data: Record<string, any>) {
+    return this.progress.update(userId, id, data);
   }
 }

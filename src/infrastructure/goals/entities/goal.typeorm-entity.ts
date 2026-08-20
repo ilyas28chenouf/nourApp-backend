@@ -21,6 +21,9 @@ export class GoalTypeormEntity {
 
   @Column('uuid', { nullable: true }) ownerUserId?: string;
   @Column('uuid', { nullable: true }) groupId?: string;
+  @Index()
+  @Column({ nullable: true })
+  goalCode?: string;
   @Column() title: string;
   @Column({ type: 'text', nullable: true }) description?: string;
   @Column({ type: 'enum', enum: GoalType }) goalType: GoalType;

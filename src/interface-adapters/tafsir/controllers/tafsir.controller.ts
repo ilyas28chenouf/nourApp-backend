@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
@@ -8,6 +16,13 @@ import {
 } from '@nestjs/swagger';
 import { TafsirUsecasesProxyService } from '../../../usecases-proxy/tafsir/tafsir-usecases-proxy.service';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
+import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import type { UserModel } from '../../../domain/users/model/user.model';
+import {
+  CreateTafsirProgressRequestDto,
+  UpdateTafsirProgressRequestDto,
+} from '../dto/request/tafsir-progress.request.dto';
+import { TafsirProgressResponseDto } from '../dto/response/tafsir-progress.response.dto';
 import {
   TafsirCollectionKeyParamDto,
   TafsirItemParamDto,
@@ -27,6 +42,38 @@ import { TafsirResponseMapper } from '../mappers/tafsir.response.mapper';
 @Controller('tafsir')
 export class TafsirController {
   constructor(private readonly proxy: TafsirUsecasesProxyService) {}
+
+  @Get('progress')
+  @ApiOperation({ summary: 'List current user Tafsir reading evidence' })
+  @ApiOkResponse({ type: [TafsirProgressResponseDto] })
+  progress(
+    @CurrentUser() user: UserModel,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.proxy.listProgress(user.id, from, to);
+  }
+
+  @Post('progress')
+  @ApiOperation({ summary: 'Record Tafsir ayah reading evidence' })
+  @ApiOkResponse({ type: TafsirProgressResponseDto })
+  createProgress(
+    @CurrentUser() user: UserModel,
+    @Body() dto: CreateTafsirProgressRequestDto,
+  ) {
+    return this.proxy.createProgress(user.id, dto);
+  }
+
+  @Patch('progress/:id')
+  @ApiOperation({ summary: 'Update Tafsir reading evidence' })
+  @ApiOkResponse({ type: TafsirProgressResponseDto })
+  updateProgress(
+    @CurrentUser() user: UserModel,
+    @Param('id') id: string,
+    @Body() dto: UpdateTafsirProgressRequestDto,
+  ) {
+    return this.proxy.updateProgress(user.id, id, dto);
+  }
 
   @Get('collections')
   @ApiOperation({ summary: 'List active Tafsir collections' })

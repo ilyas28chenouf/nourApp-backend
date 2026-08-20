@@ -3,6 +3,7 @@ import { ResourcesTypeormAdapter } from '../../infrastructure/resources/adapters
 import { CreateResourceUsecase } from '../../usecases/resources/create-resource.usecase';
 import { DeleteResourceUsecase } from '../../usecases/resources/delete-resource.usecase';
 import { GetResourceByIdUsecase } from '../../usecases/resources/get-resource-by-id.usecase';
+import { GetDailyResourcesUsecase } from '../../usecases/resources/get-daily-resources.usecase';
 import { GetResourcesUsecase } from '../../usecases/resources/get-resources.usecase';
 import { UpdateResourceUsecase } from '../../usecases/resources/update-resource.usecase';
 
@@ -14,15 +15,7 @@ export class ResourcesUsecasesProxyService {
     return new GetResourcesUsecase(this.resources).execute();
   }
   async daily() {
-    const resources = await new GetResourcesUsecase(this.resources).execute();
-    return {
-      verseOfTheDay:
-        resources.find((resource: any) => resource.type === 'VERSE') ?? null,
-      hadithOfTheDay:
-        resources.find((resource: any) => resource.type === 'HADITH') ?? null,
-      wisdomOfTheDay:
-        resources.find((resource: any) => resource.type === 'WISDOM') ?? null,
-    };
+    return new GetDailyResourcesUsecase(this.resources).execute();
   }
   get(id: string) {
     return new GetResourceByIdUsecase(this.resources).execute(id);

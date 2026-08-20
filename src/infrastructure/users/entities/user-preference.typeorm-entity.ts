@@ -24,6 +24,7 @@ export class UserPreferenceTypeormEntity {
   @Column({ default: true }) fastingNotificationsEnabled: boolean;
   @Column({ default: true }) dhikrNotificationsEnabled: boolean;
   @Column({ default: true }) quranNotificationsEnabled: boolean;
+  @Column({ default: true }) activityNotificationsEnabled: boolean;
   @Column({ default: true }) encouragementNotificationsEnabled: boolean;
   @Column({ default: true }) dailyReminderEnabled: boolean;
   @Column({ default: '09:00' }) dailyReminderTime: string;
@@ -42,4 +43,6 @@ export class UserPreferenceTypeormEntity {
   @Column({ nullable: true }) regularityDuration?: string;
   @Column({ nullable: true }) islamicKnowledgeLevel?: string;
   @Column({ nullable: true }) mainIntention?: string;
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
+  mainIntentions?: string[];
 }

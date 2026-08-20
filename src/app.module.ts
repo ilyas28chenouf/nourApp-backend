@@ -28,6 +28,7 @@ import { ResourcesController } from './interface-adapters/resources/controllers/
 import { TafsirController } from './interface-adapters/tafsir/controllers/tafsir.controller';
 import { UsersController } from './interface-adapters/users/controllers/users.controller';
 import { WomenController } from './interface-adapters/women/controllers/women.controller';
+import { AsmaAlHusnaController } from './interface-adapters/asma-al-husna/controllers/asma-al-husna.controller';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { FirebaseModule } from './infrastructure/firebase/firebase.module';
 import { HttpExceptionLoggingFilter } from './infrastructure/logger/http-exception-logging.filter';
@@ -55,6 +56,7 @@ import { ResourcesUsecasesProxyModule } from './usecases-proxy/resources/resourc
 import { TafsirUsecasesProxyModule } from './usecases-proxy/tafsir/tafsir-usecases-proxy.module';
 import { UsersUsecasesProxyModule } from './usecases-proxy/users/users-usecases-proxy.module';
 import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-proxy.module';
+import { AsmaAlHusnaUsecasesProxyModule } from './usecases-proxy/asma-al-husna/asma-al-husna-usecases-proxy.module';
 
 @Module({
   imports: [
@@ -84,6 +86,7 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
     WomenUsecasesProxyModule,
     DiaryUsecasesProxyModule,
     AdminUsecasesProxyModule,
+    AsmaAlHusnaUsecasesProxyModule,
   ],
   controllers: [
     AuthController,
@@ -112,6 +115,7 @@ import { WomenUsecasesProxyModule } from './usecases-proxy/women/women-usecases-
     AdminTafsirController,
     AdminProgressionController,
     ProgressionController,
+    AsmaAlHusnaController,
   ],
   providers: [
     {

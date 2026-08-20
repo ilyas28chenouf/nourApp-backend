@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { DhikrSessionType } from '../../../../domain/dhikr/enums/dhikr-session-type.enum';
 
 export class DhikrLogResponseDto {
   @ApiProperty()
@@ -12,6 +13,15 @@ export class DhikrLogResponseDto {
 
   @ApiProperty()
   period: string;
+
+  @ApiPropertyOptional()
+  dhikrItemId?: string;
+
+  @ApiPropertyOptional()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ enum: DhikrSessionType })
+  sessionType?: DhikrSessionType;
 
   @ApiProperty()
   counter: number;

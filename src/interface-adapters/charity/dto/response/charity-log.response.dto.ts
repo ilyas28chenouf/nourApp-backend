@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { CharityActionType } from '../../../../domain/charity/enums/charity-action-type.enum';
 
 export class CharityLogResponseDto {
   @ApiProperty()
@@ -18,6 +19,9 @@ export class CharityLogResponseDto {
 
   @ApiPropertyOptional()
   frequencyType?: string;
+
+  @ApiProperty({ enum: CharityActionType })
+  actionType: CharityActionType;
 
   @ApiPropertyOptional()
   description?: string;

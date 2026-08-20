@@ -29,6 +29,7 @@ import { UpdateQuranReadingLogRequestDto } from '../dto/request/update-quran-rea
 import { UpdateQuranMemorizationRequestDto } from '../dto/request/update-quran-memorization.request.dto';
 import { QuranReadingGoalResponseDto } from '../dto/response/quran-reading-goal.response.dto';
 import { QuranReadingLogResponseDto } from '../dto/response/quran-reading-log.response.dto';
+import { QuranSummaryResponseDto } from '../dto/response/quran-summary.response.dto';
 import { QuranResponseMapper } from '../mappers/quran.response.mapper';
 @ApiTags('Quran')
 @ApiBearerAuth()
@@ -112,7 +113,7 @@ export class QuranController {
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get Quran summary' })
-  @ApiOkResponse({ description: 'Summary' })
+  @ApiOkResponse({ type: QuranSummaryResponseDto })
   async summary(
     @CurrentUser() user: UserModel,
     @Query('period') period: string,

@@ -28,7 +28,10 @@ export class UserPreferencesTypeormAdapter implements UserPreferencesPersistence
         .filter(([, value]) => value !== undefined)
         .map(([key, value]) => [
           key,
-          key === 'dhikrPractices' && Array.isArray(value) ? [...value] : value,
+          (key === 'dhikrPractices' || key === 'mainIntentions') &&
+          Array.isArray(value)
+            ? [...value]
+            : value,
         ]),
     ) as Partial<UserPreferenceTypeormEntity>;
     await this.repository.update({ id }, updatePayload);

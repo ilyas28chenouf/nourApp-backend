@@ -69,6 +69,13 @@ export class ProgressionService {
 
     return {
       totalHasanat: progression.totalHasanat,
+      currentLevelNumber:
+        SPIRITUAL_LEVEL_THRESHOLDS.findIndex(
+          (level) => level.level === levelState.current.level,
+        ) + 1,
+      totalVisibleLevels: SPIRITUAL_LEVEL_THRESHOLDS.length,
+      currentPoints: progression.totalHasanat,
+      targetPoints: levelState.next?.minPoints ?? levelState.current.minPoints,
       currentVisibleLevel: levelState.current.level,
       currentVisibleLevelLabel: levelState.current.label,
       nextVisibleLevel: levelState.next?.level ?? null,

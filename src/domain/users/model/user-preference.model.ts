@@ -7,6 +7,7 @@ export interface UserPreferenceModel {
   fastingNotificationsEnabled: boolean;
   dhikrNotificationsEnabled: boolean;
   quranNotificationsEnabled: boolean;
+  activityNotificationsEnabled: boolean;
   encouragementNotificationsEnabled: boolean;
   dailyReminderEnabled: boolean;
   dailyReminderTime: string;
@@ -23,6 +24,7 @@ export interface UserPreferenceModel {
   regularityDuration?: string | null;
   islamicKnowledgeLevel?: string | null;
   mainIntention?: string | null;
+  mainIntentions?: string[] | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

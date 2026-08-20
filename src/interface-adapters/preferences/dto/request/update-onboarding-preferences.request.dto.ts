@@ -1,12 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsArray, IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 import {
-  IsArray,
-  IsEnum,
-  IsIn,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { DailyAvailableTime } from '../../../../domain/preferences/enums/daily-available-time.enum';
+  ACCEPTED_DAILY_AVAILABLE_TIMES,
+  NEW_DAILY_AVAILABLE_TIMES,
+} from '../../../../domain/preferences/enums/daily-available-time.enum';
+import { MainIntention } from '../../../../domain/preferences/enums/main-intention.enum';
 
 export const GLOBAL_PRACTICE_LEVELS = [
   'D\u00e9butant',
@@ -36,9 +35,14 @@ export const QURAN_PRACTICE_LEVELS = [
   'Sans r\u00e9gularit\u00e9',
   '1\u20135 pages / jour',
   'R\u00e9gulier',
-  'Au moins 1 Hizb',
+  'Au moins 1 Hizb par jour',
   'Lecture + M\u00e9morisation',
   'M\u00e9morisation active',
+];
+
+export const ACCEPTED_QURAN_PRACTICE_LEVELS = [
+  ...QURAN_PRACTICE_LEVELS,
+  'Au moins 1 Hizb',
   'M\u00e9morisation + r\u00e9vision',
 ];
 
@@ -58,6 +62,7 @@ export const FASTING_PRACTICE_LEVELS = [
   'De temps en temps',
   'R\u00e9gulier lundi / jeudi',
   'Chaque semaine',
+  'Jours lunaires (13, 14, 15)',
   'Autres jours de je\u00fbne Sunnah / sur\u00e9rogatoires (Arafat, Achoura\u2026)',
 ];
 
@@ -92,7 +97,7 @@ export const ISLAMIC_KNOWLEDGE_LEVELS = [
   'Formation islamique',
 ];
 
-export const MAIN_INTENTIONS = [
+export const LEGACY_MAIN_INTENTIONS = [
   'Assiduit\u00e9 dans les pri\u00e8res',
   'Effectuer les 5 pri\u00e8res par jour',
   'Progresser dans la lecture du Coran',
@@ -104,17 +109,21 @@ export const MAIN_INTENTIONS = [
   '\u00c9quilibre et \u00e9panouissement spirituel',
 ];
 
+export const MAIN_INTENTIONS = Object.values(MainIntention);
+export const ACCEPTED_MAIN_INTENTIONS = [
+  ...MAIN_INTENTIONS,
+  ...LEGACY_MAIN_INTENTIONS,
+];
 
 export class UpdateOnboardingPreferencesRequestDto {
   @ApiPropertyOptional({
-    enum: DailyAvailableTime,
+    enum: NEW_DAILY_AVAILABLE_TIMES,
     description:
-      '5\u201315 min: Pri\u00e8re + adhkars; 15\u201330 min: Pri\u00e8re + Coran + dhikr; 30\u201360 min: Programme complet; + 1 heure: Tahajjud, hifz',
+      'New v1.6 selections. Legacy values remain readable and accepted for compatibility.',
   })
   @IsOptional()
-  @IsEnum(DailyAvailableTime)
-  dailyAvailableTime?: DailyAvailableTime;
-
+  @IsIn(ACCEPTED_DAILY_AVAILABLE_TIMES)
+  dailyAvailableTime?: string;
 
   @ApiPropertyOptional({ enum: GLOBAL_PRACTICE_LEVELS })
   @IsOptional()
@@ -122,20 +131,17 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(GLOBAL_PRACTICE_LEVELS)
   globalPracticeLevel?: string;
 
-
   @ApiPropertyOptional({ enum: PRAYER_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
   @IsIn(PRAYER_PRACTICE_LEVELS)
   prayerPracticeLevel?: string;
 
-
   @ApiPropertyOptional({ enum: QURAN_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
-  @IsIn(QURAN_PRACTICE_LEVELS)
+  @IsIn(ACCEPTED_QURAN_PRACTICE_LEVELS)
   quranPracticeLevel?: string;
-
 
   @ApiPropertyOptional({
     enum: DHIKR_PRACTICES,
@@ -147,13 +153,11 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(DHIKR_PRACTICES, { each: true })
   dhikrPractices?: string[];
 
-
   @ApiPropertyOptional({ enum: FASTING_PRACTICE_LEVELS })
   @IsOptional()
   @IsString()
   @IsIn(FASTING_PRACTICE_LEVELS)
   fastingPracticeLevel?: string;
-
 
   @ApiPropertyOptional({ enum: SOCIAL_ACTIONS_FREQUENCIES })
   @IsOptional()
@@ -161,13 +165,11 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(SOCIAL_ACTIONS_FREQUENCIES)
   socialActionsFrequency?: string;
 
-
   @ApiPropertyOptional({ enum: REGULARITY_DURATIONS })
   @IsOptional()
   @IsString()
   @IsIn(REGULARITY_DURATIONS)
   regularityDuration?: string;
-
 
   @ApiPropertyOptional({ enum: ISLAMIC_KNOWLEDGE_LEVELS })
   @IsOptional()
@@ -175,14 +177,23 @@ export class UpdateOnboardingPreferencesRequestDto {
   @IsIn(ISLAMIC_KNOWLEDGE_LEVELS)
   islamicKnowledgeLevel?: string;
 
+  @ApiPropertyOptional({ enum: MAIN_INTENTIONS, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(ACCEPTED_MAIN_INTENTIONS, { each: true })
+  mainIntentions?: string[];
 
   @ApiPropertyOptional({
     enum: MAIN_INTENTIONS,
     isArray: true,
+    deprecated: true,
+    description: 'Legacy key; scalar and array payloads remain accepted.',
   })
   @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   @IsArray()
   @IsString({ each: true })
-  @IsIn(MAIN_INTENTIONS, { each: true })
+  @IsIn(ACCEPTED_MAIN_INTENTIONS, { each: true })
   mainIntention?: string[];
 }

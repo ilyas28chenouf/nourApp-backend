@@ -24,6 +24,7 @@ import { CharityUsecasesProxyService } from '../../../usecases-proxy/charity/cha
 import { CreateCharityLogRequestDto } from '../dto/request/create-charity-log.request.dto';
 import { UpdateCharityLogRequestDto } from '../dto/request/update-charity-log.request.dto';
 import { CharityLogResponseDto } from '../dto/response/charity-log.response.dto';
+import { CharitySummaryResponseDto } from '../dto/response/charity-summary.response.dto';
 import { CharityResponseMapper } from '../mappers/charity.response.mapper';
 @ApiTags('Charity')
 @ApiBearerAuth()
@@ -70,7 +71,7 @@ export class CharityController {
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get charity summary' })
-  @ApiOkResponse({ description: 'Summary' })
+  @ApiOkResponse({ type: CharitySummaryResponseDto })
   summary(@CurrentUser() user: UserModel, @Query('period') period: string) {
     return CharityResponseMapper.toDto(this.proxy.summary(user.id, period));
   }

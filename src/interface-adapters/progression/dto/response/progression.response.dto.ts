@@ -5,6 +5,20 @@ export class ProgressionResponseDto {
   @ApiProperty()
   totalHasanat: number;
 
+  @ApiProperty({
+    description: 'One-based index in the existing six-level model',
+  })
+  currentLevelNumber: number;
+
+  @ApiProperty({ example: 6 })
+  totalVisibleLevels: number;
+
+  @ApiProperty()
+  currentPoints: number;
+
+  @ApiProperty()
+  targetPoints: number;
+
   @ApiProperty({ enum: SpiritualLevel })
   currentVisibleLevel: SpiritualLevel;
 

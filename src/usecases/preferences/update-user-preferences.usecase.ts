@@ -23,6 +23,7 @@ export class UpdateUserPreferencesUsecase {
       'fastingNotificationsEnabled',
       'dhikrNotificationsEnabled',
       'quranNotificationsEnabled',
+      'activityNotificationsEnabled',
       'encouragementNotificationsEnabled',
       'dailyReminderEnabled',
       'dailyReminderTime',
@@ -37,8 +38,9 @@ export class UpdateUserPreferencesUsecase {
       'socialActionsFrequency',
       'regularityDuration',
       'islamicKnowledgeLevel',
-      'mainIntention',
+      'mainIntentions',
     ]);
+    this.normalizeMainIntentions(data, updatePayload);
     const updated = await this.preferences.update(pref.id, updatePayload);
     this.logger.debug('Preferences updated', {
       userId,
@@ -53,5 +55,18 @@ export class UpdateUserPreferencesUsecase {
         .filter((field) => data[field] !== undefined)
         .map((field) => [field, data[field]]),
     );
+  }
+
+  private normalizeMainIntentions(
+    data: Record<string, unknown>,
+    updatePayload: Record<string, unknown>,
+  ) {
+    const value = data.mainIntentions ?? data.mainIntention;
+    if (value === undefined) return;
+    const mainIntentions = (Array.isArray(value) ? value : [value]).filter(
+      (item): item is string => typeof item === 'string',
+    );
+    updatePayload.mainIntentions = mainIntentions;
+    updatePayload.mainIntention = mainIntentions[0] ?? null;
   }
 }

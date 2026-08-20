@@ -7,9 +7,11 @@ import { NotificationsSchedulerService } from '../../infrastructure/notification
 import { UserPreferencesTypeormAdapter } from '../../infrastructure/users/adapters/user-preferences-typeorm.adapter';
 import { UsersTypeormAdapter } from '../../infrastructure/users/adapters/users-typeorm.adapter';
 import { NotificationsUsecasesProxyService } from './notifications-usecases-proxy.service';
+import { PrayersUsecasesProxyModule } from '../prayers/prayers-usecases-proxy.module';
+import { FastingTypeormAdapter } from '../../infrastructure/fasting/adapters/fasting-typeorm.adapter';
 
 @Module({
-  imports: [FirebaseModule, LoggerModule],
+  imports: [FirebaseModule, LoggerModule, PrayersUsecasesProxyModule],
   providers: [
     NotificationsTypeormAdapter,
     NotificationsFcmService,
@@ -17,7 +19,8 @@ import { NotificationsUsecasesProxyService } from './notifications-usecases-prox
     UsersTypeormAdapter,
     UserPreferencesTypeormAdapter,
     NotificationsUsecasesProxyService,
+    FastingTypeormAdapter,
   ],
-  exports: [NotificationsUsecasesProxyService],
+  exports: [NotificationsUsecasesProxyService, NotificationsSchedulerService],
 })
 export class NotificationsUsecasesProxyModule {}

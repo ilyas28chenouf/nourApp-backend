@@ -25,6 +25,7 @@ import { CreateFastingLogRequestDto } from '../dto/request/create-fasting-log.re
 import { UpdateFastingLogRequestDto } from '../dto/request/update-fasting-log.request.dto';
 import { FastingLogResponseDto } from '../dto/response/fasting-log.response.dto';
 import { FastingRecommendedDayResponseDto } from '../dto/response/fasting-recommended-day.response.dto';
+import { FastingSummaryResponseDto } from '../dto/response/fasting-summary.response.dto';
 import { FastingResponseMapper } from '../mappers/fasting.response.mapper';
 @ApiTags('Fasting')
 @ApiBearerAuth()
@@ -83,7 +84,7 @@ export class FastingController {
   }
   @Get('summary')
   @ApiOperation({ summary: 'Get fasting summary' })
-  @ApiOkResponse({ description: 'Summary' })
+  @ApiOkResponse({ type: FastingSummaryResponseDto })
   async summary(
     @CurrentUser() user: UserModel,
     @Query('period') period: string,

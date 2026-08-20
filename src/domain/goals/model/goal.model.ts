@@ -4,6 +4,7 @@ export interface GoalModel {
   id: string;
   ownerUserId?: string | null;
   groupId?: string | null;
+  goalCode?: string | null;
   title: string;
   description?: string | null;
   goalType: GoalType;

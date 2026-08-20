@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { GoalEvaluationResponseDto } from './goal-analytics.response.dto';
 
 export class GoalResponseDto {
   @ApiProperty()
@@ -9,6 +10,9 @@ export class GoalResponseDto {
 
   @ApiPropertyOptional()
   groupId?: string;
+
+  @ApiPropertyOptional()
+  goalCode?: string;
 
   @ApiProperty()
   title: string;
@@ -39,6 +43,9 @@ export class GoalResponseDto {
 
   @ApiProperty()
   isActive: boolean;
+
+  @ApiPropertyOptional({ type: GoalEvaluationResponseDto })
+  automaticProgress?: GoalEvaluationResponseDto;
 
   @ApiPropertyOptional()
   createdAt?: Date;

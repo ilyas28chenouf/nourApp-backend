@@ -20,15 +20,18 @@ import {
 } from '../../../domain/tafsir/ports/tafsir-persistence.port';
 import { TafsirCollectionTypeormEntity } from '../entities/tafsir-collection.typeorm-entity';
 import { TafsirItemTypeormEntity } from '../entities/tafsir-item.typeorm-entity';
+import { TafsirProgressTypeormEntity } from '../entities/tafsir-progress.typeorm-entity';
 
 @Injectable()
 export class TafsirTypeormAdapter implements TafsirPersistencePort {
   private readonly collections: Repository<TafsirCollectionTypeormEntity>;
   private readonly items: Repository<TafsirItemTypeormEntity>;
+  private readonly progress: Repository<TafsirProgressTypeormEntity>;
 
   constructor(dataSource: DataSource) {
     this.collections = dataSource.getRepository(TafsirCollectionTypeormEntity);
     this.items = dataSource.getRepository(TafsirItemTypeormEntity);
+    this.progress = dataSource.getRepository(TafsirProgressTypeormEntity);
   }
 
   async listCollections(filters: TafsirCollectionFilters, activeOnly = false) {
@@ -260,6 +263,27 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
 
   async deleteItem(id: string) {
     await this.items.delete(id);
+  }
+
+  findProgressByUserId(userId: string) {
+    return this.progress.find({
+      where: { userId },
+      order: { readDate: 'DESC', createdAt: 'DESC' },
+    });
+  }
+
+  findProgressById(id: string) {
+    return this.progress.findOne({ where: { id } });
+  }
+
+  createProgress(data: Partial<TafsirProgressTypeormEntity>) {
+    return this.progress.save(this.progress.create(data));
+  }
+
+  async updateProgress(id: string, data: Partial<TafsirProgressTypeormEntity>) {
+    const existing = await this.progress.findOne({ where: { id } });
+    if (!existing) throw new NotFoundException('Tafsir progress not found');
+    return this.progress.save({ ...existing, ...this.stripUndefined(data) });
   }
 
   private collectionQuery(activeOnly: boolean) {

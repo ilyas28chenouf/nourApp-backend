@@ -19,8 +19,10 @@ export class AdminProgressionController {
   constructor(private readonly progression: ProgressionService) {}
 
   @Get(':id/progression')
-  @ApiOperation({ summary: 'Get user progression including hidden sub-level' })
-  @ApiOkResponse({ description: 'Progression with hidden debug data' })
+  @ApiOperation({
+    summary: 'Get user progression including combined-level catalog metadata',
+  })
+  @ApiOkResponse({ description: 'Progression with catalog metadata' })
   getUserProgression(@Param('id') id: string) {
     return this.progression.getUserProgression(id, true);
   }

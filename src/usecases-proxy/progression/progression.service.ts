@@ -1,15 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
+import {
+  calculateObligatoryPrayerPoints,
+  calculateQuranReadingPoints,
+  calculateSupererogatoryPrayerPoints,
+  HASANAT_ACTION_RULES,
+} from '../../domain/progression/constants/hasanat-action-rules';
+import {
+  calculateSpiritualLevelProgress,
+  SPIRITUAL_LEVEL_CATALOG,
+  SPIRITUAL_PROGRESSION_COMPLETION_POINTS,
+} from '../../domain/progression/constants/spiritual-levels';
 import { BadgeKey } from '../../domain/progression/enums/badge-key.enum';
 import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
 import { SpiritualLevel } from '../../domain/progression/enums/spiritual-level.enum';
-import { HASANAT_ACTION_RULES } from '../../domain/progression/constants/hasanat-action-rules';
-import { SPIRITUAL_LEVEL_THRESHOLDS } from '../../domain/progression/constants/spiritual-levels';
-import { DhikrPeriod } from '../../domain/dhikr/enums/dhikr-period.enum';
-import { PrayerMode } from '../../domain/prayers/enums/prayer-mode.enum';
+import { DhikrSessionType } from '../../domain/dhikr/enums/dhikr-session-type.enum';
 import { PrayerName } from '../../domain/prayers/enums/prayer-name.enum';
 import { PrayerStatus } from '../../domain/prayers/enums/prayer-status.enum';
 import { FastingStatus } from '../../domain/fasting/enums/fasting-status.enum';
+import type { CharityLogModel } from '../../domain/charity/model/charity-log.model';
+import type { DhikrLogModel } from '../../domain/dhikr/model/dhikr-log.model';
+import type { FastingLogModel } from '../../domain/fasting/model/fasting-log.model';
+import type { AdditionalPrayerLogModel } from '../../domain/prayers/model/additional-prayer-log.model';
+import type { PrayerLogModel } from '../../domain/prayers/model/prayer-log.model';
+import type { QuranReadingLogModel } from '../../domain/quran/model/quran-reading-log.model';
 import { HasanatPointEventTypeormEntity } from '../../infrastructure/progression/entities/hasanat-point-event.typeorm-entity';
 import { UserBadgeTypeormEntity } from '../../infrastructure/progression/entities/user-badge.typeorm-entity';
 import { UserProgressionTypeormEntity } from '../../infrastructure/progression/entities/user-progression.typeorm-entity';
@@ -21,12 +35,17 @@ import {
 type PointInput = {
   userId: string;
   sourceType: HasanatSourceType;
-  sourceId?: string | null;
+  sourceId: string | null;
   actionKey: string;
   points: number;
   eventDate: string;
   metadata?: Record<string, unknown>;
 };
+
+type AdditionalPrayerRewardInput = Pick<
+  AdditionalPrayerLogModel,
+  'userId' | 'prayerDate' | 'prayerTime' | 'rakaat'
+>;
 
 @Injectable()
 export class ProgressionService {
@@ -48,13 +67,12 @@ export class ProgressionService {
       this.progressions.create({
         userId,
         totalHasanat: 0,
-        currentVisibleLevel: SpiritualLevel.MURID,
-        currentHiddenSubLevel: 1,
+        currentVisibleLevel: SpiritualLevel.EVEIL_SERVITEUR_D_ALLAH,
       }),
     );
   }
 
-  async getUserProgression(userId: string, includeHidden = false) {
+  async getUserProgression(userId: string, includeCatalogMetadata = false) {
     const progression = await this.getOrCreateProgression(userId);
     const badges = await this.badges.find({
       where: { userId },
@@ -65,146 +83,142 @@ export class ProgressionService {
       order: { createdAt: 'DESC' },
       take: 10,
     });
-    const levelState = this.getLevelState(progression.totalHasanat);
+    const levelState = calculateSpiritualLevelProgress(
+      progression.totalHasanat,
+    );
 
     return {
       totalHasanat: progression.totalHasanat,
-      currentLevelNumber:
-        SPIRITUAL_LEVEL_THRESHOLDS.findIndex(
-          (level) => level.level === levelState.current.level,
-        ) + 1,
-      totalVisibleLevels: SPIRITUAL_LEVEL_THRESHOLDS.length,
-      currentPoints: progression.totalHasanat,
-      targetPoints: levelState.next?.minPoints ?? levelState.current.minPoints,
+      currentLevelNumber: levelState.current.order,
+      totalVisibleLevels: SPIRITUAL_LEVEL_CATALOG.length,
+      currentPoints: levelState.currentPoints,
+      targetPoints: levelState.targetPoints,
       currentVisibleLevel: levelState.current.level,
       currentVisibleLevelLabel: levelState.current.label,
       nextVisibleLevel: levelState.next?.level ?? null,
-      pointsToNextLevel: levelState.next
-        ? Math.max(0, levelState.next.minPoints - progression.totalHasanat)
-        : 0,
+      pointsToNextLevel: levelState.pointsToNextLevel,
       progressToNextLevelPercent: levelState.progressToNextLevelPercent,
+      isCompleted: levelState.isCompleted,
       currentStreakDays: progression.currentStreakDays,
       longestStreakDays: progression.longestStreakDays,
       badges,
       recentPointEvents,
-      ...(includeHidden
-        ? { currentHiddenSubLevel: progression.currentHiddenSubLevel }
+      ...(includeCatalogMetadata
+        ? {
+            currentLevelDefinition: levelState.current,
+            nextLevelDefinition: levelState.next,
+            completionTargetPoints: SPIRITUAL_PROGRESSION_COMPLETION_POINTS,
+          }
         : {}),
     };
   }
 
-  async recordPrayerLog(log: any) {
-    if (log.status !== PrayerStatus.DONE) {
-      await this.reverseEventsForSource(
-        log.userId,
-        HasanatSourceType.PRAYER,
-        log.id,
-        log.prayerDate,
-      );
-      return;
+  async recordPrayerLog(log: PrayerLogModel) {
+    const completed =
+      log.status === PrayerStatus.DONE || log.status === PrayerStatus.LATE;
+    let points = 0;
+    let qualifiedRuleKey: string | null = null;
+    const isSupererogatory =
+      log.isSupererogatory || log.prayerName === PrayerName.TAHAJJUD;
+
+    if (completed && isSupererogatory) {
+      points = calculateSupererogatoryPrayerPoints(log.rakaat);
+      if (points > 0) {
+        qualifiedRuleKey = HASANAT_ACTION_RULES.SUPEREROGATORY_PRAYER_RAKAH.key;
+      }
+    } else if (completed) {
+      const wasOnTime =
+        log.status === PrayerStatus.DONE && Boolean(log.wasOnTime);
+      points = calculateObligatoryPrayerPoints(wasOnTime);
+      qualifiedRuleKey = wasOnTime
+        ? HASANAT_ACTION_RULES.PRAYER_ON_TIME_FARD.key
+        : HASANAT_ACTION_RULES.PRAYER_LATE_FARD.key;
     }
 
-    const candidates: Array<
-      (typeof HASANAT_ACTION_RULES)[keyof typeof HASANAT_ACTION_RULES]
-    > = [];
-    if (
-      log.isSupererogatory &&
-      String(log.prayerName).toUpperCase() === PrayerName.TAHAJJUD
-    ) {
-      candidates.push(HASANAT_ACTION_RULES.TAHAJJUD);
-    }
-    if (log.wasOnTime)
-      candidates.push(HASANAT_ACTION_RULES.PRAYER_ON_TIME_FARD);
-    if (log.prayerMode === PrayerMode.GROUP_PHYSICAL)
-      candidates.push(HASANAT_ACTION_RULES.PRAYER_GROUP);
-    if (log.prayedAtMosque) candidates.push(HASANAT_ACTION_RULES.PRAYER_MOSQUE);
-
-    const best = candidates.sort((a, b) => b.points - a.points)[0];
-    if (!best) return;
-
-    // MVP rule: prayer rewards use the single highest applicable score per prayer
-    // to avoid double counting on-time, group, and mosque attributes.
-    await this.upsertPointEvent({
+    await this.setSourcePointContribution({
       userId: log.userId,
       sourceType: HasanatSourceType.PRAYER,
       sourceId: log.id,
-      actionKey: best.key,
-      points: best.points,
+      actionKey: this.contributionActionKey(HasanatSourceType.PRAYER),
+      points,
       eventDate: log.prayerDate,
       metadata: {
+        qualifiedRuleKey,
         prayerName: log.prayerName,
         prayerMode: log.prayerMode,
         wasOnTime: log.wasOnTime,
         prayedAtMosque: log.prayedAtMosque,
+        isSupererogatory,
+        rakaat: log.rakaat ?? null,
       },
     });
   }
 
-  async recordQuranReadingLog(log: any) {
-    const pages = Number(log.pagesCount ?? 0);
-    const points =
-      pages * HASANAT_ACTION_RULES.QURAN_PAGE.points +
-      (log.objectiveReached
-        ? HASANAT_ACTION_RULES.QURAN_OBJECTIVE_REACHED.points
-        : 0);
-
-    if (points <= 0) {
-      await this.reverseEventsForSource(
-        log.userId,
-        HasanatSourceType.QURAN_READING,
-        log.id,
-        log.readingDate,
-      );
-      return;
-    }
-
-    await this.upsertPointEvent({
+  async setAdditionalPrayerReward(log: AdditionalPrayerRewardInput) {
+    await this.setSourcePointContribution({
       userId: log.userId,
-      sourceType: HasanatSourceType.QURAN_READING,
-      sourceId: log.id,
-      actionKey: 'QURAN_READING_LOG',
-      points,
-      eventDate: log.readingDate,
-      metadata: { pagesCount: pages, objectiveReached: log.objectiveReached },
+      sourceType: HasanatSourceType.PRAYER,
+      sourceId: null,
+      actionKey: `additional_prayer:${log.prayerTime}:${log.userId}:${log.prayerDate}`,
+      points: calculateSupererogatoryPrayerPoints(log.rakaat),
+      eventDate: log.prayerDate,
+      metadata: {
+        qualifiedRuleKey: HASANAT_ACTION_RULES.SUPEREROGATORY_PRAYER_RAKAH.key,
+        prayerTime: log.prayerTime,
+        rakaat: log.rakaat,
+        rewardType: 'additional_prayer',
+      },
     });
   }
 
-  async recordDhikrLog(log: any) {
-    if (!log.completed && Number(log.counter ?? 0) < 100) {
-      await this.reverseEventsForSource(
-        log.userId,
-        HasanatSourceType.DHIKR,
-        log.id,
-        log.dhikrDate,
-      );
-      return;
+  async recordQuranReadingLog(log: QuranReadingLogModel) {
+    const pages = Number(log.pagesCount ?? 0);
+    const hizb = Number(log.hizbCount ?? 0);
+    const points = calculateQuranReadingPoints({
+      pagesCount: pages,
+      hizbCount: hizb,
+    });
+
+    await this.setSourcePointContribution({
+      userId: log.userId,
+      sourceType: HasanatSourceType.QURAN_READING,
+      sourceId: log.id,
+      actionKey: this.contributionActionKey(HasanatSourceType.QURAN_READING),
+      points,
+      eventDate: log.readingDate,
+      metadata: {
+        pagesCount: pages,
+        hizbCount: hizb,
+        rewardedUnit: pages > 0 ? 'page' : hizb > 0 ? 'hizb' : null,
+        objectiveReached: log.objectiveReached,
+      },
+    });
+  }
+
+  async recordDhikrLog(log: DhikrLogModel) {
+    let points = 0;
+    let qualifiedRuleKey: string | null = null;
+
+    if (log.completed && log.sessionType === DhikrSessionType.MORNING_ADHKAR) {
+      points = HASANAT_ACTION_RULES.MORNING_ADHKAR_COMPLETED.points;
+      qualifiedRuleKey = HASANAT_ACTION_RULES.MORNING_ADHKAR_COMPLETED.key;
+    } else if (
+      log.completed &&
+      log.sessionType === DhikrSessionType.EVENING_ADHKAR
+    ) {
+      points = HASANAT_ACTION_RULES.EVENING_ADHKAR_COMPLETED.points;
+      qualifiedRuleKey = HASANAT_ACTION_RULES.EVENING_ADHKAR_COMPLETED.key;
     }
 
-    const sessionType = String(log.sessionType ?? '').toUpperCase();
-    const period = log.period;
-    let rule:
-      | (typeof HASANAT_ACTION_RULES)[keyof typeof HASANAT_ACTION_RULES]
-      | undefined;
-
-    if (log.completed && sessionType === 'MORNING_ADHKAR')
-      rule = HASANAT_ACTION_RULES.MORNING_ADHKAR_COMPLETED;
-    else if (log.completed && sessionType === 'EVENING_ADHKAR')
-      rule = HASANAT_ACTION_RULES.EVENING_ADHKAR_COMPLETED;
-    else if (Number(log.counter ?? 0) >= 100 && period === DhikrPeriod.MORNING)
-      rule = HASANAT_ACTION_RULES.TASBIH_100_MORNING;
-    else if (Number(log.counter ?? 0) >= 100 && period === DhikrPeriod.EVENING)
-      rule = HASANAT_ACTION_RULES.TASBIH_100_EVENING;
-
-    if (!rule) return;
-
-    await this.upsertPointEvent({
+    await this.setSourcePointContribution({
       userId: log.userId,
       sourceType: HasanatSourceType.DHIKR,
       sourceId: log.id,
-      actionKey: rule.key,
-      points: rule.points,
+      actionKey: this.contributionActionKey(HasanatSourceType.DHIKR),
+      points,
       eventDate: log.dhikrDate,
       metadata: {
+        qualifiedRuleKey,
         period: log.period,
         counter: log.counter,
         sessionType: log.sessionType,
@@ -214,61 +228,41 @@ export class ProgressionService {
     });
   }
 
-  async recordFastingLog(log: any) {
-    if (log.status !== FastingStatus.FASTED) {
-      await this.reverseEventsForSource(
-        log.userId,
-        HasanatSourceType.FASTING,
-        log.id,
-        log.fastingDate,
-      );
-      return;
-    }
+  async recordFastingLog(log: FastingLogModel) {
+    const points =
+      log.status === FastingStatus.FASTED
+        ? HASANAT_ACTION_RULES.FASTING_COMPLETED.points
+        : 0;
 
-    await this.upsertPointEvent({
+    await this.setSourcePointContribution({
       userId: log.userId,
       sourceType: HasanatSourceType.FASTING,
       sourceId: log.id,
-      actionKey: HASANAT_ACTION_RULES.FASTING_COMPLETED.key,
-      points: HASANAT_ACTION_RULES.FASTING_COMPLETED.points,
+      actionKey: this.contributionActionKey(HasanatSourceType.FASTING),
+      points,
       eventDate: log.fastingDate,
-      metadata: { fastingType: log.fastingType },
-    });
-  }
-
-  async recordCharityLog(log: any) {
-    await this.upsertPointEvent({
-      userId: log.userId,
-      sourceType: HasanatSourceType.CHARITY,
-      sourceId: log.id,
-      actionKey: HASANAT_ACTION_RULES.CHARITY_ACTION_COMPLETED.key,
-      points: HASANAT_ACTION_RULES.CHARITY_ACTION_COMPLETED.points,
-      eventDate: log.charityDate,
       metadata: {
-        actionType: log.actionType,
-        amount: log.amount,
-        currency: log.currency,
+        qualifiedRuleKey:
+          points > 0 ? HASANAT_ACTION_RULES.FASTING_COMPLETED.key : null,
+        fastingType: log.fastingType,
+        status: log.status,
       },
     });
   }
 
-  async setAdditionalPrayerReward(input: {
-    userId: string;
-    prayerDate: string;
-    prayerTime: string;
-    eligible: boolean;
-  }) {
-    const time = String(input.prayerTime).toUpperCase();
-    await this.upsertPointEvent({
-      userId: input.userId,
-      sourceType: HasanatSourceType.PRAYER,
-      sourceId: null,
-      actionKey: `additional_prayer:${time}:${input.userId}:${input.prayerDate}`,
-      points: input.eligible ? 40 : 0,
-      eventDate: input.prayerDate,
+  async recordCharityLog(log: CharityLogModel) {
+    await this.setSourcePointContribution({
+      userId: log.userId,
+      sourceType: HasanatSourceType.CHARITY,
+      sourceId: log.id,
+      actionKey: this.contributionActionKey(HasanatSourceType.CHARITY),
+      points: HASANAT_ACTION_RULES.CHARITY_ACTION_COMPLETED.points,
+      eventDate: log.charityDate,
       metadata: {
-        prayerTime: time,
-        rewardType: 'additional_prayer',
+        qualifiedRuleKey: HASANAT_ACTION_RULES.CHARITY_ACTION_COMPLETED.key,
+        actionType: log.actionType,
+        amount: log.amount,
+        currency: log.currency,
       },
     });
   }
@@ -279,7 +273,15 @@ export class ProgressionService {
     sourceId: string,
     eventDate: string,
   ) {
-    await this.reverseEventsForSource(userId, sourceType, sourceId, eventDate);
+    await this.setSourcePointContribution({
+      userId,
+      sourceType,
+      sourceId,
+      actionKey: this.contributionActionKey(sourceType),
+      points: 0,
+      eventDate,
+      metadata: { removed: true },
+    });
   }
 
   async getEventsForDate(userId: string, date: string) {
@@ -298,67 +300,114 @@ export class ProgressionService {
       .getMany();
   }
 
-  private async upsertPointEvent(input: PointInput) {
-    const existing = await this.events
-      .createQueryBuilder('event')
-      .where('event.userId = :userId', { userId: input.userId })
-      .andWhere('event.sourceType = :sourceType', {
+  private async setSourcePointContribution(input: PointInput) {
+    const allSourceEvents = await this.events.find({
+      where: {
+        userId: input.userId,
         sourceType: input.sourceType,
-      })
-      .andWhere(
-        input.sourceId
-          ? 'event.sourceId = :sourceId'
-          : 'event.sourceId IS NULL',
-        { sourceId: input.sourceId },
+        sourceId: input.sourceId ?? IsNull(),
+      },
+    });
+    const reversalActionKey = `${input.actionKey}_REVERSAL`;
+    const sourceEvents =
+      input.sourceId === null
+        ? allSourceEvents.filter(
+            (event) =>
+              event.actionKey === input.actionKey ||
+              event.actionKey === reversalActionKey,
+          )
+        : allSourceEvents;
+    const contributionEvent = sourceEvents.find(
+      (event) => event.actionKey === input.actionKey,
+    );
+    const reversalEvent = sourceEvents.find(
+      (event) => event.actionKey === reversalActionKey,
+    );
+    const priorPoints = sourceEvents
+      .filter(
+        (event) =>
+          event.id !== contributionEvent?.id && event.id !== reversalEvent?.id,
       )
-      .andWhere('event.actionKey = :actionKey', { actionKey: input.actionKey })
-      .getOne();
+      .reduce((sum, event) => sum + event.points, 0);
 
-    if (existing) {
-      const delta = input.points - existing.points;
-      if (delta === 0) return existing;
+    if (
+      input.points === 0 &&
+      !contributionEvent &&
+      !reversalEvent &&
+      priorPoints === 0
+    ) {
+      return;
+    }
 
-      existing.points = input.points;
-      existing.eventDate = input.eventDate;
-      existing.metadata = input.metadata ?? {};
-      const saved = await this.events.save(existing);
+    if (input.points > 0) {
+      const reconciledPoints = input.points - priorPoints;
+      const event = contributionEvent
+        ? Object.assign(contributionEvent, {
+            points: reconciledPoints,
+            eventDate: input.eventDate,
+            metadata: {
+              ...input.metadata,
+              targetContribution: input.points,
+              reconcilesPriorPoints: priorPoints,
+            },
+          })
+        : this.events.create({
+            ...input,
+            points: reconciledPoints,
+            metadata: {
+              ...input.metadata,
+              targetContribution: input.points,
+              reconcilesPriorPoints: priorPoints,
+            },
+          });
+      const saved = await this.events.save(event);
+
+      if (reversalEvent) {
+        reversalEvent.points = 0;
+        reversalEvent.eventDate = input.eventDate;
+        reversalEvent.metadata = {
+          reactivated: true,
+          contributionActionKey: input.actionKey,
+        };
+        await this.events.save(reversalEvent);
+      }
+
       await this.recalculateProgression(input.userId);
       return saved;
     }
 
-    const saved = await this.events.save(this.events.create(input));
+    if (contributionEvent) {
+      contributionEvent.eventDate = input.eventDate;
+      await this.events.save(contributionEvent);
+    }
+    const pointsBeforeReversal = priorPoints + (contributionEvent?.points ?? 0);
+    const event = reversalEvent
+      ? Object.assign(reversalEvent, {
+          points: -pointsBeforeReversal,
+          eventDate: input.eventDate,
+          metadata: {
+            ...input.metadata,
+            contributionActionKey: input.actionKey,
+            reconcilesPriorPoints: priorPoints,
+          },
+        })
+      : this.events.create({
+          userId: input.userId,
+          sourceType: input.sourceType,
+          sourceId: input.sourceId,
+          actionKey: reversalActionKey,
+          points: -pointsBeforeReversal,
+          eventDate: input.eventDate,
+          metadata: {
+            ...input.metadata,
+            contributionActionKey: input.actionKey,
+            reconcilesPriorPoints: priorPoints,
+          },
+        });
+
+    const saved = await this.events.save(event);
     await this.recalculateProgression(input.userId);
     return saved;
-  }
-
-  private async reverseEventsForSource(
-    userId: string,
-    sourceType: HasanatSourceType,
-    sourceId: string,
-    eventDate: string,
-  ) {
-    const activeEvents = await this.events.find({
-      where: { userId, sourceType, sourceId },
-    });
-    for (const event of activeEvents.filter((item) => item.points > 0)) {
-      const reversalKey = `${event.actionKey}_REVERSAL`;
-      const existingReversal = activeEvents.find(
-        (item) => item.actionKey === reversalKey,
-      );
-      if (existingReversal) continue;
-      await this.events.save(
-        this.events.create({
-          userId,
-          sourceType,
-          sourceId,
-          actionKey: reversalKey,
-          points: -event.points,
-          eventDate,
-          metadata: { reversedEventId: event.id },
-        }),
-      );
-    }
-    if (activeEvents.length) await this.recalculateProgression(userId);
   }
 
   private async recalculateProgression(userId: string) {
@@ -370,18 +419,11 @@ export class ProgressionService {
       .getRawOne<{ total: string }>();
     const totalHasanat = Math.max(0, Number(result?.total ?? 0));
     const streak = await this.calculateStreak(userId);
-    const visibleLevel = this.getLevelForPoints(totalHasanat);
+    const visibleLevel =
+      calculateSpiritualLevelProgress(totalHasanat).current.level;
 
     progression.totalHasanat = totalHasanat;
-    progression.currentVisibleLevel = this.nonRegressingLevel(
-      progression.currentVisibleLevel,
-      visibleLevel,
-    );
-    progression.currentHiddenSubLevel = await this.calculateHiddenSubLevel(
-      userId,
-      totalHasanat,
-      streak.currentStreakDays,
-    );
+    progression.currentVisibleLevel = visibleLevel;
     progression.currentStreakDays = streak.currentStreakDays;
     progression.longestStreakDays = Math.max(
       progression.longestStreakDays,
@@ -396,11 +438,12 @@ export class ProgressionService {
     const rows = await this.events
       .createQueryBuilder('event')
       .select('event.eventDate', 'date')
+      .addSelect('SUM(event.points)', 'total')
       .where('event.userId = :userId', { userId })
-      .andWhere('event.points > 0')
       .groupBy('event.eventDate')
+      .having('SUM(event.points) > 0')
       .orderBy('event.eventDate', 'DESC')
-      .getRawMany<{ date: string }>();
+      .getRawMany<{ date: string; total: string }>();
 
     const dates = rows
       .map((row) => toSafeDateOnly(row.date))
@@ -445,88 +488,23 @@ export class ProgressionService {
           metadata: { streakDays: days },
         }),
       );
-
-      if (badgeKey === BadgeKey.STREAK_7) {
-        await this.upsertPointEvent({
-          userId,
-          sourceType: HasanatSourceType.STREAK_BONUS,
-          sourceId: null,
-          actionKey: HASANAT_ACTION_RULES.STREAK_7_BONUS.key,
-          points: HASANAT_ACTION_RULES.STREAK_7_BONUS.points,
-          eventDate: new Date().toISOString().slice(0, 10),
-          metadata: { badgeKey },
-        });
-      }
     }
   }
 
-  private getLevelForPoints(points: number) {
-    return [...SPIRITUAL_LEVEL_THRESHOLDS]
-      .reverse()
-      .find((level) => points >= level.minPoints)!.level;
-  }
-
-  private nonRegressingLevel(current: SpiritualLevel, next: SpiritualLevel) {
-    const currentIndex = SPIRITUAL_LEVEL_THRESHOLDS.findIndex(
-      (level) => level.level === current,
-    );
-    const nextIndex = SPIRITUAL_LEVEL_THRESHOLDS.findIndex(
-      (level) => level.level === next,
-    );
-    return nextIndex >= currentIndex ? next : current;
-  }
-
-  private getLevelState(points: number) {
-    const current =
-      [...SPIRITUAL_LEVEL_THRESHOLDS]
-        .reverse()
-        .find((level) => points >= level.minPoints) ??
-      SPIRITUAL_LEVEL_THRESHOLDS[0];
-    const currentIndex = SPIRITUAL_LEVEL_THRESHOLDS.findIndex(
-      (level) => level.level === current.level,
-    );
-    const next = SPIRITUAL_LEVEL_THRESHOLDS[currentIndex + 1];
-    const progressToNextLevelPercent = next
-      ? Math.min(
-          100,
-          Math.round(
-            ((points - current.minPoints) /
-              (next.minPoints - current.minPoints)) *
-              100,
-          ),
-        )
-      : 100;
-
-    return { current, next, progressToNextLevelPercent };
-  }
-
-  private async calculateHiddenSubLevel(
-    userId: string,
-    totalHasanat: number,
-    currentStreakDays: number,
-  ) {
-    const accountAgeScore = 5;
-    const varietyRows = await this.events
-      .createQueryBuilder('event')
-      .select('COUNT(DISTINCT event.sourceType)', 'count')
-      .where('event.userId = :userId', { userId })
-      .andWhere('event.points > 0')
-      .getRawOne<{ count: string }>();
-    const varietyScore = Number(varietyRows?.count ?? 0) * 4;
-    const regularityScore = Math.min(30, currentStreakDays * 2);
-    const hasanatScore = Math.min(60, Math.floor(totalHasanat / 200));
-
-    // Deterministic v1 formula: total points provide the base, then regularity,
-    // variety, and account age add small bonuses. It is intentionally simple and
-    // private so future CDC tuning can replace it without changing public APIs.
-    return this.clamp(
-      1,
-      100,
-      hasanatScore + regularityScore + varietyScore + accountAgeScore,
-    );
-  }
-
-  private clamp(min: number, max: number, value: number) {
-    return Math.max(min, Math.min(max, value));
+  private contributionActionKey(sourceType: HasanatSourceType) {
+    switch (sourceType) {
+      case HasanatSourceType.PRAYER:
+        return 'PRAYER_LOG_CONTRIBUTION';
+      case HasanatSourceType.QURAN_READING:
+        return 'QURAN_READING_LOG';
+      case HasanatSourceType.DHIKR:
+        return 'DHIKR_LOG_CONTRIBUTION';
+      case HasanatSourceType.FASTING:
+        return HASANAT_ACTION_RULES.FASTING_COMPLETED.key;
+      case HasanatSourceType.CHARITY:
+        return HASANAT_ACTION_RULES.CHARITY_ACTION_COMPLETED.key;
+      default:
+        return `${sourceType}_LOG_CONTRIBUTION`;
+    }
   }
 }

@@ -30,6 +30,7 @@ export class PrayerLogTypeormEntity {
   @Column({ type: 'enum', enum: PrayerMode, nullable: true })
   prayerMode: PrayerMode | null;
   @Column({ default: false }) isSupererogatory: boolean;
+  @Column({ type: 'integer', nullable: true }) rakaat: number | null;
   @Column({ default: false }) prayedAtMosque: boolean;
   @Column({ type: 'text', nullable: true }) notes: string | null;
 }

@@ -27,6 +27,11 @@ export class CreatePrayerLogRequestDto {
   @IsEnum(PrayerMode)
   prayerMode?: PrayerMode;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isSupererogatory?: boolean;
+  @ApiPropertyOptional({ minimum: 1 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  rakaat?: number;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() prayedAtMosque?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() notes?: string;
 }

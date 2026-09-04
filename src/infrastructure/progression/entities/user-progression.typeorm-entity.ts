@@ -21,14 +21,11 @@ export class UserProgressionTypeormEntity {
   totalHasanat: number;
 
   @Column({
-    type: 'enum',
-    enum: SpiritualLevel,
-    default: SpiritualLevel.MURID,
+    type: 'varchar',
+    length: 100,
+    default: SpiritualLevel.EVEIL_SERVITEUR_D_ALLAH,
   })
   currentVisibleLevel: SpiritualLevel;
-
-  @Column({ default: 1 })
-  currentHiddenSubLevel: number;
 
   @Column({ default: 0 })
   currentStreakDays: number;

@@ -150,20 +150,19 @@ export class PrayersUsecasesProxyService {
     prayerDate: string,
     prayerTime: AdditionalPrayerTime,
   ) {
-    const minRakaat = prayerTime === AdditionalPrayerTime.DAY ? 2 : 1;
-    const eligibleCount = await this.additionalLogs
+    const result = await this.additionalLogs
       .createQueryBuilder('log')
+      .select('COALESCE(SUM(log.rakaat), 0)', 'total')
       .where('log.userId = :userId', { userId })
       .andWhere('log.prayerDate = :prayerDate', { prayerDate })
       .andWhere('log.prayerTime = :prayerTime', { prayerTime })
-      .andWhere('log.rakaat >= :minRakaat', { minRakaat })
-      .getCount();
+      .getRawOne<{ total: string }>();
 
     await this.progression.setAdditionalPrayerReward({
       userId,
       prayerDate,
       prayerTime,
-      eligible: eligibleCount > 0,
+      rakaat: Number(result?.total ?? 0),
     });
   }
 

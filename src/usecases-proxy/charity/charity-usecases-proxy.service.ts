@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
 import { CharityTypeormAdapter } from '../../infrastructure/charity/adapters/charity-typeorm.adapter';
 import { CreateCharityLogUsecase } from '../../usecases/charity/create-charity-log.usecase';
 import { DeleteCharityLogUsecase } from '../../usecases/charity/delete-charity-log.usecase';
@@ -38,8 +39,21 @@ export class CharityUsecasesProxyService {
     await this.progression.recordCharityLog(log);
     return log;
   }
-  deleteLog(userId: string, id: string) {
-    return new DeleteCharityLogUsecase(this.persistence).execute(userId, id);
+  async deleteLog(userId: string, id: string) {
+    const existing = await this.persistence.findById(id);
+    if (!existing || existing.userId !== userId)
+      throw new Error('Record not found');
+    const result = await new DeleteCharityLogUsecase(this.persistence).execute(
+      userId,
+      id,
+    );
+    await this.progression.reverseEventsForLog(
+      userId,
+      HasanatSourceType.CHARITY,
+      id,
+      existing.charityDate,
+    );
+    return result;
   }
   summary(userId: string, period: string) {
     return new GetCharitySummaryUsecase(this.persistence).execute(

@@ -21,7 +21,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Build NestJS app
         run: npm run build
@@ -44,6 +44,7 @@ jobs:
           fi
 
           mkdir -p ~/.ssh
+
           echo "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail_key
           chmod 600 ~/.ssh/lightsail_key
 
@@ -54,7 +55,11 @@ jobs:
           LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
         run: |
-          ssh -i ~/.ssh/lightsail_key \
+          ssh \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            -o TCPKeepAlive=yes \
+            -i ~/.ssh/lightsail_key \
             "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
             "echo SSH OK && hostname && whoami"
 
@@ -64,7 +69,11 @@ jobs:
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          ssh -i ~/.ssh/lightsail_key \
+          ssh \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            -o TCPKeepAlive=yes \
+            -i ~/.ssh/lightsail_key \
             "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
             "mkdir -p '$DEPLOY_PATH'"
 
@@ -75,7 +84,11 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/lightsail_key" \
+            -e "ssh \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              -i ~/.ssh/lightsail_key" \
             dist/ \
             "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/dist/"
 
@@ -86,7 +99,11 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           rsync -az \
-            -e "ssh -i ~/.ssh/lightsail_key" \
+            -e "ssh \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=10 \
+              -o TCPKeepAlive=yes \
+              -i ~/.ssh/lightsail_key" \
             package.json package-lock.json \
             "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/"
 
@@ -96,12 +113,19 @@ jobs:
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          ssh -i ~/.ssh/lightsail_key \
+          ssh \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=10 \
+            -o TCPKeepAlive=yes \
+            -i ~/.ssh/lightsail_key \
             "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
             "DEPLOY_PATH='$DEPLOY_PATH' bash -s" << 'EOF'
+
               set -e
 
+              echo "========================================"
               echo "Loading Node environment..."
+              echo "========================================"
 
               export NVM_DIR="$HOME/.nvm"
 
@@ -112,7 +136,10 @@ jobs:
 
               export PATH="$HOME/.nvm/versions/node/v18.13.0/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
+              echo ""
+              echo "========================================"
               echo "Checking server tools..."
+              echo "========================================"
 
               command -v node || {
                 echo "ERROR: node not found in non-interactive SSH session"
@@ -120,6 +147,7 @@ jobs:
                 exit 1
               }
 
+              echo "Node:"
               node -v
 
               command -v npm || {
@@ -128,30 +156,76 @@ jobs:
                 exit 1
               }
 
+              echo "NPM:"
               npm -v
 
               command -v pm2 || {
-                echo "ERROR: pm2 not found. Installing pm2 locally for this Node version..."
-                npm install -g pm2
+                echo "PM2 not found."
+                echo "Installing PM2..."
+                npm install -g pm2 --no-audit --no-fund
               }
 
+              echo "PM2:"
               pm2 -v
 
+              echo ""
+              echo "========================================"
               echo "Go to deploy folder..."
+              echo "========================================"
+
               cd "$DEPLOY_PATH"
 
+              echo "Deploy path:"
+              pwd
+
+              echo ""
               echo "Files in deploy folder:"
               ls -la
 
+              echo ""
+              echo "========================================"
               echo "Install production dependencies..."
-              npm ci --omit=dev
+              echo "========================================"
 
+              npm ci \
+                --omit=dev \
+                --no-audit \
+                --no-fund
+
+              echo ""
+              echo "========================================"
               echo "Restart PM2 app..."
-              if pm2 describe nourapp-api > /dev/null; then
+              echo "========================================"
+
+              if pm2 describe nourapp-api > /dev/null 2>&1; then
+                echo "Existing PM2 application found."
+                echo "Reloading nourapp-api..."
+
                 pm2 reload nourapp-api --update-env
               else
-                pm2 start dist/main.js --name nourapp-api --update-env
+                echo "PM2 application does not exist."
+                echo "Starting nourapp-api..."
+
+                pm2 start dist/main.js \
+                  --name nourapp-api \
+                  --update-env
               fi
 
+              echo ""
+              echo "Saving PM2 configuration..."
+
               pm2 save
+
+              echo ""
+              echo "========================================"
+              echo "PM2 status"
+              echo "========================================"
+
+              pm2 status
+
+              echo ""
+              echo "========================================"
+              echo "Deployment completed successfully"
+              echo "========================================"
+
           EOF

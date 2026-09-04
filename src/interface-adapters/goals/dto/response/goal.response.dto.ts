@@ -17,8 +17,8 @@ export class GoalResponseDto {
   @ApiProperty()
   title: string;
 
-  @ApiPropertyOptional()
-  description?: string;
+  @ApiPropertyOptional({ nullable: true })
+  description?: string | null;
 
   @ApiProperty()
   goalType: string;

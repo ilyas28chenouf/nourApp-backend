@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CalendarPeriod } from '../../../../common-utils/dates/calendar-period.util';
 import { GoalCategory } from '../../../../domain/goals/enums/goal-category.enum';
+import { GoalFrequency } from '../../../../domain/goals/enums/goal-frequency.enum';
 
 export class GoalEvaluationResponseDto {
   @ApiProperty()
@@ -14,6 +15,9 @@ export class GoalEvaluationResponseDto {
 
   @ApiPropertyOptional()
   title?: string;
+
+  @ApiPropertyOptional({ enum: GoalFrequency })
+  frequency?: GoalFrequency;
 
   @ApiProperty()
   from: string;

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PrayerName } from '../../../../domain/prayers/enums/prayer-name.enum';
 
 export class PrayerLogResponseDto {
   @ApiProperty()
@@ -10,8 +11,8 @@ export class PrayerLogResponseDto {
   @ApiProperty()
   prayerDate: string;
 
-  @ApiProperty()
-  prayerName: string;
+  @ApiProperty({ enum: PrayerName })
+  prayerName: PrayerName;
 
   @ApiProperty()
   status: string;

@@ -4,5 +4,6 @@ export enum PrayerName {
   ASR = 'ASR',
   MAGHRIB = 'MAGHRIB',
   ISHA = 'ISHA',
+  JUMUAH = 'JUMUAH',
   TAHAJJUD = 'TAHAJJUD',
 }

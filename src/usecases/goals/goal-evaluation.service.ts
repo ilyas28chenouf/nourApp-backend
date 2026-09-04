@@ -1,9 +1,11 @@
 import { DateTime } from 'luxon';
 import {
+  diffDateOnlyInDays,
   eachDateOnlyBetween,
-  isDateOnlyInRange,
+  toSafeDateOnly,
 } from '../../common-utils/dates/date-format.util';
 import {
+  APPROVED_SUNNAH_FASTING_TYPES,
   findGoalCatalogDefinition,
   RECOMMENDED_SURAH_NUMBERS,
 } from '../../domain/goals/constants/goal-catalog';
@@ -24,6 +26,14 @@ import { DhikrPeriod } from '../../domain/dhikr/enums/dhikr-period.enum';
 import { DhikrSessionType } from '../../domain/dhikr/enums/dhikr-session-type.enum';
 import { FastingStatus } from '../../domain/fasting/enums/fasting-status.enum';
 import { FastingType } from '../../domain/fasting/enums/fasting-type.enum';
+
+const OBLIGATORY_PRAYER_NAMES = new Set<PrayerName>([
+  PrayerName.FAJR,
+  PrayerName.DHUHR,
+  PrayerName.ASR,
+  PrayerName.MAGHRIB,
+  PrayerName.ISHA,
+]);
 
 export interface GoalEvaluationResult {
   goalId: string;
@@ -139,7 +149,7 @@ export class GoalEvaluationService {
           goal,
           effectiveFrom,
           effectiveTo,
-          this.standardPrayerCount(prayers),
+          this.completedObligatoryPrayerCount(prayers),
           days.length * 5,
         );
       case 'PRAYER_TWO_ON_TIME_DAILY':
@@ -151,9 +161,12 @@ export class GoalEvaluationService {
             (total, date) =>
               total +
               Math.min(
-                this.standardPrayerCount(
+                this.completedObligatoryPrayerCount(
                   prayers.filter(
-                    (item) => item.prayerDate === date && item.wasOnTime,
+                    (item) =>
+                      item.prayerDate === date &&
+                      item.status === PrayerStatus.DONE &&
+                      item.wasOnTime,
                   ),
                 ),
                 2,
@@ -163,17 +176,24 @@ export class GoalEvaluationService {
           days.length * 2,
         );
       case 'PRAYER_ALL_ON_TIME_DAILY':
-        return this.booleanDays(
+        return this.result(
           goal,
           effectiveFrom,
           effectiveTo,
-          days,
-          (date) =>
-            this.standardPrayerCount(
-              prayers.filter(
-                (item) => item.prayerDate === date && item.wasOnTime,
+          days.reduce(
+            (total, date) =>
+              total +
+              this.completedObligatoryPrayerCount(
+                prayers.filter(
+                  (item) =>
+                    item.prayerDate === date &&
+                    item.status === PrayerStatus.DONE &&
+                    item.wasOnTime,
+                ),
               ),
-            ) >= 5,
+            0,
+          ),
+          days.length * 5,
         );
       case 'PRAYER_FAJR_ON_TIME':
         return this.booleanDays(
@@ -198,7 +218,6 @@ export class GoalEvaluationService {
           days,
           prayers,
           (item) =>
-            item.status === PrayerStatus.DONE &&
             [PrayerMode.GROUP_PHYSICAL, PrayerMode.GROUP_APP].includes(
               item.prayerMode as PrayerMode,
             ),
@@ -213,7 +232,7 @@ export class GoalEvaluationService {
           effectiveTo,
           days,
           prayers,
-          (item) => item.status === PrayerStatus.DONE && item.prayedAtMosque,
+          (item) => item.prayedAtMosque,
           definition.target,
         );
       case 'PRAYER_FRIDAY_MOSQUE': {
@@ -222,7 +241,7 @@ export class GoalEvaluationService {
           prayers.some(
             (item) =>
               item.prayerDate === date &&
-              item.prayerName === PrayerName.DHUHR &&
+              item.prayerName === PrayerName.JUMUAH &&
               item.status === PrayerStatus.DONE &&
               item.prayedAtMosque,
           ),
@@ -276,7 +295,8 @@ export class GoalEvaluationService {
             quran.some(
               (item) =>
                 item.readingDate === date &&
-                item.readingPeriod === ReadingPeriod.MORNING,
+                item.readingPeriod === ReadingPeriod.MORNING &&
+                this.isValidQuranReading(item),
             ),
         );
       case 'QURAN_EVENING':
@@ -289,7 +309,8 @@ export class GoalEvaluationService {
             quran.some(
               (item) =>
                 item.readingDate === date &&
-                item.readingPeriod === ReadingPeriod.EVENING,
+                item.readingPeriod === ReadingPeriod.EVENING &&
+                this.isValidQuranReading(item),
             ),
         );
       case 'QURAN_MORNING_EVENING':
@@ -302,7 +323,9 @@ export class GoalEvaluationService {
             [ReadingPeriod.MORNING, ReadingPeriod.EVENING].every((period) =>
               quran.some(
                 (item) =>
-                  item.readingDate === date && item.readingPeriod === period,
+                  item.readingDate === date &&
+                  item.readingPeriod === period &&
+                  this.isValidQuranReading(item),
               ),
             ),
         );
@@ -314,8 +337,10 @@ export class GoalEvaluationService {
           effectiveTo,
           days,
           (date) =>
-            quran.some((item) => item.readingDate === date) &&
-            memorizationDates.has(date),
+            quran.some(
+              (item) =>
+                item.readingDate === date && this.isValidQuranReading(item),
+            ) && memorizationDates.has(date),
         );
       }
       case 'QURAN_RECOMMENDED_SURAHS':
@@ -328,6 +353,7 @@ export class GoalEvaluationService {
             quran.some(
               (item) =>
                 item.readingDate === date &&
+                this.isValidQuranReading(item) &&
                 item.surahNumber !== null &&
                 item.surahNumber !== undefined &&
                 RECOMMENDED_SURAH_NUMBERS.includes(item.surahNumber),
@@ -416,63 +442,48 @@ export class GoalEvaluationService {
             ),
         );
       case 'FASTING_MONDAY':
-        return this.fastingRecommended(
+        return this.fastingWeekdays(
           goal,
-          evidence,
           fasting,
           effectiveFrom,
           effectiveTo,
-          [FastingType.MONDAY],
+          [1],
         );
       case 'FASTING_THURSDAY':
-        return this.fastingRecommended(
+        return this.fastingWeekdays(
           goal,
-          evidence,
           fasting,
           effectiveFrom,
           effectiveTo,
-          [FastingType.THURSDAY],
+          [4],
         );
       case 'FASTING_MONDAY_THURSDAY':
-        return this.fastingRecommended(
+        return this.fastingWeekdays(
           goal,
-          evidence,
           fasting,
           effectiveFrom,
           effectiveTo,
-          [FastingType.MONDAY, FastingType.THURSDAY],
+          [1, 4],
         );
       case 'FASTING_WHITE_DAYS':
-        return this.fastingRecommended(
+        return this.fastingWhiteDays(
           goal,
           evidence,
           fasting,
           effectiveFrom,
           effectiveTo,
-          [FastingType.WHITE_DAYS],
         );
       case 'FASTING_SUNNAH':
-        return this.fastingRecommended(
+        return this.fastingSunnah(
           goal,
           evidence,
           fasting,
           effectiveFrom,
           effectiveTo,
-          Object.values(FastingType).filter(
-            (type) => type !== FastingType.RAMADAN,
-          ),
         );
       case 'FASTING_DAOUD': {
         const cadenceDays = days.filter(
-          (date) =>
-            Math.abs(
-              DateTime.fromISO(date).diff(
-                DateTime.fromISO(goal.startDate),
-                'days',
-              ).days,
-            ) %
-              2 ===
-            0,
+          (date) => diffDateOnlyInDays(date, goal.startDate) % 2 === 0,
         );
         const actual = cadenceDays.filter((date) =>
           fasting.some(
@@ -507,20 +518,13 @@ export class GoalEvaluationService {
     }
   }
 
-  private standardPrayerCount(prayers: GoalEvidence['prayers']) {
-    const standardNames = new Set([
-      PrayerName.FAJR,
-      PrayerName.DHUHR,
-      PrayerName.ASR,
-      PrayerName.MAGHRIB,
-      PrayerName.ISHA,
-    ]);
+  private completedObligatoryPrayerCount(prayers: GoalEvidence['prayers']) {
     return new Set(
       prayers
         .filter(
           (item) =>
-            item.status === PrayerStatus.DONE &&
-            standardNames.has(item.prayerName),
+            [PrayerStatus.DONE, PrayerStatus.LATE].includes(item.status) &&
+            OBLIGATORY_PRAYER_NAMES.has(item.prayerName),
         )
         .map((item) => `${item.prayerDate}:${item.prayerName}`),
     ).size;
@@ -539,9 +543,11 @@ export class GoalEvaluationService {
       (total, date) =>
         total +
         Math.min(
-          prayers.filter(
-            (prayer) => prayer.prayerDate === date && predicate(prayer),
-          ).length,
+          this.completedObligatoryPrayerCount(
+            prayers.filter(
+              (prayer) => prayer.prayerDate === date && predicate(prayer),
+            ),
+          ),
           targetPerDay,
         ),
       0,
@@ -626,39 +632,98 @@ export class GoalEvaluationService {
       DhikrSessionType.TASBIH,
       DhikrSessionType.SALAWAT,
       DhikrSessionType.ISTIGHFAR,
-    ].every((sessionType) =>
-      dhikr.some(
-        (item) =>
-          item.dhikrDate === date &&
-          item.period === period &&
-          item.sessionType === sessionType &&
-          Number(item.counter) >= 100,
-      ),
+    ].every(
+      (sessionType) =>
+        dhikr
+          .filter(
+            (item) =>
+              item.dhikrDate === date &&
+              item.period === period &&
+              item.sessionType === sessionType,
+          )
+          .reduce((total, item) => total + Number(item.counter), 0) >= 100,
     );
   }
 
-  private fastingRecommended(
+  private fastingWeekdays(
     goal: GoalModel,
-    evidence: GoalEvidence,
     fasting: GoalEvidence['fasting'],
     from: string,
     to: string,
-    types: FastingType[],
+    weekdays: number[],
   ) {
-    const recommendations = evidence.recommendedFastingDays.filter(
-      (day) =>
-        isDateOnlyInRange(day.date, from, to) &&
-        day.type !== FastingType.RAMADAN &&
-        types.includes(day.type),
+    const requiredDates = eachDateOnlyBetween(from, to).filter((date) =>
+      weekdays.includes(this.weekday(date)),
     );
-    const dates = new Set(recommendations.map((day) => day.date));
-    const actual = [...dates].filter((date) =>
+    const actual = requiredDates.filter((date) =>
       fasting.some(
         (item) =>
           item.fastingDate === date && item.status === FastingStatus.FASTED,
       ),
     ).length;
-    return this.result(goal, from, to, actual, dates.size);
+    return this.result(goal, from, to, actual, requiredDates.length);
+  }
+
+  private fastingWhiteDays(
+    goal: GoalModel,
+    evidence: GoalEvidence,
+    fasting: GoalEvidence['fasting'],
+    from: string,
+    to: string,
+  ) {
+    const recommendedDates = new Set(
+      evidence.recommendedFastingDays
+        .filter((day) => day.type === FastingType.WHITE_DAYS)
+        .map((day) => day.date),
+    );
+    const completedDates = new Set(
+      fasting
+        .filter(
+          (item) =>
+            item.status === FastingStatus.FASTED &&
+            (item.fastingType === FastingType.WHITE_DAYS ||
+              recommendedDates.has(item.fastingDate)),
+        )
+        .map((item) => item.fastingDate),
+    );
+    const months = new Set(
+      eachDateOnlyBetween(from, to).map((date) => date.slice(0, 7)),
+    );
+    const actual = [...months].reduce(
+      (total, month) =>
+        total +
+        Math.min(
+          [...completedDates].filter((date) => date.startsWith(month)).length,
+          3,
+        ),
+      0,
+    );
+    return this.result(goal, from, to, actual, months.size * 3);
+  }
+
+  private fastingSunnah(
+    goal: GoalModel,
+    evidence: GoalEvidence,
+    fasting: GoalEvidence['fasting'],
+    from: string,
+    to: string,
+  ) {
+    const recommendedDates = new Set(
+      evidence.recommendedFastingDays
+        .filter((day) => APPROVED_SUNNAH_FASTING_TYPES.includes(day.type))
+        .map((day) => day.date),
+    );
+    const actual = new Set(
+      fasting
+        .filter(
+          (item) =>
+            item.status === FastingStatus.FASTED &&
+            (APPROVED_SUNNAH_FASTING_TYPES.includes(item.fastingType) ||
+              recommendedDates.has(item.fastingDate)),
+        )
+        .map((item) => item.fastingDate),
+    ).size;
+    return this.result(goal, from, to, actual, this.monthsInRange(from, to));
   }
 
   private memorizationDates(evidence: GoalEvidence) {
@@ -666,8 +731,17 @@ export class GoalEvaluationService {
       evidence.memorization
         .filter((item) => item.status !== QuranMemorizationStatus.NOT_STARTED)
         .map((item) => item.lastReviewedAt ?? item.updatedAt ?? item.createdAt)
-        .filter((date): date is Date => date instanceof Date)
-        .map((date) => date.toISOString().slice(0, 10)),
+        .map((date) => toSafeDateOnly(date))
+        .filter((date): date is string => date !== null),
+    );
+  }
+
+  private isValidQuranReading(item: GoalEvidence['quran'][number]) {
+    return (
+      Number(item.pagesCount) > 0 ||
+      Number(item.hizbCount) > 0 ||
+      Number(item.ayahFrom) > 0 ||
+      Number(item.ayahTo) > 0
     );
   }
 

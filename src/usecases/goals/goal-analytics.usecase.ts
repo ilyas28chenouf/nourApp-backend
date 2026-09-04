@@ -19,9 +19,17 @@ export class GoalAnalyticsUsecase {
   async execute(
     userId: string,
     goals: GoalModel[],
-    input: { category?: GoalCategory; period?: string; anchor?: string },
+    input: {
+      category?: GoalCategory;
+      period?: string;
+      anchor?: string;
+      timezone?: string | null;
+    },
   ) {
-    const range = resolveCalendarRange(input.period, input.anchor);
+    const range = resolveCalendarRange(
+      input.period,
+      input.anchor ?? this.today(input.timezone),
+    );
     const selectedGoals = goals.filter((goal) => {
       if (!goal.isActive || !goal.goalCode) return false;
       const definition = findGoalCatalogDefinition(goal.goalCode);
@@ -37,15 +45,12 @@ export class GoalAnalyticsUsecase {
       )
       .filter((item): item is GoalEvaluationResult => item !== null);
     const goalsResponse = evaluations.map((item) => {
-      const goal = selectedGoals.find(
-        (candidate) => candidate.id === item.goalId,
-      )!;
       const definition = findGoalCatalogDefinition(item.goalCode)!;
       return {
         ...item,
         category: definition.category,
-        title: goal.title,
-        frequency: goal.frequency,
+        title: definition.title,
+        frequency: definition.frequency,
       };
     });
 
@@ -74,9 +79,13 @@ export class GoalAnalyticsUsecase {
     };
   }
 
-  async evaluateCurrent(userId: string, goals: GoalModel[]) {
+  async evaluateCurrent(
+    userId: string,
+    goals: GoalModel[],
+    timezone?: string | null,
+  ) {
     const evidence = await this.evaluation.loadEvidence(userId);
-    const anchor = DateTime.utc();
+    const anchor = this.now(timezone);
     return goals.map((goal) => {
       if (!goal.goalCode) return null;
       const range = this.currentGoalRange(goal.frequency, anchor);
@@ -97,6 +106,15 @@ export class GoalAnalyticsUsecase {
       from: anchor.startOf(startUnit).toISODate()!,
       to: anchor.endOf(startUnit).toISODate()!,
     };
+  }
+
+  private today(timezone?: string | null) {
+    return this.now(timezone).toISODate();
+  }
+
+  private now(timezone?: string | null) {
+    const local = timezone ? DateTime.now().setZone(timezone) : DateTime.utc();
+    return local.isValid ? local : DateTime.utc();
   }
 
   private buckets(period: CalendarPeriod, from: string, to: string) {

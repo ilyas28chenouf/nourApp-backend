@@ -5,6 +5,7 @@ import {
 } from '../../domain/goals/constants/goal-catalog';
 import { GoalCategory } from '../../domain/goals/enums/goal-category.enum';
 import { GoalType } from '../../domain/goals/enums/goal-type.enum';
+import { GoalModel } from '../../domain/goals/model/goal.model';
 
 export class GoalCatalogUsecase {
   list(category?: GoalCategory) {
@@ -13,7 +14,10 @@ export class GoalCatalogUsecase {
       : [...GOAL_CATALOG];
   }
 
-  materialize(data: Record<string, any>) {
+  materialize(
+    data: Record<string, any>,
+    defaultStartDate = new Date().toISOString().slice(0, 10),
+  ) {
     if (!data.goalCode) return data;
     const definition = findGoalCatalogDefinition(String(data.goalCode));
     if (!definition) throw new BadRequestException('Unknown goalCode');
@@ -27,7 +31,23 @@ export class GoalCatalogUsecase {
       targetValue: definition.target,
       targetUnit: definition.targetUnit,
       frequency: definition.frequency,
-      startDate: data.startDate ?? new Date().toISOString().slice(0, 10),
+      startDate: data.startDate ?? defaultStartDate,
+    };
+  }
+
+  withCatalogDefinition<T extends GoalModel>(goal: T): T {
+    if (!goal.goalCode) return goal;
+    const definition = findGoalCatalogDefinition(goal.goalCode);
+    if (!definition) return goal;
+
+    return {
+      ...goal,
+      title: definition.title,
+      description: null,
+      goalType: this.toGoalType(definition.category),
+      targetValue: definition.target,
+      targetUnit: definition.targetUnit,
+      frequency: definition.frequency,
     };
   }
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { GroupMemberRole } from '../../domain/groups/enums/group-member-role.enum';
 import { GroupMemberStatus } from '../../domain/groups/enums/group-member-status.enum';
 import { GoalsTypeormAdapter } from '../../infrastructure/goals/adapters/goals-typeorm.adapter';
@@ -33,50 +34,79 @@ export class GoalsUsecasesProxyService {
     private readonly tafsir: TafsirTypeormAdapter,
   ) {}
 
-  async list(userId: string) {
-    const goals = await new GetGoalsUsecase(this.goals).execute(userId);
+  async list(userId: string, timezone?: string | null) {
+    const catalog = new GoalCatalogUsecase();
+    const goals = (await new GetGoalsUsecase(this.goals).execute(userId)).map(
+      (goal) => catalog.withCatalogDefinition(goal),
+    );
     const evaluations = await this.analyticsUsecase().evaluateCurrent(
       userId,
       goals,
+      timezone,
     );
     return goals.map((goal, index) => ({
       ...goal,
       automaticProgress: evaluations[index] ?? undefined,
     }));
   }
-  create(userId: string, data: any) {
-    return new CreateGoalUsecase(this.goals).execute(userId, data);
+  create(userId: string, data: any, timezone?: string | null) {
+    return new CreateGoalUsecase(this.goals).execute(
+      userId,
+      data,
+      this.today(timezone),
+    );
   }
   catalog(
     category?: import('../../domain/goals/enums/goal-category.enum').GoalCategory,
   ) {
     return new GoalCatalogUsecase().list(category);
   }
-  async createGroupGoal(userId: string, groupId: string, data: any) {
+  async createGroupGoal(
+    userId: string,
+    groupId: string,
+    data: any,
+    timezone?: string | null,
+  ) {
     await this.assertCanManageGroupGoals(userId, groupId);
-    const materialized = new GoalCatalogUsecase().materialize(data);
-    return this.goals.create({
+    const materialized = new GoalCatalogUsecase().materialize(
+      data,
+      this.today(timezone),
+    );
+    const goal = await this.goals.create({
       ...materialized,
       ownerUserId: userId,
       groupId,
       isGroupGoal: true,
       isActive: true,
     });
+    return new GoalCatalogUsecase().withCatalogDefinition(goal);
   }
   async listGroupGoals(userId: string, groupId: string) {
     await this.assertGroupMember(userId, groupId);
-    return this.goals.findByGroupId(groupId);
+    const goals = await this.goals.findByGroupId(groupId);
+    const catalog = new GoalCatalogUsecase();
+    return goals.map((goal) => catalog.withCatalogDefinition(goal));
   }
-  async get(userId: string, id: string) {
-    const goal = await new GetGoalByIdUsecase(this.goals).execute(userId, id);
+  async get(userId: string, id: string, timezone?: string | null) {
+    const storedGoal = await new GetGoalByIdUsecase(this.goals).execute(
+      userId,
+      id,
+    );
+    const goal = new GoalCatalogUsecase().withCatalogDefinition(storedGoal);
     const [automaticProgress] = await this.analyticsUsecase().evaluateCurrent(
       userId,
       [goal],
+      timezone,
     );
     return { ...goal, automaticProgress: automaticProgress ?? undefined };
   }
-  update(userId: string, id: string, data: any) {
-    return new UpdateGoalUsecase(this.goals).execute(userId, id, data);
+  async update(userId: string, id: string, data: any) {
+    const goal = await new UpdateGoalUsecase(this.goals).execute(
+      userId,
+      id,
+      data,
+    );
+    return new GoalCatalogUsecase().withCatalogDefinition(goal);
   }
   delete(userId: string, id: string) {
     return new DeleteGoalUsecase(this.goals).execute(userId, id);
@@ -98,9 +128,13 @@ export class GoalsUsecasesProxyService {
       category?: import('../../domain/goals/enums/goal-category.enum').GoalCategory;
       period?: string;
       anchor?: string;
+      timezone?: string | null;
     },
   ) {
-    const goals = await this.goals.findByOwnerUserId(userId);
+    const catalog = new GoalCatalogUsecase();
+    const goals = (await this.goals.findByOwnerUserId(userId)).map((goal) =>
+      catalog.withCatalogDefinition(goal),
+    );
     return this.analyticsUsecase().execute(userId, goals, input);
   }
 
@@ -115,6 +149,11 @@ export class GoalsUsecasesProxyService {
         this.tafsir,
       ),
     );
+  }
+
+  private today(timezone?: string | null) {
+    const local = timezone ? DateTime.now().setZone(timezone) : DateTime.utc();
+    return (local.isValid ? local : DateTime.utc()).toISODate();
   }
 
   private async assertGroupMember(userId: string, groupId: string) {

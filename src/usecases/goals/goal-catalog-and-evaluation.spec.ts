@@ -1,6 +1,7 @@
 import { CharityActionType } from '../../domain/charity/enums/charity-action-type.enum';
 import { GOAL_CATALOG } from '../../domain/goals/constants/goal-catalog';
 import { GoalFrequency } from '../../domain/goals/enums/goal-frequency.enum';
+import { GoalCategory } from '../../domain/goals/enums/goal-category.enum';
 import { GoalType } from '../../domain/goals/enums/goal-type.enum';
 import { GoalModel } from '../../domain/goals/model/goal.model';
 import { PrayerName } from '../../domain/prayers/enums/prayer-name.enum';
@@ -24,7 +25,7 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
     expect(new Set(GOAL_CATALOG.map((item) => item.code)).size).toBe(
       GOAL_CATALOG.length,
     );
-    expect(PrayerName).not.toHaveProperty('JUMUAH');
+    expect(PrayerName.JUMUAH).toBe('JUMUAH');
   });
 
   it('materializes catalog goals into the existing Goal shape', () => {
@@ -42,14 +43,43 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
     });
   });
 
-  it('uses Friday + Dhuhr + DONE + mosque evidence and loads each domain once', async () => {
+  it('uses absence of a category as the complete ordered catalog filter', () => {
+    const usecase = new GoalCatalogUsecase();
+    expect(usecase.list()).toEqual(GOAL_CATALOG);
+    expect(usecase.list(GoalCategory.QURAN)).toEqual(
+      GOAL_CATALOG.filter((item) => item.category === GoalCategory.QURAN),
+    );
+  });
+
+  it('renders latest catalog metadata for stored predefined goals only', () => {
+    const usecase = new GoalCatalogUsecase();
+    expect(
+      usecase.withCatalogDefinition({
+        ...goal('stored', 'PRAYER_FAJR_ON_TIME'),
+        title: 'Ancien titre',
+        description: 'Ancien sous-titre',
+      }),
+    ).toMatchObject({
+      title: 'Sobh à l’heure',
+      description: null,
+      goalType: GoalType.PRAYER,
+      targetValue: 1,
+      targetUnit: 'PRAYERS',
+      frequency: GoalFrequency.DAILY,
+    });
+
+    const custom = { ...goal('custom', ''), goalCode: null, title: 'Mon but' };
+    expect(usecase.withCatalogDefinition(custom).title).toBe('Mon but');
+  });
+
+  it('uses explicit Friday Jumuah evidence and loads each domain once', async () => {
     const prayers = {
       findByUserId: jest.fn().mockResolvedValue([
         {
           id: 'prayer-1',
           userId: 'user-1',
           prayerDate: '2026-08-21',
-          prayerName: PrayerName.DHUHR,
+          prayerName: PrayerName.JUMUAH,
           status: PrayerStatus.DONE,
           wasOnTime: true,
           isSupererogatory: false,
@@ -96,7 +126,7 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
       completed: true,
       applicable: true,
     });
-    expect(result[1]).toMatchObject({ actual: 1, target: 35 });
+    expect(result[1]).toMatchObject({ actual: 0, target: 35 });
     for (const dependency of [
       prayers.findByUserId,
       prayers.findAdditionalByUserId,

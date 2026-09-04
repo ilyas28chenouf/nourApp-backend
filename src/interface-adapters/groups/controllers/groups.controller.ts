@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,8 +15,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { GroupsUsecasesProxyService } from '../../../usecases-proxy/groups/groups-usecases-proxy.service';
@@ -128,7 +125,7 @@ export class GroupsController {
     @Body() dto: CreateGroupGoalRequestDto,
   ) {
     return GoalResponseMapper.toDto(
-      await this.goalsProxy.createGroupGoal(user.id, id, dto),
+      await this.goalsProxy.createGroupGoal(user.id, id, dto, user.timezone),
     );
   }
   @Post(':id/encouragements')

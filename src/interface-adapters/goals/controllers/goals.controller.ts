@@ -16,8 +16,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { Roles } from '../../shared/decorators/roles.decorator';
-import { UserRole } from '../../../domain/users/enums/user-role.enum';
 import { ProtectedApi } from '../../shared/decorators/protected-api.decorator';
 import type { UserModel } from '../../../domain/users/model/user.model';
 import { GoalsUsecasesProxyService } from '../../../usecases-proxy/goals/goals-usecases-proxy.service';
@@ -41,17 +39,19 @@ export class GoalsController {
   @ApiOperation({ summary: 'Get goals' })
   @ApiOkResponse({ type: [GoalResponseDto] })
   list(@CurrentUser() user: UserModel) {
-    return GoalResponseMapper.toDto(this.proxy.list(user.id));
+    return GoalResponseMapper.toDto(this.proxy.list(user.id, user.timezone));
   }
   @Post()
   @ApiOperation({ summary: 'Create goal' })
   @ApiBody({ type: CreateGoalRequestDto })
   @ApiOkResponse({ type: GoalResponseDto })
   create(@CurrentUser() user: UserModel, @Body() dto: CreateGoalRequestDto) {
-    return GoalResponseMapper.toDto(this.proxy.create(user.id, dto));
+    return GoalResponseMapper.toDto(
+      this.proxy.create(user.id, dto, user.timezone),
+    );
   }
   @Get('catalog')
-  @ApiOperation({ summary: 'Get the versioned v1.6 goal catalog' })
+  @ApiOperation({ summary: 'Get the client-approved predefined goal catalog' })
   @ApiOkResponse({ type: [GoalCatalogResponseDto] })
   catalog(@Query() query: GoalCatalogQueryDto) {
     return this.proxy.catalog(query.category);
@@ -63,13 +63,16 @@ export class GoalsController {
     @CurrentUser() user: UserModel,
     @Query() query: GoalAnalyticsQueryDto,
   ) {
-    return this.proxy.analytics(user.id, query);
+    return this.proxy.analytics(user.id, {
+      ...query,
+      timezone: user.timezone,
+    });
   }
   @Get(':id')
   @ApiOperation({ summary: 'Get goal by id' })
   @ApiOkResponse({ type: GoalResponseDto })
   get(@CurrentUser() user: UserModel, @Param('id') id: string) {
-    return GoalResponseMapper.toDto(this.proxy.get(user.id, id));
+    return GoalResponseMapper.toDto(this.proxy.get(user.id, id, user.timezone));
   }
   @Patch(':id')
   @ApiOperation({ summary: 'Update goal' })

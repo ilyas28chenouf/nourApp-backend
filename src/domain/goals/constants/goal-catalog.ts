@@ -1,4 +1,5 @@
 import { CharityActionType } from '../../charity/enums/charity-action-type.enum';
+import { FastingType } from '../../fasting/enums/fasting-type.enum';
 import { GoalCategory } from '../enums/goal-category.enum';
 import { GoalFrequency } from '../enums/goal-frequency.enum';
 
@@ -37,14 +38,14 @@ const definitions: CatalogInput[] = [
     code: 'PRAYER_ALL_ON_TIME_DAILY',
     category: GoalCategory.PRAYER,
     title: 'Toutes les prières à l’heure',
-    target: 1,
-    targetUnit: 'DAYS',
+    target: 5,
+    targetUnit: 'PRAYERS',
     frequency: GoalFrequency.DAILY,
   },
   {
     code: 'PRAYER_FAJR_ON_TIME',
     category: GoalCategory.PRAYER,
-    title: 'Fajr à l’heure',
+    title: 'Sobh à l’heure',
     target: 1,
     targetUnit: 'PRAYERS',
     frequency: GoalFrequency.DAILY,
@@ -76,7 +77,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_MOSQUE_THREE_DAILY',
     category: GoalCategory.PRAYER,
-    title: 'Au moins 3 prières à la mosquée par jour',
+    title: '3 prières au minimum à la mosquée par jour',
     target: 3,
     targetUnit: 'PRAYERS',
     frequency: GoalFrequency.DAILY,
@@ -92,7 +93,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_DAY_MIN_2',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de jour ≥ 2 rakaat',
+    title: 'Prières surérogatoires de jour (au minimum 2 unités)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -100,7 +101,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_DAY_2_6',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de jour de 2 à 6 rakaat',
+    title: 'Prières surérogatoires de jour ( entre 2 et 6 unités)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -108,7 +109,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_DAY_GT_6',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de jour de plus de 6 rakaat',
+    title: 'Prières surérogatoires de jour ( plus de 6 unités)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -116,7 +117,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_NIGHT_MIN_2',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de nuit ≥ 2 rakaat',
+    title: 'Prières surérogatoires de nuit (au minimum 2 unités)',
     target: 1,
     targetUnit: 'NIGHTS',
     frequency: GoalFrequency.DAILY,
@@ -124,7 +125,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_NIGHT_2_6',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de nuit de 2 à 6 rakaat',
+    title: 'Prières surérogatoires de nuit ( entre 2 et 6 unités)',
     target: 1,
     targetUnit: 'NIGHTS',
     frequency: GoalFrequency.DAILY,
@@ -132,7 +133,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'PRAYER_ADDITIONAL_NIGHT_GT_6',
     category: GoalCategory.PRAYER,
-    title: 'Prière surérogatoire de nuit de plus de 6 rakaat',
+    title: 'Prières surérogatoires de nuit ( plus de 6 unités)',
     target: 1,
     targetUnit: 'NIGHTS',
     frequency: GoalFrequency.DAILY,
@@ -141,7 +142,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_MORNING',
     category: GoalCategory.QURAN,
-    title: 'Coran le matin',
+    title: 'Lecture du Coran chaque matin',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -149,7 +150,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_EVENING',
     category: GoalCategory.QURAN,
-    title: 'Coran le soir',
+    title: 'Lecture du Coran chaque soir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -157,7 +158,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_MORNING_EVENING',
     category: GoalCategory.QURAN,
-    title: 'Coran matin et soir',
+    title: 'Lecture du Coran matin et soir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -165,7 +166,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_DAILY_MEMORIZATION',
     category: GoalCategory.QURAN,
-    title: 'Coran quotidien et mémorisation',
+    title: 'Lecture quotidienne & mémorisation',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -173,8 +174,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_RECOMMENDED_SURAHS',
     category: GoalCategory.QURAN,
-    title: 'Sourates recommandées',
-    description: 'Sourates 1, 2, 18, 36, 56, 67, 112, 113 et 114',
+    title: 'Lecture sourates recommandées (Kahf, Yassin, Mulk, Waqi’a..)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -182,7 +182,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'QURAN_MEMORIZATION_TAFSIR',
     category: GoalCategory.QURAN,
-    title: 'Mémorisation et Tafsir',
+    title: 'Mémorisation + Tafsir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -191,7 +191,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_MORNING',
     category: GoalCategory.DHIKR,
-    title: 'Adhkar du matin',
+    title: 'Invocations du matin',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -199,7 +199,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_EVENING',
     category: GoalCategory.DHIKR,
-    title: 'Adhkar du soir',
+    title: 'Invocations du soir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -207,7 +207,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_MORNING_EVENING',
     category: GoalCategory.DHIKR,
-    title: 'Adhkar matin et soir',
+    title: 'Invocations du matin et du soir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -215,7 +215,8 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_MORNING_TRIPLE_100',
     category: GoalCategory.DHIKR,
-    title: 'Tasbih, Salawat et Istighfar du matin × 100',
+    title:
+      'Dhikr du matin : Tasbih (x100) + Salat sur le Prophète (x100) + Istighfar (x100)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -223,7 +224,8 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_EVENING_TRIPLE_100',
     category: GoalCategory.DHIKR,
-    title: 'Tasbih, Salawat et Istighfar du soir × 100',
+    title:
+      'Dhikr du soir : Tasbih (x100) + Salat sur le Prophète (x100) + Istighfar (x100)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -231,7 +233,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'DHIKR_MORNING_EVENING_COMPLETE',
     category: GoalCategory.DHIKR,
-    title: 'Dhikr complet matin et soir',
+    title: 'Dhikr du matin et du soir',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.DAILY,
@@ -256,7 +258,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'FASTING_MONDAY_THURSDAY',
     category: GoalCategory.FASTING,
-    title: 'Jeûne du lundi et du jeudi',
+    title: 'Jeûnes du lundi et du jeudi',
     target: 2,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.WEEKLY,
@@ -264,7 +266,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'FASTING_WHITE_DAYS',
     category: GoalCategory.FASTING,
-    title: 'Jours lunaires 13, 14 et 15',
+    title: 'Jeûnes des 3 jours lunaires',
     target: 3,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.MONTHLY,
@@ -272,7 +274,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'FASTING_SUNNAH',
     category: GoalCategory.FASTING,
-    title: 'Jeûne Sunnah',
+    title: 'Jeûnes sunnah (Arafat, Achoura…)',
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.MONTHLY,
@@ -280,7 +282,7 @@ const definitions: CatalogInput[] = [
   {
     code: 'FASTING_DAOUD',
     category: GoalCategory.FASTING,
-    title: 'Cadence de Daoud',
+    title: 'Jeûne de Daoud (1 jour sur 2)',
     target: 1,
     targetUnit: 'CADENCE',
     frequency: GoalFrequency.DAILY,
@@ -330,6 +332,9 @@ export const GOAL_CATALOG: readonly GoalCatalogDefinition[] = Object.freeze(
 export const RECOMMENDED_SURAH_NUMBERS = Object.freeze([
   1, 2, 18, 36, 56, 67, 112, 113, 114,
 ]);
+
+export const APPROVED_SUNNAH_FASTING_TYPES: readonly FastingType[] =
+  Object.freeze([FastingType.ARAFAH, FastingType.ASHURA]);
 
 export function findGoalCatalogDefinition(code: string) {
   return GOAL_CATALOG.find((definition) => definition.code === code);

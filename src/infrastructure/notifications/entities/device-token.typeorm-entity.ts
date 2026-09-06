@@ -24,6 +24,7 @@ export class DeviceTokenTypeormEntity {
   @Column('uuid')
   userId: string;
 
+  /** FCM registration token for IOS and ANDROID, not a native APNs token. */
   @Column({ type: 'text' })
   token: string;
 

@@ -34,11 +34,11 @@ export class UserPreferenceTypeormEntity {
   @Column({ default: 'Shafi' }) prayerMadhab: string;
   @Column({ nullable: true }) dailyAvailableTime?: string;
   @Column({ nullable: true }) globalPracticeLevel?: string;
-  @Column({ nullable: true }) prayerPracticeLevel?: string;
-  @Column({ nullable: true }) quranPracticeLevel?: string;
+  @Column({ type: 'jsonb', nullable: true }) prayerPracticeLevel?: string[];
+  @Column({ type: 'jsonb', nullable: true }) quranPracticeLevel?: string[];
   @Column({ type: 'jsonb', nullable: true, default: () => "'[]'::jsonb" })
   dhikrPractices?: string[];
-  @Column({ nullable: true }) fastingPracticeLevel?: string;
+  @Column({ type: 'jsonb', nullable: true }) fastingPracticeLevel?: string[];
   @Column({ nullable: true }) socialActionsFrequency?: string;
   @Column({ nullable: true }) regularityDuration?: string;
   @Column({ nullable: true }) islamicKnowledgeLevel?: string;

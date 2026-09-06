@@ -16,10 +16,10 @@ export interface UserPreferenceModel {
   prayerMadhab: string;
   dailyAvailableTime?: string | null;
   globalPracticeLevel?: string | null;
-  prayerPracticeLevel?: string | null;
-  quranPracticeLevel?: string | null;
+  prayerPracticeLevel?: string[] | null;
+  quranPracticeLevel?: string[] | null;
   dhikrPractices?: string[] | null;
-  fastingPracticeLevel?: string | null;
+  fastingPracticeLevel?: string[] | null;
   socialActionsFrequency?: string | null;
   regularityDuration?: string | null;
   islamicKnowledgeLevel?: string | null;

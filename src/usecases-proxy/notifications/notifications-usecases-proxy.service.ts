@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { NotificationsTypeormAdapter } from '../../infrastructure/notifications/adapters/notifications-typeorm.adapter';
 import { NotificationsFcmService } from '../../infrastructure/notifications/services/notifications-fcm.service';
 import { GetScheduledNotificationsUsecase } from '../../usecases/notifications/get-scheduled-notifications.usecase';
-import { RegisterDeviceTokenUsecase } from '../../usecases/notifications/register-device-token.usecase';
+import {
+  RegisterDeviceTokenInput,
+  RegisterDeviceTokenUsecase,
+} from '../../usecases/notifications/register-device-token.usecase';
 import { SendTestNotificationUsecase } from '../../usecases/notifications/send-test-notification.usecase';
 
 @Injectable()
@@ -12,7 +15,7 @@ export class NotificationsUsecasesProxyService {
     private readonly fcm: NotificationsFcmService,
   ) {}
 
-  registerDeviceToken(userId: string, data: any) {
+  registerDeviceToken(userId: string, data: RegisterDeviceTokenInput) {
     return new RegisterDeviceTokenUsecase(this.notifications).execute(
       userId,
       data,

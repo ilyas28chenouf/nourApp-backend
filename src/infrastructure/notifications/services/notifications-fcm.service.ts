@@ -35,8 +35,11 @@ export class NotificationsFcmService {
       .then((tokens) => this.sendToTokens(tokens, payload));
   }
 
-  async sendToToken(token: string, payload: SendNotificationPayload) {
-    return this.sendToTokens([{ token } as DeviceTokenModel], payload);
+  async sendToToken(fcmToken: string, payload: SendNotificationPayload) {
+    return this.sendToTokens(
+      [{ token: fcmToken } as DeviceTokenModel],
+      payload,
+    );
   }
 
   async sendToTokens(
@@ -61,6 +64,8 @@ export class NotificationsFcmService {
       );
     }
 
+    // Firebase routes iOS delivery through APNs using an FCM registration token.
+    // The device platform does not select a different backend transport.
     for (const token of tokens) {
       try {
         const messageId = await messaging.send({

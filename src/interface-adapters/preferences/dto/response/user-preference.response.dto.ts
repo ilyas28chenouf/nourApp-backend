@@ -55,17 +55,17 @@ export class UserPreferenceResponseDto {
   @ApiPropertyOptional()
   globalPracticeLevel?: string;
 
-  @ApiPropertyOptional()
-  prayerPracticeLevel?: string;
+  @ApiPropertyOptional({ type: [String] })
+  prayerPracticeLevel?: string[];
 
-  @ApiPropertyOptional()
-  quranPracticeLevel?: string;
+  @ApiPropertyOptional({ type: [String] })
+  quranPracticeLevel?: string[];
 
   @ApiPropertyOptional({ type: [String] })
   dhikrPractices?: string[];
 
-  @ApiPropertyOptional()
-  fastingPracticeLevel?: string;
+  @ApiPropertyOptional({ type: [String] })
+  fastingPracticeLevel?: string[];
 
   @ApiPropertyOptional()
   socialActionsFrequency?: string;

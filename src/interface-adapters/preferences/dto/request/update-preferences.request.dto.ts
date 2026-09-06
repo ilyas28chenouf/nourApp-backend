@@ -119,17 +119,35 @@ export class UpdatePreferencesRequestDto {
   @IsIn(GLOBAL_PRACTICE_LEVELS)
   globalPracticeLevel?: string;
 
-  @ApiPropertyOptional({ enum: PRAYER_PRACTICE_LEVELS })
+  @ApiPropertyOptional({
+    enum: PRAYER_PRACTICE_LEVELS,
+    isArray: true,
+    description:
+      'Multiple selections; legacy single answers are also accepted.',
+  })
   @IsOptional()
-  @IsString()
-  @IsIn(PRAYER_PRACTICE_LEVELS)
-  prayerPracticeLevel?: string;
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? [value] : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(PRAYER_PRACTICE_LEVELS, { each: true })
+  prayerPracticeLevel?: string[];
 
-  @ApiPropertyOptional({ enum: QURAN_PRACTICE_LEVELS })
+  @ApiPropertyOptional({
+    enum: QURAN_PRACTICE_LEVELS,
+    isArray: true,
+    description:
+      'Multiple selections; legacy single answers are also accepted.',
+  })
   @IsOptional()
-  @IsString()
-  @IsIn(ACCEPTED_QURAN_PRACTICE_LEVELS)
-  quranPracticeLevel?: string;
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? [value] : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(ACCEPTED_QURAN_PRACTICE_LEVELS, { each: true })
+  quranPracticeLevel?: string[];
 
   @ApiPropertyOptional({ enum: DHIKR_PRACTICES, isArray: true })
   @IsOptional()
@@ -138,11 +156,20 @@ export class UpdatePreferencesRequestDto {
   @IsIn(DHIKR_PRACTICES, { each: true })
   dhikrPractices?: string[];
 
-  @ApiPropertyOptional({ enum: FASTING_PRACTICE_LEVELS })
+  @ApiPropertyOptional({
+    enum: FASTING_PRACTICE_LEVELS,
+    isArray: true,
+    description:
+      'Multiple selections; legacy single answers are also accepted.',
+  })
   @IsOptional()
-  @IsString()
-  @IsIn(FASTING_PRACTICE_LEVELS)
-  fastingPracticeLevel?: string;
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? [value] : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(FASTING_PRACTICE_LEVELS, { each: true })
+  fastingPracticeLevel?: string[];
 
   @ApiPropertyOptional({ enum: SOCIAL_ACTIONS_FREQUENCIES })
   @IsOptional()

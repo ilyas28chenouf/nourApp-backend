@@ -6,6 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PrayerMadhab } from '../../../domain/users/enums/prayer-madhab.enum';
+import type { PrayerMadhabValue } from '../../../domain/users/enums/prayer-madhab.enum';
 @Entity('user_preferences')
 export class UserPreferenceTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -31,7 +33,7 @@ export class UserPreferenceTypeormEntity {
   @Column({ type: 'date', nullable: true })
   dailyReminderCycleStartDate?: string;
   @Column({ default: 'Algeria' }) prayerCalculationMethod: string;
-  @Column({ default: 'Shafi' }) prayerMadhab: string;
+  @Column({ default: PrayerMadhab.SHAFI }) prayerMadhab: PrayerMadhabValue;
   @Column({ nullable: true }) dailyAvailableTime?: string;
   @Column({ nullable: true }) globalPracticeLevel?: string;
   @Column({ type: 'jsonb', nullable: true }) prayerPracticeLevel?: string[];

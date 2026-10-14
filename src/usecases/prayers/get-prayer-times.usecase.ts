@@ -91,7 +91,9 @@ export class GetPrayerTimesUsecase {
       latitude: user.latitude,
       longitude: user.longitude,
       calculationMethod: String(data.calculation_method ?? calculationMethod),
-      madhab: String(data.madhab ?? madhab),
+      // Cache and expose the user's actual preference. The provider adapter maps
+      // Maliki/Hanbali to Ummah's Shafi calculation without changing this value.
+      madhab,
       imsak: prayerTimes.imsak,
       fajr: prayerTimes.fajr,
       sunrise: prayerTimes.sunrise,

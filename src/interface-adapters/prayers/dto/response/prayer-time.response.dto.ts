@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PrayerMadhab } from '../../../../domain/users/enums/prayer-madhab.enum';
 
 export class PrayerTimesValueResponseDto {
   @ApiPropertyOptional({ example: '00:48' })
@@ -85,8 +86,8 @@ export class PrayerTimeResponseDto {
   @ApiProperty({ example: 'Algeria' })
   calculationMethod: string;
 
-  @ApiProperty({ example: 'Shafi' })
-  madhab: string;
+  @ApiProperty({ enum: PrayerMadhab, example: PrayerMadhab.SHAFI })
+  madhab: PrayerMadhab;
 
   @ApiProperty({ type: PrayerTimesValueResponseDto })
   prayerTimes: PrayerTimesValueResponseDto;

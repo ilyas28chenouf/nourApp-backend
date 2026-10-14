@@ -1,3 +1,5 @@
+import type { PrayerMadhabValue } from '../enums/prayer-madhab.enum';
+
 export interface UserPreferenceModel {
   id: string;
   userId: string;
@@ -13,7 +15,7 @@ export interface UserPreferenceModel {
   dailyReminderTime: string;
   dailyReminderCycleStartDate?: string | null;
   prayerCalculationMethod: string;
-  prayerMadhab: string;
+  prayerMadhab: PrayerMadhabValue;
   dailyAvailableTime?: string | null;
   globalPracticeLevel?: string | null;
   prayerPracticeLevel?: string[] | null;

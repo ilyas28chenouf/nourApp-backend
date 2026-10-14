@@ -5,6 +5,7 @@ import {
   PrayerTimesProviderRequest,
 } from '../../../domain/prayers/ports/prayer-times-provider.port';
 import { AppLoggerService } from '../../logger/app-logger.service';
+import { toUmmahPrayerMadhab } from './ummah-prayer-madhab';
 
 @Injectable()
 export class UmmahPrayerTimesClient implements Pick<
@@ -19,6 +20,7 @@ export class UmmahPrayerTimesClient implements Pick<
   async fetchPrayerTimes(
     request: PrayerTimesProviderRequest,
   ): Promise<Record<string, any>> {
+    const providerMadhab = toUmmahPrayerMadhab(request.madhab);
     const url = new URL(
       'prayer-times',
       this.configService.get<string>(
@@ -30,7 +32,7 @@ export class UmmahPrayerTimesClient implements Pick<
     url.searchParams.set('lng', String(request.longitude));
     url.searchParams.set('date', request.date);
     url.searchParams.set('method', request.method);
-    url.searchParams.set('madhab', request.madhab);
+    url.searchParams.set('madhab', providerMadhab);
     url.searchParams.set('timezone', request.timezone);
 
     try {

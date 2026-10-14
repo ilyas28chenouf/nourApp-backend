@@ -29,18 +29,18 @@ describe('GoalEvaluationService approved rules', () => {
         prayer(`p-${index}`, name),
       );
       expect(evaluate('PRAYER_FIVE_DAILY', { prayers: five })).toMatchObject({
-        actual: 5,
-        target: 5,
+        actual: 1,
+        target: 1,
         completed: true,
       });
       expect(
         evaluate('PRAYER_FIVE_DAILY', { prayers: five.slice(0, 4) }),
-      ).toMatchObject({ actual: 4, target: 5, completed: false });
+      ).toMatchObject({ actual: 0, target: 1, completed: false });
       expect(
         evaluate('PRAYER_FIVE_DAILY', {
           prayers: [prayer('jumuah', PrayerName.JUMUAH)],
         }),
-      ).toMatchObject({ actual: 0, target: 5, completed: false });
+      ).toMatchObject({ actual: 0, target: 1, completed: false });
     });
 
     it('evaluates two-on-time, all-on-time and Sobh from obligatory logs', () => {
@@ -51,18 +51,18 @@ describe('GoalEvaluationService approved rules', () => {
         }),
       );
       expect(evaluate('PRAYER_FIVE_DAILY', { prayers })).toMatchObject({
-        actual: 5,
-        target: 5,
+        actual: 1,
+        target: 1,
         completed: true,
       });
       expect(evaluate('PRAYER_TWO_ON_TIME_DAILY', { prayers })).toMatchObject({
-        actual: 2,
-        target: 2,
+        actual: 1,
+        target: 1,
         completed: true,
       });
       expect(evaluate('PRAYER_ALL_ON_TIME_DAILY', { prayers })).toMatchObject({
-        actual: 4,
-        target: 5,
+        actual: 0,
+        target: 1,
         completed: false,
       });
       expect(evaluate('PRAYER_FAJR_ON_TIME', { prayers })).toMatchObject({
@@ -86,10 +86,10 @@ describe('GoalEvaluationService approved rules', () => {
       ).toMatchObject({ actual: 1, target: 1, completed: true });
       expect(
         evaluate('PRAYER_MOSQUE_TWO_DAILY', { prayers: twoMosque }),
-      ).toMatchObject({ actual: 2, target: 2, completed: true });
+      ).toMatchObject({ actual: 1, target: 1, completed: true });
       expect(
         evaluate('PRAYER_MOSQUE_THREE_DAILY', { prayers: twoMosque }),
-      ).toMatchObject({ actual: 2, target: 3, completed: false });
+      ).toMatchObject({ actual: 0, target: 1, completed: false });
 
       const threeMosque = [
         ...twoMosque,
@@ -97,7 +97,7 @@ describe('GoalEvaluationService approved rules', () => {
       ];
       expect(
         evaluate('PRAYER_MOSQUE_THREE_DAILY', { prayers: threeMosque }),
-      ).toMatchObject({ actual: 3, target: 3, completed: true });
+      ).toMatchObject({ actual: 1, target: 1, completed: true });
 
       expect(
         evaluate('PRAYER_GROUP_DAILY', {
@@ -321,7 +321,7 @@ describe('GoalEvaluationService approved rules', () => {
           { fasting: [monday, thursday] },
           ...range,
         ),
-      ).toMatchObject({ actual: 2, target: 2, completed: true });
+      ).toMatchObject({ actual: 1, target: 1, completed: true });
       expect(
         evaluate(
           'FASTING_MONDAY_THURSDAY',
@@ -333,7 +333,7 @@ describe('GoalEvaluationService approved rules', () => {
           },
           ...range,
         ),
-      ).toMatchObject({ actual: 0, target: 2, completed: false });
+      ).toMatchObject({ actual: 0, target: 1, completed: false });
     });
 
     it('requires three classified white days and excludes arbitrary custom fasts from Sunnah', () => {
@@ -348,7 +348,7 @@ describe('GoalEvaluationService approved rules', () => {
           '2026-09-01',
           '2026-09-30',
         ),
-      ).toMatchObject({ actual: 3, target: 3, completed: true });
+      ).toMatchObject({ actual: 1, target: 1, completed: true });
       expect(
         evaluate(
           'FASTING_SUNNAH',

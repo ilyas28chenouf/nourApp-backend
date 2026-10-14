@@ -8,6 +8,7 @@ import {
 } from '../../domain/progression/constants/hasanat-action-rules';
 import {
   calculateSpiritualLevelProgress,
+  SPIRITUAL_CATEGORY_POINTS,
   SPIRITUAL_LEVEL_CATALOG,
   SPIRITUAL_PROGRESSION_COMPLETION_POINTS,
 } from '../../domain/progression/constants/spiritual-levels';
@@ -86,6 +87,27 @@ export class ProgressionService {
     const levelState = calculateSpiritualLevelProgress(
       progression.totalHasanat,
     );
+    const mainLevelStart =
+      (levelState.current.categoryOrder - 1) * SPIRITUAL_CATEGORY_POINTS;
+    const mainLevelCurrentPoints = levelState.isCompleted
+      ? SPIRITUAL_CATEGORY_POINTS
+      : Math.max(
+          0,
+          Math.min(
+            SPIRITUAL_CATEGORY_POINTS,
+            progression.totalHasanat - mainLevelStart,
+          ),
+        );
+    const pointsToNextMainLevel = levelState.isCompleted
+      ? 0
+      : SPIRITUAL_CATEGORY_POINTS - mainLevelCurrentPoints;
+    const mainLevelProgressPercent = levelState.isCompleted
+      ? 100
+      : Number(
+          ((mainLevelCurrentPoints / SPIRITUAL_CATEGORY_POINTS) * 100).toFixed(
+            2,
+          ),
+        );
 
     return {
       totalHasanat: progression.totalHasanat,
@@ -98,6 +120,10 @@ export class ProgressionService {
       nextVisibleLevel: levelState.next?.level ?? null,
       pointsToNextLevel: levelState.pointsToNextLevel,
       progressToNextLevelPercent: levelState.progressToNextLevelPercent,
+      mainLevelCurrentPoints,
+      mainLevelTargetPoints: SPIRITUAL_CATEGORY_POINTS,
+      pointsToNextMainLevel,
+      mainLevelProgressPercent,
       isCompleted: levelState.isCompleted,
       currentStreakDays: progression.currentStreakDays,
       longestStreakDays: progression.longestStreakDays,

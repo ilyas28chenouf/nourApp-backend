@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { numericColumnTransformer } from '../../database/numeric-column.transformer';
 
 @Entity('user_progression')
 export class UserProgressionTypeormEntity {
@@ -17,7 +18,13 @@ export class UserProgressionTypeormEntity {
   @Column('uuid')
   userId: string;
 
-  @Column({ default: 0 })
+  @Column({
+    type: 'numeric',
+    precision: 14,
+    scale: 1,
+    default: 0,
+    transformer: numericColumnTransformer,
+  })
   totalHasanat: number;
 
   @Column({

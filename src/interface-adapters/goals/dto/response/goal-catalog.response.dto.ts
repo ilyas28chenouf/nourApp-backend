@@ -3,6 +3,17 @@ import { CharityActionType } from '../../../../domain/charity/enums/charity-acti
 import { GoalCategory } from '../../../../domain/goals/enums/goal-category.enum';
 import { GoalFrequency } from '../../../../domain/goals/enums/goal-frequency.enum';
 
+export class GoalIndicatorTargetsResponseDto {
+  @ApiPropertyOptional({ nullable: true })
+  WEEK: number | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  MONTH: number | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  YEAR: number | null;
+}
+
 export class GoalCatalogResponseDto {
   @ApiProperty()
   code: string;
@@ -30,4 +41,7 @@ export class GoalCatalogResponseDto {
 
   @ApiPropertyOptional({ enum: CharityActionType })
   actionType?: CharityActionType;
+
+  @ApiProperty({ type: GoalIndicatorTargetsResponseDto })
+  indicatorTargets: GoalIndicatorTargetsResponseDto;
 }

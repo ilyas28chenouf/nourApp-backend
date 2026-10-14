@@ -56,14 +56,14 @@ describe('ProgressionService point-event idempotency', () => {
     notes: null,
   });
 
-  it('keeps one 20-point contribution across repeated updates, then reconciles changes and deletion', async () => {
+  it('keeps one 2-point contribution across repeated updates, then reconciles changes and deletion', async () => {
     const log = prayerLog();
 
     await service.recordPrayerLog(log);
     await service.recordPrayerLog(log);
 
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(20);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(2);
 
     await service.recordPrayerLog({
       ...log,
@@ -72,7 +72,7 @@ describe('ProgressionService point-event idempotency', () => {
     });
 
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(10);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(1);
 
     await service.reverseEventsForLog(
       log.userId,
@@ -91,7 +91,7 @@ describe('ProgressionService point-event idempotency', () => {
     });
 
     expect(events).toHaveLength(2);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(10);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(1);
   });
 
   it('reconciles a legacy event without deleting point history', async () => {
@@ -115,7 +115,7 @@ describe('ProgressionService point-event idempotency', () => {
     expect(events.find((event) => event.id === 'legacy-event')?.points).toBe(
       25,
     );
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(20);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(2);
   });
 
   it('updates additional-prayer points per rakah without duplicate awards', async () => {
@@ -130,11 +130,11 @@ describe('ProgressionService point-event idempotency', () => {
     await service.setAdditionalPrayerReward(log);
     await service.setAdditionalPrayerReward(log);
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(10);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(1);
 
     await service.setAdditionalPrayerReward({ ...log, rakaat: 8 });
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(40);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(4);
   });
 
   it('recalculates the legacy additional-prayer aggregate in place', async () => {
@@ -160,7 +160,7 @@ describe('ProgressionService point-event idempotency', () => {
     await service.setAdditionalPrayerReward(log);
 
     expect(events).toHaveLength(1);
-    expect(events[0].points).toBe(10);
+    expect(events[0].points).toBe(1);
   });
 
   it('scores a Tahajjud prayer only from its recorded rakah count', async () => {
@@ -171,7 +171,7 @@ describe('ProgressionService point-event idempotency', () => {
       rakaat: 2,
     });
 
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(10);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(1);
   });
 
   it('updates Quran points without an objective bonus or duplicate award', async () => {
@@ -187,10 +187,10 @@ describe('ProgressionService point-event idempotency', () => {
     await service.recordQuranReadingLog(log);
     await service.recordQuranReadingLog(log);
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(150);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(15);
 
     await service.recordQuranReadingLog({ ...log, pagesCount: 5 });
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(75);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(7.5);
   });
 
   it('reverses fasting and dhikr contributions when completion is removed', async () => {
@@ -204,7 +204,7 @@ describe('ProgressionService point-event idempotency', () => {
 
     await service.recordFastingLog(fastingLog);
     await service.recordFastingLog(fastingLog);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(200);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(20);
     await service.recordFastingLog({
       ...fastingLog,
       status: FastingStatus.NOT_FASTED,
@@ -223,7 +223,7 @@ describe('ProgressionService point-event idempotency', () => {
     };
     await service.recordDhikrLog(dhikrLog);
     await service.recordDhikrLog(dhikrLog);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(50);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(5);
     await service.recordDhikrLog({ ...dhikrLog, completed: false });
     expect(events.reduce((total, event) => total + event.points, 0)).toBe(0);
   });
@@ -240,7 +240,7 @@ describe('ProgressionService point-event idempotency', () => {
     await service.recordCharityLog(log);
     await service.recordCharityLog(log);
     expect(events).toHaveLength(1);
-    expect(events.reduce((total, event) => total + event.points, 0)).toBe(300);
+    expect(events.reduce((total, event) => total + event.points, 0)).toBe(30);
     await service.reverseEventsForLog(
       log.userId,
       HasanatSourceType.CHARITY,

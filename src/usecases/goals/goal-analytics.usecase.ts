@@ -4,7 +4,10 @@ import {
   resolveCalendarRange,
 } from '../../common-utils/dates/calendar-period.util';
 import { eachDateOnlyBetween } from '../../common-utils/dates/date-format.util';
-import { findGoalCatalogDefinition } from '../../domain/goals/constants/goal-catalog';
+import {
+  findGoalCatalogDefinition,
+  GoalCatalogDefinition,
+} from '../../domain/goals/constants/goal-catalog';
 import { GoalCategory } from '../../domain/goals/enums/goal-category.enum';
 import { GoalFrequency } from '../../domain/goals/enums/goal-frequency.enum';
 import { GoalModel } from '../../domain/goals/model/goal.model';
@@ -47,10 +50,11 @@ export class GoalAnalyticsUsecase {
     const goalsResponse = evaluations.map((item) => {
       const definition = findGoalCatalogDefinition(item.goalCode)!;
       return {
-        ...item,
+        ...this.toIndicator(item, definition, range.period),
         category: definition.category,
         title: definition.title,
         frequency: definition.frequency,
+        targetUnit: definition.targetUnit,
       };
     });
 
@@ -75,7 +79,7 @@ export class GoalAnalyticsUsecase {
       categorySummaries: this.categorySummaries(goalsResponse),
       goals: goalsResponse,
       buckets,
-      summary: this.summary(evaluations),
+      summary: this.summary(goalsResponse),
     };
   }
 
@@ -190,6 +194,33 @@ export class GoalAnalyticsUsecase {
                 applicable.length
               ).toFixed(2),
             ),
+    };
+  }
+
+  private toIndicator(
+    evaluation: GoalEvaluationResult,
+    definition: GoalCatalogDefinition,
+    period: CalendarPeriod,
+  ): GoalEvaluationResult {
+    const target = definition.indicatorTargets[period];
+    if (target === null) {
+      return {
+        ...evaluation,
+        target: 0,
+        percentage: 0,
+        completed: false,
+        applicable: false,
+      };
+    }
+
+    const actual = Math.min(Math.max(0, evaluation.actual), target);
+    return {
+      ...evaluation,
+      actual,
+      target,
+      percentage: Number(((actual / target) * 100).toFixed(2)),
+      completed: actual >= target,
+      applicable: true,
     };
   }
 }

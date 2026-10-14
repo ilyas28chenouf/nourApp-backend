@@ -1,5 +1,6 @@
 import { HasanatSourceType } from '../../../domain/progression/enums/hasanat-source-type.enum';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { numericColumnTransformer } from '../../database/numeric-column.transformer';
 
 @Entity('hasanat_action_rules')
 export class HasanatActionRuleTypeormEntity {
@@ -9,7 +10,12 @@ export class HasanatActionRuleTypeormEntity {
   @Column({ type: 'enum', enum: HasanatSourceType })
   sourceType: HasanatSourceType;
 
-  @Column()
+  @Column({
+    type: 'numeric',
+    precision: 12,
+    scale: 1,
+    transformer: numericColumnTransformer,
+  })
   points: number;
 
   @Column({ type: 'text' })

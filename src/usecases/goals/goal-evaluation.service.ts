@@ -145,55 +145,47 @@ export class GoalEvaluationService {
 
     switch (definition.code) {
       case 'PRAYER_FIVE_DAILY':
-        return this.result(
+        return this.booleanDays(
           goal,
           effectiveFrom,
           effectiveTo,
-          this.completedObligatoryPrayerCount(prayers),
-          days.length * 5,
+          days,
+          (date) =>
+            this.completedObligatoryPrayerCount(
+              prayers.filter((item) => item.prayerDate === date),
+            ) >= 5,
         );
       case 'PRAYER_TWO_ON_TIME_DAILY':
-        return this.result(
+        return this.booleanDays(
           goal,
           effectiveFrom,
           effectiveTo,
-          days.reduce(
-            (total, date) =>
-              total +
-              Math.min(
-                this.completedObligatoryPrayerCount(
-                  prayers.filter(
-                    (item) =>
-                      item.prayerDate === date &&
-                      item.status === PrayerStatus.DONE &&
-                      item.wasOnTime,
-                  ),
-                ),
-                2,
+          days,
+          (date) =>
+            this.completedObligatoryPrayerCount(
+              prayers.filter(
+                (item) =>
+                  item.prayerDate === date &&
+                  item.status === PrayerStatus.DONE &&
+                  item.wasOnTime,
               ),
-            0,
-          ),
-          days.length * 2,
+            ) >= 2,
         );
       case 'PRAYER_ALL_ON_TIME_DAILY':
-        return this.result(
+        return this.booleanDays(
           goal,
           effectiveFrom,
           effectiveTo,
-          days.reduce(
-            (total, date) =>
-              total +
-              this.completedObligatoryPrayerCount(
-                prayers.filter(
-                  (item) =>
-                    item.prayerDate === date &&
-                    item.status === PrayerStatus.DONE &&
-                    item.wasOnTime,
-                ),
+          days,
+          (date) =>
+            this.completedObligatoryPrayerCount(
+              prayers.filter(
+                (item) =>
+                  item.prayerDate === date &&
+                  item.status === PrayerStatus.DONE &&
+                  item.wasOnTime,
               ),
-            0,
-          ),
-          days.length * 5,
+            ) >= 5,
         );
       case 'PRAYER_FAJR_ON_TIME':
         return this.booleanDays(
@@ -501,11 +493,15 @@ export class GoalEvaluationService {
       }
       default:
         if (definition.actionType) {
-          const actual = evidence.charity.filter(
-            (item) =>
-              inDays(item.charityDate) &&
-              item.actionType === definition.actionType,
-          ).length;
+          const actual = new Set(
+            evidence.charity
+              .filter(
+                (item) =>
+                  inDays(item.charityDate) &&
+                  item.actionType === definition.actionType,
+              )
+              .map((item) => item.charityDate),
+          ).size;
           return this.result(
             goal,
             effectiveFrom,
@@ -539,20 +535,14 @@ export class GoalEvaluationService {
     predicate: (prayer: GoalEvidence['prayers'][number]) => boolean,
     targetPerDay: number,
   ) {
-    const actual = days.reduce(
-      (total, date) =>
-        total +
-        Math.min(
-          this.completedObligatoryPrayerCount(
-            prayers.filter(
-              (prayer) => prayer.prayerDate === date && predicate(prayer),
-            ),
-          ),
-          targetPerDay,
+    return this.booleanDays(goal, from, to, days, (date) => {
+      const completed = this.completedObligatoryPrayerCount(
+        prayers.filter(
+          (prayer) => prayer.prayerDate === date && predicate(prayer),
         ),
-      0,
-    );
-    return this.result(goal, from, to, actual, days.length * targetPerDay);
+      );
+      return completed >= targetPerDay;
+    });
   }
 
   private monthsInRange(from: string, to: string) {
@@ -655,13 +645,20 @@ export class GoalEvaluationService {
     const requiredDates = eachDateOnlyBetween(from, to).filter((date) =>
       weekdays.includes(this.weekday(date)),
     );
-    const actual = requiredDates.filter((date) =>
-      fasting.some(
-        (item) =>
-          item.fastingDate === date && item.status === FastingStatus.FASTED,
-      ),
+    const completedDates = new Set(
+      fasting
+        .filter((item) => item.status === FastingStatus.FASTED)
+        .map((item) => item.fastingDate),
+    );
+    const requiredByWeek = new Map<string, string[]>();
+    for (const date of requiredDates) {
+      const week = DateTime.fromISO(date, { zone: 'utc' }).toFormat('kkkk-WW');
+      requiredByWeek.set(week, [...(requiredByWeek.get(week) ?? []), date]);
+    }
+    const actual = [...requiredByWeek.values()].filter((dates) =>
+      dates.every((date) => completedDates.has(date)),
     ).length;
-    return this.result(goal, from, to, actual, requiredDates.length);
+    return this.result(goal, from, to, actual, requiredByWeek.size);
   }
 
   private fastingWhiteDays(
@@ -689,16 +686,12 @@ export class GoalEvaluationService {
     const months = new Set(
       eachDateOnlyBetween(from, to).map((date) => date.slice(0, 7)),
     );
-    const actual = [...months].reduce(
-      (total, month) =>
-        total +
-        Math.min(
-          [...completedDates].filter((date) => date.startsWith(month)).length,
-          3,
-        ),
-      0,
-    );
-    return this.result(goal, from, to, actual, months.size * 3);
+    const actual = [...months].filter(
+      (month) =>
+        [...completedDates].filter((date) => date.startsWith(month)).length >=
+        3,
+    ).length;
+    return this.result(goal, from, to, actual, months.size);
   }
 
   private fastingSunnah(

@@ -1,10 +1,10 @@
 import { SpiritualLevel } from '../enums/spiritual-level.enum';
 
-export const SPIRITUAL_LEVEL_POINTS = 1_000;
+export const SPIRITUAL_LEVEL_POINTS = 2_000;
 export const SPIRITUAL_TITLES_PER_CATEGORY = 15;
 export const SPIRITUAL_CATEGORY_POINTS =
   SPIRITUAL_LEVEL_POINTS * SPIRITUAL_TITLES_PER_CATEGORY;
-export const SPIRITUAL_PROGRESSION_COMPLETION_POINTS = 150_000;
+export const SPIRITUAL_PROGRESSION_COMPLETION_POINTS = 300_000;
 
 export interface SpiritualCategoryDefinition {
   readonly order: number;

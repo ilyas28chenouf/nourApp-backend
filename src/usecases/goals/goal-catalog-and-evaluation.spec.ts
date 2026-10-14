@@ -126,7 +126,7 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
       completed: true,
       applicable: true,
     });
-    expect(result[1]).toMatchObject({ actual: 0, target: 35 });
+    expect(result[1]).toMatchObject({ actual: 0, target: 7 });
     for (const dependency of [
       prayers.findByUserId,
       prayers.findAdditionalByUserId,
@@ -158,7 +158,7 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
       '2026-08-21',
     );
 
-    expect(result).toMatchObject({ actual: 3, target: 4, percentage: 75 });
+    expect(result).toMatchObject({ actual: 1, target: 2, percentage: 50 });
   });
 
   it('scales monthly activity targets and creates every intersecting month week', async () => {
@@ -181,6 +181,36 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
       '2026-12-31',
     );
     expect(result).toMatchObject({ actual: 1, target: 12 });
+
+    const analyticsEvaluation = evaluationService();
+    jest.spyOn(analyticsEvaluation, 'loadEvidence').mockResolvedValue(
+      evidence({
+        charity: [
+          {
+            id: 'charity-1',
+            userId: 'user-1',
+            charityDate: '2026-08-20',
+            actionType: CharityActionType.SADAQA,
+          },
+        ],
+      }),
+    );
+    const yearly = await new GoalAnalyticsUsecase(analyticsEvaluation).execute(
+      'user-1',
+      [activityGoal],
+      { period: 'YEAR', anchor: '2026-08-20' },
+    );
+    expect(yearly.goals[0]).toMatchObject({
+      actual: 1,
+      target: 52,
+      percentage: 1.92,
+      completed: false,
+    });
+    expect(yearly.summary).toMatchObject({
+      applicableGoals: 1,
+      completedGoals: 0,
+      percentage: 1.92,
+    });
 
     const analytics = new GoalAnalyticsUsecase({
       loadEvidence: jest.fn().mockResolvedValue({}),

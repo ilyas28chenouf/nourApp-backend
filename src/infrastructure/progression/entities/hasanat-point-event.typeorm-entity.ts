@@ -6,6 +6,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { numericColumnTransformer } from '../../database/numeric-column.transformer';
 
 @Entity('hasanat_point_events')
 @Index(['userId', 'eventDate'])
@@ -26,7 +27,12 @@ export class HasanatPointEventTypeormEntity {
   @Column()
   actionKey: string;
 
-  @Column()
+  @Column({
+    type: 'numeric',
+    precision: 14,
+    scale: 1,
+    transformer: numericColumnTransformer,
+  })
   points: number;
 
   @Column({ type: 'date' })

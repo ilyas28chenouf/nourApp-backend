@@ -16,15 +16,15 @@ export class ProgressionResponseDto {
   totalVisibleLevels: number;
 
   @ApiProperty({
-    description: 'Points earned inside the current 1,000-point level',
+    description: 'Points earned inside the current 2,000-point step',
     minimum: 0,
-    maximum: 1000,
+    maximum: 2000,
   })
   currentPoints: number;
 
   @ApiProperty({
     description: 'Point target for each combined spiritual level',
-    example: 1000,
+    example: 2000,
   })
   targetPoints: number;
 
@@ -44,7 +44,21 @@ export class ProgressionResponseDto {
   progressToNextLevelPercent: number;
 
   @ApiProperty({
-    description: 'Whether the 150,000-point progression is complete',
+    description: 'Points earned inside the current 30,000-point main level',
+  })
+  mainLevelCurrentPoints: number;
+
+  @ApiProperty({ example: 30000 })
+  mainLevelTargetPoints: number;
+
+  @ApiProperty()
+  pointsToNextMainLevel: number;
+
+  @ApiProperty()
+  mainLevelProgressPercent: number;
+
+  @ApiProperty({
+    description: 'Whether the 300,000-point progression is complete',
   })
   isCompleted: boolean;
 

@@ -19,6 +19,9 @@ export class GoalEvaluationResponseDto {
   @ApiPropertyOptional({ enum: GoalFrequency })
   frequency?: GoalFrequency;
 
+  @ApiPropertyOptional()
+  targetUnit?: string;
+
   @ApiProperty()
   from: string;
 

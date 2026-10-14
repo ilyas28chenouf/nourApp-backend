@@ -4,63 +4,63 @@ export const HASANAT_ACTION_RULES = {
   PRAYER_ON_TIME_FARD: {
     key: 'PRAYER_ON_TIME_FARD',
     sourceType: HasanatSourceType.PRAYER,
-    points: 20,
+    points: 2,
     description: 'Obligatory prayer completed on time',
     isActive: true,
   },
   PRAYER_LATE_FARD: {
     key: 'PRAYER_LATE_FARD',
     sourceType: HasanatSourceType.PRAYER,
-    points: 10,
+    points: 1,
     description: 'Obligatory prayer completed late',
     isActive: true,
   },
   SUPEREROGATORY_PRAYER_RAKAH: {
     key: 'SUPEREROGATORY_PRAYER_RAKAH',
     sourceType: HasanatSourceType.PRAYER,
-    points: 5,
+    points: 0.5,
     description: "Supererogatory prayer per rak'ah",
     isActive: true,
   },
   QURAN_PAGE: {
     key: 'QURAN_PAGE',
     sourceType: HasanatSourceType.QURAN_READING,
-    points: 15,
+    points: 1.5,
     description: 'Quran reading per page',
     isActive: true,
   },
   QURAN_HIZB: {
     key: 'QURAN_HIZB',
     sourceType: HasanatSourceType.QURAN_READING,
-    points: 15,
+    points: 1.5,
     description: 'Quran reading per hizb',
     isActive: true,
   },
   MORNING_ADHKAR_COMPLETED: {
     key: 'MORNING_ADHKAR_COMPLETED',
     sourceType: HasanatSourceType.DHIKR,
-    points: 50,
+    points: 5,
     description: 'Morning adhkar completed',
     isActive: true,
   },
   EVENING_ADHKAR_COMPLETED: {
     key: 'EVENING_ADHKAR_COMPLETED',
     sourceType: HasanatSourceType.DHIKR,
-    points: 50,
+    points: 5,
     description: 'Evening adhkar completed',
     isActive: true,
   },
   FASTING_COMPLETED: {
     key: 'FASTING_COMPLETED',
     sourceType: HasanatSourceType.FASTING,
-    points: 200,
+    points: 20,
     description: 'Validated fasting day completed',
     isActive: true,
   },
   CHARITY_ACTION_COMPLETED: {
     key: 'CHARITY_ACTION_COMPLETED',
     sourceType: HasanatSourceType.CHARITY,
-    points: 300,
+    points: 30,
     description: 'Solidarity or social activity completed',
     isActive: true,
   },
@@ -92,7 +92,7 @@ export function calculateQuranReadingPoints(input: {
     pages > 0
       ? pages * HASANAT_ACTION_RULES.QURAN_PAGE.points
       : hizb * HASANAT_ACTION_RULES.QURAN_HIZB.points;
-  return Math.round(points);
+  return Math.round(points * 10) / 10;
 }
 
 function toNonNegativeNumber(value: unknown) {

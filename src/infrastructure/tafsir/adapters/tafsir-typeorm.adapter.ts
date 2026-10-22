@@ -276,6 +276,18 @@ export class TafsirTypeormAdapter implements TafsirPersistencePort {
     return this.progress.findOne({ where: { id } });
   }
 
+  findProgressByEvidence(
+    userId: string,
+    collectionId: string,
+    surahNumber: number,
+    ayahNumber: number,
+    readDate: string,
+  ) {
+    return this.progress.findOne({
+      where: { userId, collectionId, surahNumber, ayahNumber, readDate },
+    });
+  }
+
   createProgress(data: Partial<TafsirProgressTypeormEntity>) {
     return this.progress.save(this.progress.create(data));
   }

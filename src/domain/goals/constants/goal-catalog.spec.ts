@@ -127,11 +127,11 @@ describe('GOAL_CATALOG', () => {
     expect(
       GOAL_CATALOG.find((item) => item.code === 'FASTING_MONDAY')
         ?.indicatorTargets,
-    ).toEqual({ WEEK: 7, MONTH: 4, YEAR: 52 });
+    ).toEqual({ WEEK: 1, MONTH: 4, YEAR: 52 });
     expect(
       GOAL_CATALOG.find((item) => item.code === 'FASTING_SUNNAH')
         ?.indicatorTargets,
-    ).toEqual({ WEEK: 1, MONTH: 1, YEAR: null });
+    ).toEqual({ WEEK: null, MONTH: null, YEAR: null });
     expect(
       GOAL_CATALOG.find((item) => item.code === 'ACTIVITY_SICK_ISOLATED_VISIT')
         ?.indicatorTargets,
@@ -139,6 +139,6 @@ describe('GOAL_CATALOG', () => {
     expect(
       GOAL_CATALOG.find((item) => item.code === 'ACTIVITY_FAMILY_VISIT')
         ?.indicatorTargets,
-    ).toEqual({ WEEK: 7, MONTH: 4, YEAR: 52 });
+    ).toEqual({ WEEK: 1, MONTH: 4, YEAR: 52 });
   });
 });

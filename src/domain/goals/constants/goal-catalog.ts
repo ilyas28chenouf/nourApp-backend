@@ -13,7 +13,13 @@ export interface GoalCatalogDefinition {
   frequency: GoalFrequency;
   sortOrder: number;
   actionType?: CharityActionType;
+  displayMode: GoalDisplayMode;
   indicatorTargets: GoalIndicatorTargets;
+}
+
+export enum GoalDisplayMode {
+  PERIODIC = 'PERIODIC',
+  UNTIMED = 'UNTIMED',
 }
 
 export interface GoalIndicatorTargets {
@@ -24,8 +30,9 @@ export interface GoalIndicatorTargets {
 
 type CatalogInput = Omit<
   GoalCatalogDefinition,
-  'sortOrder' | 'indicatorTargets'
+  'sortOrder' | 'displayMode' | 'indicatorTargets'
 > & {
+  displayMode?: GoalDisplayMode;
   indicatorTargets?: GoalIndicatorTargets;
 };
 
@@ -50,8 +57,8 @@ const YEARLY_INDICATOR_TARGETS: GoalIndicatorTargets = {
   YEAR: 1,
 };
 const SPECIAL_FAST_INDICATOR_TARGETS: GoalIndicatorTargets = {
-  WEEK: 1,
-  MONTH: 1,
+  WEEK: null,
+  MONTH: null,
   YEAR: null,
 };
 
@@ -297,7 +304,7 @@ const definitions: CatalogInput[] = [
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.WEEKLY,
-    indicatorTargets: DAILY_INDICATOR_TARGETS,
+    indicatorTargets: WEEKLY_INDICATOR_TARGETS,
   },
   {
     code: 'FASTING_THURSDAY',
@@ -306,7 +313,7 @@ const definitions: CatalogInput[] = [
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.WEEKLY,
-    indicatorTargets: DAILY_INDICATOR_TARGETS,
+    indicatorTargets: WEEKLY_INDICATOR_TARGETS,
   },
   {
     code: 'FASTING_MONDAY_THURSDAY',
@@ -315,7 +322,7 @@ const definitions: CatalogInput[] = [
     target: 2,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.WEEKLY,
-    indicatorTargets: DAILY_INDICATOR_TARGETS,
+    indicatorTargets: WEEKLY_INDICATOR_TARGETS,
   },
   {
     code: 'FASTING_WHITE_DAYS',
@@ -324,7 +331,8 @@ const definitions: CatalogInput[] = [
     target: 3,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.MONTHLY,
-    indicatorTargets: DAILY_INDICATOR_TARGETS,
+    displayMode: GoalDisplayMode.UNTIMED,
+    indicatorTargets: SPECIAL_FAST_INDICATOR_TARGETS,
   },
   {
     code: 'FASTING_SUNNAH',
@@ -333,6 +341,7 @@ const definitions: CatalogInput[] = [
     target: 1,
     targetUnit: 'DAYS',
     frequency: GoalFrequency.MONTHLY,
+    displayMode: GoalDisplayMode.UNTIMED,
     indicatorTargets: SPECIAL_FAST_INDICATOR_TARGETS,
   },
   {
@@ -342,80 +351,42 @@ const definitions: CatalogInput[] = [
     target: 1,
     targetUnit: 'CADENCE',
     frequency: GoalFrequency.DAILY,
+    displayMode: GoalDisplayMode.UNTIMED,
     indicatorTargets: SPECIAL_FAST_INDICATOR_TARGETS,
   },
 ];
 
-const activityDefinitions: Array<
-  [CharityActionType, string, GoalIndicatorTargets]
-> = [
+const activityDefinitions: Array<[CharityActionType, string]> = [
   [
     CharityActionType.SICK_ISOLATED_VISIT,
     'Visite des malades et personnes isolées',
-    WEEKLY_INDICATOR_TARGETS,
   ],
-  [
-    CharityActionType.FAMILY_VISIT,
-    'Visites familiales',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.FRATERNAL_VISIT,
-    'Visites amicales et fraternelles',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [CharityActionType.MARAUDE, 'Maraudes', DAILY_INDICATOR_TARGETS],
-  [CharityActionType.COLLECTE, 'Collectes', DAILY_INDICATOR_TARGETS],
-  [CharityActionType.SADAQA, 'Donations', DAILY_INDICATOR_TARGETS],
-  [CharityActionType.EDUCATION, 'Éducation', DAILY_INDICATOR_TARGETS],
-  [
-    CharityActionType.TEACHING,
-    'Cours et enseignements',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [CharityActionType.MENTORAT, 'Mentorat', DAILY_INDICATOR_TARGETS],
-  [
-    CharityActionType.CONFERENCE_VIGIL,
-    'Conférences et veillées',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.SPIRITUAL_REMINDER,
-    'Rappel spirituel',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.RANDONNEE_SOLIDAIRE,
-    'Randonnées et sorties solidaires',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.VOYAGE_SOLIDAIRE,
-    'Voyages solidaires',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.ASSOCIATIVE_ENGAGEMENT,
-    'Engagement associatif',
-    DAILY_INDICATOR_TARGETS,
-  ],
-  [
-    CharityActionType.COMMUNITY_ENGAGEMENT,
-    'Engagement communautaire',
-    DAILY_INDICATOR_TARGETS,
-  ],
+  [CharityActionType.FAMILY_VISIT, 'Visites familiales'],
+  [CharityActionType.FRATERNAL_VISIT, 'Visites amicales et fraternelles'],
+  [CharityActionType.MARAUDE, 'Maraudes'],
+  [CharityActionType.COLLECTE, 'Collectes'],
+  [CharityActionType.SADAQA, 'Donations'],
+  [CharityActionType.EDUCATION, 'Éducation'],
+  [CharityActionType.TEACHING, 'Cours et enseignements'],
+  [CharityActionType.MENTORAT, 'Mentorat'],
+  [CharityActionType.CONFERENCE_VIGIL, 'Conférences et veillées'],
+  [CharityActionType.SPIRITUAL_REMINDER, 'Rappel spirituel'],
+  [CharityActionType.RANDONNEE_SOLIDAIRE, 'Randonnées et sorties solidaires'],
+  [CharityActionType.VOYAGE_SOLIDAIRE, 'Voyages solidaires'],
+  [CharityActionType.ASSOCIATIVE_ENGAGEMENT, 'Engagement associatif'],
+  [CharityActionType.COMMUNITY_ENGAGEMENT, 'Engagement communautaire'],
 ];
 
-for (const [actionType, title, indicatorTargets] of activityDefinitions) {
+for (const [actionType, title] of activityDefinitions) {
   definitions.push({
     code: `ACTIVITY_${actionType}`,
     category: GoalCategory.ACTIVITY,
     title,
     target: 1,
     targetUnit: 'ACTIVITIES',
-    frequency: GoalFrequency.MONTHLY,
+    frequency: GoalFrequency.WEEKLY,
     actionType,
-    indicatorTargets,
+    indicatorTargets: WEEKLY_INDICATOR_TARGETS,
   });
 }
 
@@ -423,6 +394,7 @@ export const GOAL_CATALOG: readonly GoalCatalogDefinition[] = Object.freeze(
   definitions.map((definition, index) => ({
     ...definition,
     sortOrder: index + 1,
+    displayMode: definition.displayMode ?? GoalDisplayMode.PERIODIC,
     indicatorTargets: Object.freeze({
       ...(definition.indicatorTargets ??
         defaultIndicatorTargets(definition.frequency)),

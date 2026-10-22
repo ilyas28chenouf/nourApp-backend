@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsInt, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  Max,
+  Min,
+} from 'class-validator';
 import { QuranMemorizationStatus } from '../../../../domain/quran/enums/quran-memorization-status.enum';
+import { QuranMemorizationUnit } from '../../../../domain/quran/enums/quran-memorization-unit.enum';
 
 export class CreateQuranMemorizationRequestDto {
   @ApiProperty()
@@ -17,6 +26,23 @@ export class CreateQuranMemorizationRequestDto {
   @IsInt()
   ayahTo?: number;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  memorizationDate?: string;
+
+  @ApiPropertyOptional({ enum: QuranMemorizationUnit })
+  @IsOptional()
+  @IsEnum(QuranMemorizationUnit)
+  selectionUnit?: QuranMemorizationUnit;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0.125)
+  @Max(10)
+  selectionValue?: number;
+
   @ApiProperty({ enum: QuranMemorizationStatus })
   @IsEnum(QuranMemorizationStatus)
   status: QuranMemorizationStatus;
@@ -25,4 +51,9 @@ export class CreateQuranMemorizationRequestDto {
   @IsOptional()
   @IsDateString()
   lastReviewedAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  completedAt?: string;
 }

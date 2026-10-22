@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CharityActionType } from '../../../../domain/charity/enums/charity-action-type.enum';
 import { GoalCategory } from '../../../../domain/goals/enums/goal-category.enum';
 import { GoalFrequency } from '../../../../domain/goals/enums/goal-frequency.enum';
+import { GoalDisplayMode } from '../../../../domain/goals/constants/goal-catalog';
 
 export class GoalIndicatorTargetsResponseDto {
   @ApiPropertyOptional({ nullable: true })
@@ -35,6 +36,9 @@ export class GoalCatalogResponseDto {
 
   @ApiProperty({ enum: GoalFrequency })
   frequency: GoalFrequency;
+
+  @ApiProperty({ enum: GoalDisplayMode })
+  displayMode: GoalDisplayMode;
 
   @ApiProperty()
   sortOrder: number;

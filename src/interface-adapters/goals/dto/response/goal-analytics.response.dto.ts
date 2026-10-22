@@ -83,6 +83,52 @@ export class GoalAnalyticsBucketResponseDto {
   summary: GoalAnalyticsSummaryResponseDto;
 }
 
+export class GoalUntimedMilestoneResponseDto {
+  @ApiProperty()
+  key: string;
+
+  @ApiProperty()
+  actual: number;
+
+  @ApiProperty()
+  target: number;
+
+  @ApiProperty()
+  percentage: number;
+
+  @ApiProperty()
+  completed: boolean;
+}
+
+export class GoalUntimedEvaluationResponseDto {
+  @ApiProperty()
+  goalId: string;
+
+  @ApiProperty()
+  goalCode: string;
+
+  @ApiProperty({ enum: GoalCategory })
+  category: GoalCategory;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty()
+  targetUnit: string;
+
+  @ApiProperty({ enum: ['UNTIMED'] })
+  displayMode: 'UNTIMED';
+
+  @ApiProperty({ type: [GoalUntimedMilestoneResponseDto] })
+  milestones: GoalUntimedMilestoneResponseDto[];
+
+  @ApiProperty()
+  percentage: number;
+
+  @ApiProperty()
+  completed: boolean;
+}
+
 export class GoalAnalyticsResponseDto {
   @ApiProperty({ enum: CalendarPeriod })
   period: CalendarPeriod;
@@ -101,6 +147,9 @@ export class GoalAnalyticsResponseDto {
 
   @ApiProperty({ type: [GoalEvaluationResponseDto] })
   goals: GoalEvaluationResponseDto[];
+
+  @ApiProperty({ type: [GoalUntimedEvaluationResponseDto] })
+  untimedGoals: GoalUntimedEvaluationResponseDto[];
 
   @ApiProperty({ type: [GoalAnalyticsBucketResponseDto] })
   buckets: GoalAnalyticsBucketResponseDto[];

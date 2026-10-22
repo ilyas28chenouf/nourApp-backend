@@ -24,10 +24,29 @@ export class ManageTafsirProgressUsecase {
       true,
     );
     if (!item) throw new NotFoundException('Active Tafsir item not found');
+    const readDate = requireDateOnly(
+      data.readDate ?? todayDateOnly(),
+      'readDate',
+    );
+    const existing = await this.persistence.findProgressByEvidence(
+      userId,
+      data.collectionId,
+      data.surahNumber,
+      data.ayahNumber,
+      readDate,
+    );
+    if (existing) {
+      return existing.completed
+        ? existing
+        : this.persistence.updateProgress(existing.id, {
+            completed: data.completed ?? true,
+            notes: data.notes,
+          });
+    }
     return this.persistence.createProgress({
       ...data,
       userId,
-      readDate: requireDateOnly(data.readDate ?? todayDateOnly(), 'readDate'),
+      readDate,
       completed: data.completed ?? true,
     });
   }

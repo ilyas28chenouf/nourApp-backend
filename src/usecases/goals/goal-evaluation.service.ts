@@ -7,6 +7,7 @@ import {
 import {
   APPROVED_SUNNAH_FASTING_TYPES,
   findGoalCatalogDefinition,
+  GoalDisplayMode,
   RECOMMENDED_SURAH_NUMBERS,
 } from '../../domain/goals/constants/goal-catalog';
 import { GoalModel } from '../../domain/goals/model/goal.model';
@@ -45,6 +46,26 @@ export interface GoalEvaluationResult {
   percentage: number;
   completed: boolean;
   applicable: boolean;
+}
+
+export interface GoalUntimedMilestoneResult {
+  key: string;
+  actual: number;
+  target: number;
+  percentage: number;
+  completed: boolean;
+}
+
+export interface GoalUntimedEvaluationResult {
+  goalId: string;
+  goalCode: string;
+  category: string;
+  title: string;
+  targetUnit: string;
+  displayMode: GoalDisplayMode.UNTIMED;
+  milestones: GoalUntimedMilestoneResult[];
+  percentage: number;
+  completed: boolean;
 }
 
 interface GoalEvidence {
@@ -233,7 +254,7 @@ export class GoalEvaluationService {
           prayers.some(
             (item) =>
               item.prayerDate === date &&
-              item.prayerName === PrayerName.JUMUAH &&
+              [PrayerName.DHUHR, PrayerName.JUMUAH].includes(item.prayerName) &&
               item.status === PrayerStatus.DONE &&
               item.prayedAtMosque,
           ),
@@ -345,7 +366,7 @@ export class GoalEvaluationService {
             quran.some(
               (item) =>
                 item.readingDate === date &&
-                this.isValidQuranReading(item) &&
+                item.objectiveReached &&
                 item.surahNumber !== null &&
                 item.surahNumber !== undefined &&
                 RECOMMENDED_SURAH_NUMBERS.includes(item.surahNumber),
@@ -493,25 +514,147 @@ export class GoalEvaluationService {
       }
       default:
         if (definition.actionType) {
-          const actual = new Set(
+          const completedWeeks = new Set(
             evidence.charity
               .filter(
                 (item) =>
                   inDays(item.charityDate) &&
                   item.actionType === definition.actionType,
               )
-              .map((item) => item.charityDate),
-          ).size;
+              .map((item) => this.weekKey(item.charityDate)),
+          );
           return this.result(
             goal,
             effectiveFrom,
             effectiveTo,
-            actual,
-            definition.target * this.monthsInRange(effectiveFrom, effectiveTo),
+            completedWeeks.size,
+            Math.ceil(days.length / 7),
           );
         }
         return null;
     }
+  }
+
+  evaluateUntimed(
+    goal: GoalModel,
+    evidence: GoalEvidence,
+    anchor: string,
+  ): GoalUntimedEvaluationResult | null {
+    if (!goal.goalCode) return null;
+    const definition = findGoalCatalogDefinition(goal.goalCode);
+    if (!definition || definition.displayMode !== GoalDisplayMode.UNTIMED) {
+      return null;
+    }
+
+    const date = DateTime.fromISO(anchor, { zone: 'utc' });
+    const yearFrom = date.startOf('year').toISODate()!;
+    const monthFrom = date.startOf('month').toISODate()!;
+    const monthTo = date.endOf('month').toISODate()!;
+    const completedFasts = evidence.fasting.filter(
+      (item) =>
+        item.status === FastingStatus.FASTED && item.fastingDate <= anchor,
+    );
+    let milestones: GoalUntimedMilestoneResult[] = [];
+
+    if (definition.code === 'FASTING_WHITE_DAYS') {
+      const recommendedDates = new Set(
+        evidence.recommendedFastingDays
+          .filter((day) => day.type === FastingType.WHITE_DAYS)
+          .map((day) => day.date),
+      );
+      const whiteDates = new Set(
+        completedFasts
+          .filter(
+            (item) =>
+              item.fastingType === FastingType.WHITE_DAYS ||
+              recommendedDates.has(item.fastingDate),
+          )
+          .map((item) => item.fastingDate),
+      );
+      const currentMonthDays = [...whiteDates].filter(
+        (fastingDate) => fastingDate >= monthFrom && fastingDate <= monthTo,
+      ).length;
+      const completedMonths = new Set(
+        [...whiteDates]
+          .filter(
+            (fastingDate) => fastingDate >= yearFrom && fastingDate <= anchor,
+          )
+          .map((fastingDate) => fastingDate.slice(0, 7))
+          .filter(
+            (month) =>
+              [...whiteDates].filter((value) => value.startsWith(month))
+                .length >= 3,
+          ),
+      ).size;
+      milestones = [
+        this.milestone('lunarDays', currentMonthDays, 3),
+        this.milestone('annualCycles', completedMonths, 12),
+      ];
+    } else if (definition.code === 'FASTING_SUNNAH') {
+      milestones = [FastingType.ARAFAH, FastingType.ASHURA].map((type) => {
+        const recommendedDates = new Set(
+          evidence.recommendedFastingDays
+            .filter((day) => day.type === type)
+            .map((day) => day.date),
+        );
+        const actual = completedFasts.some(
+          (item) =>
+            item.fastingDate >= yearFrom &&
+            (item.fastingType === type ||
+              recommendedDates.has(item.fastingDate)),
+        )
+          ? 1
+          : 0;
+        return this.milestone(
+          type === FastingType.ARAFAH ? 'arafah' : 'ashura',
+          actual,
+          1,
+        );
+      });
+    } else if (definition.code === 'FASTING_DAOUD') {
+      const dueDates = eachDateOnlyBetween(goal.startDate, anchor).filter(
+        (dueDate) => diffDateOnlyInDays(dueDate, goal.startDate) % 2 === 0,
+      );
+      const completedDates = new Set(
+        completedFasts.map((item) => item.fastingDate),
+      );
+      const latestDueDate = dueDates.at(-1);
+      const recentDueDates = dueDates.slice(-2);
+      milestones = [
+        this.milestone(
+          'latestFastingDay',
+          latestDueDate && completedDates.has(latestDueDate) ? 1 : 0,
+          1,
+        ),
+        this.milestone(
+          'cadence',
+          recentDueDates.length > 0 &&
+            recentDueDates.every((dueDate) => completedDates.has(dueDate))
+            ? 1
+            : 0,
+          1,
+        ),
+      ];
+    }
+
+    if (!milestones.length) return null;
+    const percentage = Number(
+      (
+        milestones.reduce((sum, item) => sum + item.percentage, 0) /
+        milestones.length
+      ).toFixed(2),
+    );
+    return {
+      goalId: goal.id,
+      goalCode: definition.code,
+      category: definition.category,
+      title: definition.title,
+      targetUnit: definition.targetUnit,
+      displayMode: GoalDisplayMode.UNTIMED,
+      milestones,
+      percentage,
+      completed: milestones.every((item) => item.completed),
+    };
   }
 
   private completedObligatoryPrayerCount(prayers: GoalEvidence['prayers']) {
@@ -722,8 +865,20 @@ export class GoalEvaluationService {
   private memorizationDates(evidence: GoalEvidence) {
     return new Set(
       evidence.memorization
-        .filter((item) => item.status !== QuranMemorizationStatus.NOT_STARTED)
-        .map((item) => item.lastReviewedAt ?? item.updatedAt ?? item.createdAt)
+        .filter((item) =>
+          [
+            QuranMemorizationStatus.MEMORIZED,
+            QuranMemorizationStatus.TO_REVIEW,
+          ].includes(item.status),
+        )
+        .map(
+          (item) =>
+            item.memorizationDate ??
+            item.completedAt ??
+            item.lastReviewedAt ??
+            item.updatedAt ??
+            item.createdAt,
+        )
         .map((date) => toSafeDateOnly(date))
         .filter((date): date is string => date !== null),
     );
@@ -762,5 +917,20 @@ export class GoalEvaluationService {
 
   private weekday(date: string) {
     return DateTime.fromISO(date, { zone: 'utc' }).weekday;
+  }
+
+  private weekKey(date: string) {
+    return DateTime.fromISO(date, { zone: 'utc' }).toFormat('kkkk-WW');
+  }
+
+  private milestone(key: string, actual: number, target: number) {
+    const cappedActual = Math.min(Math.max(actual, 0), target);
+    return {
+      key,
+      actual: cappedActual,
+      target,
+      percentage: Number(((cappedActual / target) * 100).toFixed(2)),
+      completed: cappedActual >= target,
+    };
   }
 }

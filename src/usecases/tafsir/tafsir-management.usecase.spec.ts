@@ -9,6 +9,7 @@ import { TafsirResponseMapper } from '../../interface-adapters/tafsir/mappers/ta
 import { GetPublicTafsirUsecase } from './get-public-tafsir.usecase';
 import { ManageTafsirCollectionsUsecase } from './manage-tafsir-collections.usecase';
 import { ManageTafsirItemsUsecase } from './manage-tafsir-items.usecase';
+import { ManageTafsirProgressUsecase } from './manage-tafsir-progress.usecase';
 
 const collection: TafsirCollectionModel = {
   id: 'collection-1',
@@ -58,10 +59,43 @@ function createPersistence() {
     createItem: jest.fn(),
     updateItem: jest.fn(),
     deleteItem: jest.fn(),
+    findProgressByUserId: jest.fn(),
+    findProgressById: jest.fn(),
+    findProgressByEvidence: jest.fn(),
+    createProgress: jest.fn(),
+    updateProgress: jest.fn(),
   } as jest.Mocked<TafsirPersistencePort>;
 }
 
 describe('Tafsir management use cases', () => {
+  it('returns existing daily Tafsir evidence instead of counting it twice', async () => {
+    const persistence = createPersistence();
+    const progress = {
+      id: 'progress-1',
+      userId: 'user-1',
+      collectionId: collection.id,
+      surahNumber: 1,
+      ayahNumber: 1,
+      readDate: '2026-10-22',
+      completed: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    persistence.findItemByLocation.mockResolvedValue(item);
+    persistence.findProgressByEvidence.mockResolvedValue(progress);
+    const usecase = new ManageTafsirProgressUsecase(persistence);
+
+    await expect(
+      usecase.create('user-1', {
+        collectionId: collection.id,
+        surahNumber: 1,
+        ayahNumber: 1,
+        readDate: '2026-10-22',
+      }),
+    ).resolves.toEqual(progress);
+    expect(persistence.createProgress.mock.calls).toHaveLength(0);
+  });
+
   it('stores explicit published values and defaults omitted published to true', async () => {
     const persistence = createPersistence();
     persistence.findCollectionByKey.mockResolvedValue(null);

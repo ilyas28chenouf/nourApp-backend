@@ -24,6 +24,7 @@ import { QuranUsecasesProxyService } from '../../../usecases-proxy/quran/quran-u
 import { CreateQuranReadingGoalRequestDto } from '../dto/request/create-quran-reading-goal.request.dto';
 import { CreateQuranReadingLogRequestDto } from '../dto/request/create-quran-reading-log.request.dto';
 import { CreateQuranMemorizationRequestDto } from '../dto/request/create-quran-memorization.request.dto';
+import { CompleteRecommendedSurahRequestDto } from '../dto/request/complete-recommended-surah.request.dto';
 import { UpdateQuranReadingGoalRequestDto } from '../dto/request/update-quran-reading-goal.request.dto';
 import { UpdateQuranReadingLogRequestDto } from '../dto/request/update-quran-reading-log.request.dto';
 import { UpdateQuranMemorizationRequestDto } from '../dto/request/update-quran-memorization.request.dto';
@@ -224,7 +225,7 @@ export class QuranController {
     @CurrentUser() user: UserModel,
     @Body() dto: CreateQuranMemorizationRequestDto,
   ) {
-    return this.proxy.createMemorization(user.id, dto);
+    return this.proxy.createMemorization(user.id, dto, user.timezone);
   }
   @Patch('memorization/:id')
   @ApiOperation({ summary: 'Update Quran memorization progress' })
@@ -236,5 +237,24 @@ export class QuranController {
     @Body() dto: UpdateQuranMemorizationRequestDto,
   ) {
     return this.proxy.updateMemorization(user.id, id, dto);
+  }
+
+  @Post('recommended-surahs/:number/complete')
+  @ApiOperation({ summary: 'Complete a recommended Surah once per day' })
+  @ApiBody({ type: CompleteRecommendedSurahRequestDto })
+  @ApiOkResponse({ type: QuranReadingLogResponseDto })
+  completeRecommendedSurah(
+    @CurrentUser() user: UserModel,
+    @Param('number') number: string,
+    @Body() dto: CompleteRecommendedSurahRequestDto,
+  ) {
+    return QuranResponseMapper.toDto(
+      this.proxy.completeRecommendedSurah(
+        user.id,
+        Number(number),
+        dto,
+        user.timezone,
+      ),
+    );
   }
 }

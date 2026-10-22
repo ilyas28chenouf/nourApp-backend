@@ -18,4 +18,15 @@ export interface QuranPersistencePort {
   findMemorizationByUserId(
     userId: string,
   ): Promise<QuranMemorizationProgressModel[]>;
+  findMemorizationByDate(
+    userId: string,
+    memorizationDate: string,
+  ): Promise<QuranMemorizationProgressModel | null>;
+  createMemorization(
+    data: Partial<QuranMemorizationProgressModel>,
+  ): Promise<QuranMemorizationProgressModel>;
+  updateMemorization(
+    id: string,
+    data: Partial<QuranMemorizationProgressModel>,
+  ): Promise<QuranMemorizationProgressModel>;
 }

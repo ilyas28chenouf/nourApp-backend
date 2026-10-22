@@ -110,7 +110,7 @@ describe('GoalEvaluationService approved rules', () => {
       ).toMatchObject({ completed: true });
     });
 
-    it('requires an explicit Jumuah mosque log for the Friday goal', () => {
+    it('accepts the Friday Dhuhr mosque selection and explicit Jumuah logs', () => {
       const friday = '2026-08-21';
       expect(
         evaluate(
@@ -126,7 +126,7 @@ describe('GoalEvaluationService approved rules', () => {
           friday,
           friday,
         ),
-      ).toMatchObject({ actual: 0, target: 1, completed: false });
+      ).toMatchObject({ actual: 1, target: 1, completed: true });
       expect(
         evaluate(
           'PRAYER_FRIDAY_MOSQUE',
@@ -204,6 +204,17 @@ describe('GoalEvaluationService approved rules', () => {
           memorization: [memorization(DATE)],
         }),
       ).toMatchObject({ completed: true });
+      expect(
+        evaluate('QURAN_DAILY_MEMORIZATION', {
+          quran: [reading],
+          memorization: [
+            {
+              ...memorization(DATE),
+              status: QuranMemorizationStatus.IN_PROGRESS,
+            },
+          ],
+        }),
+      ).toMatchObject({ completed: false });
     });
 
     it('uses canonical Surah numbers and real Tafsir progress', () => {
@@ -213,10 +224,29 @@ describe('GoalEvaluationService approved rules', () => {
             {
               ...quran('kahf', ReadingPeriod.DAY, 1),
               surahNumber: 18,
+              objectiveReached: true,
             },
           ],
         }),
       ).toMatchObject({ completed: true });
+      expect(
+        evaluate('QURAN_RECOMMENDED_SURAHS', {
+          quran: [
+            {
+              ...quran('kahf-1', ReadingPeriod.DAY, 0),
+              ayahFrom: 1,
+              objectiveReached: true,
+              surahNumber: 18,
+            },
+            {
+              ...quran('kahf-2', ReadingPeriod.DAY, 0),
+              ayahFrom: 1,
+              objectiveReached: true,
+              surahNumber: 18,
+            },
+          ],
+        }),
+      ).toMatchObject({ actual: 1, target: 1 });
       expect(
         evaluate('QURAN_MEMORIZATION_TAFSIR', {
           memorization: [memorization(DATE)],
@@ -489,7 +519,8 @@ function memorization(date: string) {
     id: 'memorization',
     userId: 'user-1',
     surahNumber: 1,
-    status: QuranMemorizationStatus.IN_PROGRESS,
+    status: QuranMemorizationStatus.MEMORIZED,
+    memorizationDate: date,
     lastReviewedAt: new Date(`${date}T12:00:00.000Z`),
   };
 }

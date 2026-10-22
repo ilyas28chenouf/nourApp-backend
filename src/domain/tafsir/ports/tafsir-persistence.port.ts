@@ -70,6 +70,13 @@ export interface TafsirPersistencePort {
   deleteItem(id: string): Promise<void>;
   findProgressByUserId(userId: string): Promise<TafsirProgressModel[]>;
   findProgressById(id: string): Promise<TafsirProgressModel | null>;
+  findProgressByEvidence(
+    userId: string,
+    collectionId: string,
+    surahNumber: number,
+    ayahNumber: number,
+    readDate: string,
+  ): Promise<TafsirProgressModel | null>;
   createProgress(
     data: Partial<TafsirProgressModel>,
   ): Promise<TafsirProgressModel>;

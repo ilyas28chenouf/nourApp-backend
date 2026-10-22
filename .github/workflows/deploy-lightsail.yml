@@ -1,113 +1,5 @@
-name: Deploy NourApp API to Lightsail
 
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    name: Build and Deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Build NestJS app
-        run: npm run build
-
-      - name: Prepare SSH
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-        run: |
-          set -e
-
-          if [ -z "$LIGHTSAIL_HOST" ]; then
-            echo "ERROR: LIGHTSAIL_HOST secret is missing"
-            exit 1
-          fi
-
-          if [ -z "$LIGHTSAIL_SSH_KEY" ]; then
-            echo "ERROR: LIGHTSAIL_SSH_KEY secret is missing"
-            exit 1
-          fi
-
-          mkdir -p ~/.ssh
-
-          echo "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail_key
-          chmod 600 ~/.ssh/lightsail_key
-
-          ssh-keyscan -H "$LIGHTSAIL_HOST" >> ~/.ssh/known_hosts
-
-      - name: Test SSH connection
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
-        run: |
-          ssh \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=10 \
-            -o TCPKeepAlive=yes \
-            -i ~/.ssh/lightsail_key \
-            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
-            "echo SSH OK && hostname && whoami"
-
-      - name: Create deploy directory
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          ssh \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=10 \
-            -o TCPKeepAlive=yes \
-            -i ~/.ssh/lightsail_key \
-            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
-            "mkdir -p '$DEPLOY_PATH'"
-
-      - name: Upload dist
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          rsync -az --delete \
-            -e "ssh \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=10 \
-              -o TCPKeepAlive=yes \
-              -i ~/.ssh/lightsail_key" \
-            dist/ \
-            "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/dist/"
-
-      - name: Upload package files
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          rsync -az \
-            -e "ssh \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=10 \
-              -o TCPKeepAlive=yes \
-              -i ~/.ssh/lightsail_key" \
-            package.json package-lock.json \
-            "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/"
-
-      - name: Install production dependencies and restart PM2
+      - name: Install dependencies, migrate database, and restart PM2
         env:
           LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
@@ -121,10 +13,10 @@ jobs:
             "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" \
             "DEPLOY_PATH='$DEPLOY_PATH' bash -s" << 'EOF'
 
-              set -e
+              set -Eeuo pipefail
 
               echo "========================================"
-              echo "Loading Node environment..."
+              echo "Loading Node environment"
               echo "========================================"
 
               export NVM_DIR="$HOME/.nvm"
@@ -136,92 +28,264 @@ jobs:
 
               export PATH="$HOME/.nvm/versions/node/v18.13.0/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
-              echo ""
-              echo "========================================"
-              echo "Checking server tools..."
-              echo "========================================"
+              command -v node
+              command -v npm
 
-              command -v node || {
-                echo "ERROR: node not found in non-interactive SSH session"
-                echo "PATH=$PATH"
-                exit 1
-              }
-
-              echo "Node:"
               node -v
-
-              command -v npm || {
-                echo "ERROR: npm not found in non-interactive SSH session"
-                echo "PATH=$PATH"
-                exit 1
-              }
-
-              echo "NPM:"
               npm -v
 
-              command -v pm2 || {
-                echo "PM2 not found."
-                echo "Installing PM2..."
+              if ! command -v pm2 >/dev/null 2>&1; then
                 npm install -g pm2 --no-audit --no-fund
-              }
-
-              echo "PM2:"
-              pm2 -v
+              fi
 
               echo ""
               echo "========================================"
-              echo "Go to deploy folder..."
+              echo "Preparing deployment"
               echo "========================================"
 
               cd "$DEPLOY_PATH"
 
-              echo "Deploy path:"
-              pwd
+              test -f .env || {
+                echo "ERROR: Production .env file not found."
+                exit 1
+              }
+
+              test -f dist/infrastructure/database/typeorm.data-source.js || {
+                echo "ERROR: Compiled TypeORM DataSource not found."
+                exit 1
+              }
+
+              echo "Checking database synchronization setting..."
+
+              if grep -Eq '^[[:space:]]*DB_SYNCHRONIZE[[:space:]]*=[[:space:]]*true([[:space:]]*(#.*)?)?$' .env; then
+                echo "ERROR: DB_SYNCHRONIZE=true in production .env."
+                echo "Set DB_SYNCHRONIZE=false before deployment."
+                exit 1
+              fi
+
+              # Explicitly disable TypeORM schema synchronization
+              # for the application started by PM2.
+              export DB_SYNCHRONIZE=false
 
               echo ""
-              echo "Files in deploy folder:"
-              ls -la
+              echo "========================================"
+              echo "Installing production dependencies"
+              echo "========================================"
+
+              npm ci --omit=dev --no-audit --no-fund
 
               echo ""
               echo "========================================"
-              echo "Install production dependencies..."
+              echo "Checking and running the newest migration"
               echo "========================================"
 
-              npm ci \
-                --omit=dev \
-                --no-audit \
-                --no-fund
+              node <<'NODE'
+              const fs = require('node:fs');
+              const path = require('node:path');
+              const { DataSource } = require('typeorm');
+
+              const migrationsDir = path.resolve(
+                'dist/infrastructure/database/migrations'
+              );
+
+              const migrationFiles = fs.readdirSync(migrationsDir)
+                .filter(file => /^\d+-.+\.js$/.test(file))
+                .sort((a, b) => {
+                  const ta = Number(a.match(/^(\d+)-/)[1]);
+                  const tb = Number(b.match(/^(\d+)-/)[1]);
+                  return ta - tb;
+                });
+
+              if (migrationFiles.length === 0) {
+                throw new Error('No compiled migration files found.');
+              }
+
+              const dataSourceModule = require(
+                './dist/infrastructure/database/typeorm.data-source.js'
+              );
+
+              const original = dataSourceModule.default;
+
+              if (!original || !original.options) {
+                throw new Error(
+                  'Could not load the configured TypeORM DataSource.'
+                );
+              }
+
+              const baseOptions = {
+                ...original.options,
+                synchronize: false,
+                migrationsRun: false,
+              };
+
+              (async () => {
+                // Read the latest recorded migration timestamp.
+                // This intentionally ignores older migration files
+                // that are missing from the existing migration history.
+                const probe = new DataSource({
+                  ...baseOptions,
+                  migrations: [],
+                });
+
+                let lastAppliedTimestamp = 0;
+
+                try {
+                  await probe.initialize();
+
+                  const rows = await probe.query(
+                    'SELECT MAX("timestamp") AS "timestamp" FROM "migrations"'
+                  );
+
+                  lastAppliedTimestamp = Number(
+                    rows[0]?.timestamp ?? 0
+                  );
+                } finally {
+                  if (probe.isInitialized) {
+                    await probe.destroy();
+                  }
+                }
+
+                console.log(
+                  'Latest recorded migration timestamp:',
+                  lastAppliedTimestamp
+                );
+
+                // Only consider migrations newer than the latest
+                // recorded migration. Never run the entire migration list.
+                const newMigrations = migrationFiles.filter(file => {
+                  const timestamp = Number(
+                    file.match(/^(\d+)-/)[1]
+                  );
+
+                  return timestamp > lastAppliedTimestamp;
+                });
+
+                if (newMigrations.length === 0) {
+                  console.log(
+                    'No new migration. Skipping migration execution.'
+                  );
+                  return;
+                }
+
+                // Fail safely if multiple migrations were added.
+                // This prevents silently skipping intermediate migrations.
+                if (newMigrations.length > 1) {
+                  throw new Error(
+                    `Found ${newMigrations.length} new migrations: ` +
+                    `${newMigrations.join(', ')}. ` +
+                    'Deploy one new migration at a time.'
+                  );
+                }
+
+                const migrationFile = newMigrations[0];
+
+                const migrationModule = require(
+                  path.join(migrationsDir, migrationFile)
+                );
+
+                const MigrationClass = Object.values(migrationModule).find(
+                  value =>
+                    typeof value === 'function' &&
+                    typeof value.prototype?.up === 'function'
+                );
+
+                if (!MigrationClass) {
+                  throw new Error(
+                    `Could not find migration class in ${migrationFile}`
+                  );
+                }
+
+                console.log(
+                  'Executing only migration:',
+                  MigrationClass.name
+                );
+
+                // Construct a DataSource containing exactly one migration.
+                const runner = new DataSource({
+                  ...baseOptions,
+                  migrations: [MigrationClass],
+                });
+
+                try {
+                  await runner.initialize();
+
+                  const executed = await runner.runMigrations({
+                    transaction: 'all',
+                  });
+
+                  console.log(
+                    'Executed migrations:',
+                    executed.map(migration => migration.name)
+                  );
+
+                  if (executed.length === 0) {
+                    console.log(
+                      'Migration already recorded. Nothing to execute.'
+                    );
+                  }
+                } finally {
+                  if (runner.isInitialized) {
+                    await runner.destroy();
+                  }
+                }
+              })().catch(error => {
+                console.error('MIGRATION FAILED:', error);
+                process.exitCode = 1;
+              });
+              NODE
 
               echo ""
               echo "========================================"
-              echo "Restart PM2 app..."
+              echo "Restarting backend"
               echo "========================================"
 
-              if pm2 describe nourapp-api > /dev/null 2>&1; then
-                echo "Existing PM2 application found."
-                echo "Reloading nourapp-api..."
-
+              if pm2 describe nourapp-api >/dev/null 2>&1; then
                 pm2 reload nourapp-api --update-env
               else
-                echo "PM2 application does not exist."
-                echo "Starting nourapp-api..."
-
                 pm2 start dist/main.js \
                   --name nourapp-api \
                   --update-env
               fi
 
+              echo "Waiting for backend startup..."
+              sleep 5
+
               echo ""
-              echo "Saving PM2 configuration..."
+              echo "========================================"
+              echo "Verifying PM2 status"
+              echo "========================================"
+
+              pm2 jlist | node -e '
+                let input = "";
+
+                process.stdin.on("data", chunk => input += chunk);
+
+                process.stdin.on("end", () => {
+                  try {
+                    const apps = JSON.parse(input);
+                    const app = apps.find(
+                      item => item.name === "nourapp-api"
+                    );
+
+                    if (!app || app.pm2_env.status !== "online") {
+                      console.error(
+                        "ERROR: nourapp-api is not online."
+                      );
+                      process.exit(1);
+                    }
+
+                    console.log(
+                      "nourapp-api is online. PID:",
+                      app.pid
+                    );
+                  } catch (error) {
+                    console.error(error);
+                    process.exit(1);
+                  }
+                });
+              '
 
               pm2 save
-
-              echo ""
-              echo "========================================"
-              echo "PM2 status"
-              echo "========================================"
-
-              pm2 status
 
               echo ""
               echo "========================================"

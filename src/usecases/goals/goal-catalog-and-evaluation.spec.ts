@@ -72,7 +72,7 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
     expect(usecase.withCatalogDefinition(custom).title).toBe('Mon but');
   });
 
-  it('uses explicit Friday Jumuah evidence and loads each domain once', async () => {
+  it('uses Friday mosque evidence and loads each domain once', async () => {
     const prayers = {
       findByUserId: jest.fn().mockResolvedValue([
         {
@@ -161,7 +161,63 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
     expect(result).toMatchObject({ actual: 1, target: 2, percentage: 50 });
   });
 
-  it('scales monthly activity targets and creates every intersecting month week', async () => {
+  it('requires four complete seven-day cycles for a monthly daily objective', async () => {
+    const evaluation = evaluationService();
+    jest.spyOn(evaluation, 'loadEvidence').mockResolvedValue(
+      evidence({
+        prayers: ['01', '02', '03', '04'].flatMap((day) => [
+          prayer(`fajr-${day}`, `2026-08-${day}`, PrayerName.FAJR),
+          prayer(`dhuhr-${day}`, `2026-08-${day}`, PrayerName.DHUHR),
+        ]),
+      }),
+    );
+
+    const analytics = await new GoalAnalyticsUsecase(evaluation).execute(
+      'user-1',
+      [goal('goal-on-time', 'PRAYER_TWO_ON_TIME_DAILY')],
+      { period: 'MONTH', anchor: '2026-08-20' },
+    );
+
+    expect(analytics.goals[0]).toMatchObject({
+      actual: 0,
+      target: 4,
+      completed: false,
+    });
+  });
+
+  it('returns special fasting objectives outside the period-based goal list', async () => {
+    const evaluation = evaluationService();
+    jest.spyOn(evaluation, 'loadEvidence').mockResolvedValue(
+      evidence({
+        fasting: [
+          {
+            id: 'white-1',
+            userId: 'user-1',
+            fastingDate: '2026-08-20',
+            fastingType: 'WHITE_DAYS',
+            status: 'FASTED',
+          },
+        ],
+      }),
+    );
+    const result = await new GoalAnalyticsUsecase(evaluation).execute(
+      'user-1',
+      [goal('white-days', 'FASTING_WHITE_DAYS')],
+      { period: 'WEEK', anchor: '2026-08-20' },
+    );
+
+    expect(result.goals).toHaveLength(0);
+    expect(result.untimedGoals[0]).toMatchObject({
+      goalCode: 'FASTING_WHITE_DAYS',
+      displayMode: 'UNTIMED',
+      milestones: [
+        expect.objectContaining({ key: 'lunarDays', actual: 1, target: 3 }),
+        expect.objectContaining({ key: 'annualCycles', target: 12 }),
+      ],
+    });
+  });
+
+  it('deduplicates activities by week and exposes four document-defined month buckets', async () => {
     const service = evaluationService();
     const activityGoal = goal('goal-activity', 'ACTIVITY_SADAQA');
     activityGoal.startDate = '2026-01-01';
@@ -175,12 +231,18 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
             charityDate: '2026-08-20',
             actionType: CharityActionType.SADAQA,
           },
+          {
+            id: 'charity-same-week',
+            userId: 'user-1',
+            charityDate: '2026-08-21',
+            actionType: CharityActionType.SADAQA,
+          },
         ],
       }),
       '2026-01-01',
       '2026-12-31',
     );
-    expect(result).toMatchObject({ actual: 1, target: 12 });
+    expect(result).toMatchObject({ actual: 1, target: 53 });
 
     const analyticsEvaluation = evaluationService();
     jest.spyOn(analyticsEvaluation, 'loadEvidence').mockResolvedValue(
@@ -190,6 +252,12 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
             id: 'charity-1',
             userId: 'user-1',
             charityDate: '2026-08-20',
+            actionType: CharityActionType.SADAQA,
+          },
+          {
+            id: 'charity-same-week',
+            userId: 'user-1',
+            charityDate: '2026-08-21',
             actionType: CharityActionType.SADAQA,
           },
         ],
@@ -220,14 +288,14 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
       period: 'MONTH',
       anchor: '2026-08-20',
     });
-    expect(month.buckets).toHaveLength(6);
+    expect(month.buckets).toHaveLength(4);
     expect(month.buckets[0]).toMatchObject({
       from: '2026-08-01',
-      to: '2026-08-02',
+      to: '2026-08-07',
     });
-    expect(month.buckets[5]).toMatchObject({
-      from: '2026-08-31',
-      to: '2026-08-31',
+    expect(month.buckets[3]).toMatchObject({
+      from: '2026-08-22',
+      to: '2026-08-28',
     });
   });
 });

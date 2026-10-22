@@ -13,6 +13,11 @@ import { TafsirCollectionTypeormEntity } from './tafsir-collection.typeorm-entit
 @Entity('tafsir_progress')
 @Index(['userId', 'readDate'])
 @Index(['collectionId', 'surahNumber', 'ayahNumber'])
+@Index(
+  'IDX_tafsir_progress_daily_evidence',
+  ['userId', 'collectionId', 'surahNumber', 'ayahNumber', 'readDate'],
+  { unique: true },
+)
 export class TafsirProgressTypeormEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

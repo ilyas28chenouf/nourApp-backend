@@ -59,6 +59,12 @@ export class QuranTypeormAdapter implements QuranPersistencePort {
       order: { surahNumber: 'ASC', createdAt: 'DESC' },
     });
   }
+  findMemorizationByDate(userId: string, memorizationDate: string) {
+    return this.memorization.findOne({
+      where: { userId, memorizationDate },
+      order: { updatedAt: 'DESC' },
+    });
+  }
   createMemorization(data: any) {
     return this.memorization.save(this.memorization.create(data) as any);
   }

@@ -6,7 +6,7 @@ import {
 import { eachDateOnlyBetween } from '../../common-utils/dates/date-format.util';
 import {
   findGoalCatalogDefinition,
-  GoalCatalogDefinition,
+  GoalDisplayMode,
 } from '../../domain/goals/constants/goal-catalog';
 import { GoalCategory } from '../../domain/goals/enums/goal-category.enum';
 import { GoalFrequency } from '../../domain/goals/enums/goal-frequency.enum';
@@ -41,28 +41,68 @@ export class GoalAnalyticsUsecase {
         (!input.category || definition.category === input.category)
       );
     });
+    const periodicGoals = selectedGoals.filter(
+      (goal) =>
+        findGoalCatalogDefinition(goal.goalCode!)?.displayMode ===
+        GoalDisplayMode.PERIODIC,
+    );
+    const untimedGoals = selectedGoals.filter(
+      (goal) =>
+        findGoalCatalogDefinition(goal.goalCode!)?.displayMode ===
+        GoalDisplayMode.UNTIMED,
+    );
     const evidence = await this.evaluation.loadEvidence(userId);
-    const evaluations = selectedGoals
+    const evaluations = periodicGoals
       .map((goal) =>
-        this.evaluation.evaluate(goal, evidence, range.from, range.to),
+        this.evaluateIndicator(
+          goal,
+          evidence,
+          range.period,
+          range.from,
+          range.to,
+        ),
       )
       .filter((item): item is GoalEvaluationResult => item !== null);
     const goalsResponse = evaluations.map((item) => {
       const definition = findGoalCatalogDefinition(item.goalCode)!;
       return {
-        ...this.toIndicator(item, definition, range.period),
+        ...item,
         category: definition.category,
         title: definition.title,
         frequency: definition.frequency,
         targetUnit: definition.targetUnit,
+        displayMode: definition.displayMode,
       };
     });
 
+    const untimedGoalsResponse = untimedGoals
+      .map((goal) =>
+        this.evaluation.evaluateUntimed(
+          goal,
+          evidence,
+          input.anchor ?? this.today(input.timezone),
+        ),
+      )
+      .filter((item) => item !== null);
+
     const buckets = this.buckets(range.period, range.from, range.to).map(
       (bucket) => {
-        const bucketGoals = selectedGoals
+        const bucketGoals = periodicGoals
           .map((goal) =>
-            this.evaluation.evaluate(goal, evidence, bucket.from, bucket.to),
+            bucket.indicatorPeriod
+              ? this.evaluateIndicator(
+                  goal,
+                  evidence,
+                  bucket.indicatorPeriod,
+                  bucket.from,
+                  bucket.to,
+                )
+              : this.evaluation.evaluate(
+                  goal,
+                  evidence,
+                  bucket.from,
+                  bucket.to,
+                ),
           )
           .filter((item): item is GoalEvaluationResult => item !== null);
         return {
@@ -78,6 +118,7 @@ export class GoalAnalyticsUsecase {
       selectedCategory: input.category ?? null,
       categorySummaries: this.categorySummaries(goalsResponse),
       goals: goalsResponse,
+      untimedGoals: untimedGoalsResponse,
       buckets,
       summary: this.summary(goalsResponse),
     };
@@ -92,6 +133,34 @@ export class GoalAnalyticsUsecase {
     const anchor = this.now(timezone);
     return goals.map((goal) => {
       if (!goal.goalCode) return null;
+      const definition = findGoalCatalogDefinition(goal.goalCode);
+      if (definition?.displayMode === GoalDisplayMode.UNTIMED) {
+        const result = this.evaluation.evaluateUntimed(
+          goal,
+          evidence,
+          anchor.toISODate(),
+        );
+        if (!result) return null;
+        const actual = result.milestones.reduce(
+          (sum, milestone) => sum + milestone.actual,
+          0,
+        );
+        const target = result.milestones.reduce(
+          (sum, milestone) => sum + milestone.target,
+          0,
+        );
+        return {
+          goalId: result.goalId,
+          goalCode: result.goalCode,
+          from: anchor.toISODate(),
+          to: anchor.toISODate(),
+          actual,
+          target,
+          percentage: result.percentage,
+          completed: result.completed,
+          applicable: true,
+        };
+      }
       const range = this.currentGoalRange(goal.frequency, anchor);
       return this.evaluation.evaluate(goal, evidence, range.from, range.to);
     });
@@ -128,31 +197,17 @@ export class GoalAnalyticsUsecase {
         label: DateTime.fromISO(date).toFormat('ccc'),
         from: date,
         to: date,
+        indicatorPeriod: null,
       }));
     }
 
     if (period === CalendarPeriod.MONTH) {
-      const buckets: Array<{
-        key: string;
-        label: string;
-        from: string;
-        to: string;
-      }> = [];
-      let cursor = DateTime.fromISO(from, { zone: 'utc' });
-      const end = DateTime.fromISO(to, { zone: 'utc' });
-      let index = 1;
-      while (cursor <= end) {
-        const bucketTo = DateTime.min(cursor.endOf('week'), end);
-        buckets.push({
-          key: `W${index}`,
-          label: `Week ${index}`,
-          from: cursor.toISODate()!,
-          to: bucketTo.toISODate()!,
-        });
-        cursor = bucketTo.plus({ days: 1 }).startOf('day');
-        index += 1;
-      }
-      return buckets;
+      return this.fixedWeekBlocks(from, 4).map((bucket, index) => ({
+        key: `W${index + 1}`,
+        label: `Week ${index + 1}`,
+        ...bucket,
+        indicatorPeriod: null,
+      }));
     }
 
     return Array.from({ length: 12 }, (_, index) => {
@@ -164,6 +219,7 @@ export class GoalAnalyticsUsecase {
         label: month.toFormat('LLLL'),
         from: month.startOf('month').toISODate()!,
         to: month.endOf('month').toISODate()!,
+        indicatorPeriod: CalendarPeriod.MONTH,
       };
     });
   }
@@ -197,22 +253,57 @@ export class GoalAnalyticsUsecase {
     };
   }
 
-  private toIndicator(
-    evaluation: GoalEvaluationResult,
-    definition: GoalCatalogDefinition,
+  private evaluateIndicator(
+    goal: GoalModel,
+    evidence: Awaited<ReturnType<GoalEvaluationService['loadEvidence']>>,
     period: CalendarPeriod,
-  ): GoalEvaluationResult {
+    from: string,
+    to: string,
+  ): GoalEvaluationResult | null {
+    if (!goal.goalCode) return null;
+    const definition = findGoalCatalogDefinition(goal.goalCode);
+    if (!definition || definition.displayMode !== GoalDisplayMode.PERIODIC) {
+      return null;
+    }
     const target = definition.indicatorTargets[period];
-    if (target === null) {
-      return {
-        ...evaluation,
-        target: 0,
-        percentage: 0,
-        completed: false,
-        applicable: false,
-      };
+    if (target === null) return null;
+
+    if (
+      period === CalendarPeriod.WEEK &&
+      definition.frequency === GoalFrequency.DAILY
+    ) {
+      const evaluation = this.evaluation.evaluate(goal, evidence, from, to);
+      if (!evaluation) return null;
+      return this.withIndicatorTarget(evaluation, target);
     }
 
+    const blocks = this.fixedWeekBlocks(from, target);
+    const actual = blocks.filter((block) => {
+      const evaluation = this.evaluation.evaluate(
+        goal,
+        evidence,
+        block.from,
+        block.to,
+      );
+      return evaluation?.applicable && evaluation.completed;
+    }).length;
+    return {
+      goalId: goal.id,
+      goalCode: goal.goalCode,
+      from,
+      to,
+      actual,
+      target,
+      percentage: Number(((actual / target) * 100).toFixed(2)),
+      completed: actual >= target,
+      applicable: true,
+    };
+  }
+
+  private withIndicatorTarget(
+    evaluation: GoalEvaluationResult,
+    target: number,
+  ): GoalEvaluationResult {
     const actual = Math.min(Math.max(0, evaluation.actual), target);
     return {
       ...evaluation,
@@ -222,5 +313,16 @@ export class GoalAnalyticsUsecase {
       completed: actual >= target,
       applicable: true,
     };
+  }
+
+  private fixedWeekBlocks(from: string, count: number) {
+    const start = DateTime.fromISO(from, { zone: 'utc' }).startOf('day');
+    return Array.from({ length: count }, (_, index) => {
+      const blockFrom = start.plus({ days: index * 7 });
+      return {
+        from: blockFrom.toISODate()!,
+        to: blockFrom.plus({ days: 6 }).toISODate()!,
+      };
+    });
   }
 }

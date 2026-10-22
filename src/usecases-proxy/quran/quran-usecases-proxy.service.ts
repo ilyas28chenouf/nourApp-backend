@@ -1,5 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
+import { requireDateOnly } from '../../common-utils/dates/date-format.util';
+import { RECOMMENDED_SURAH_NUMBERS } from '../../domain/goals/constants/goal-catalog';
 import { HasanatSourceType } from '../../domain/progression/enums/hasanat-source-type.enum';
+import { QuranMemorizationStatus } from '../../domain/quran/enums/quran-memorization-status.enum';
+import { QuranMemorizationUnit } from '../../domain/quran/enums/quran-memorization-unit.enum';
+import { ReadingPeriod } from '../../domain/quran/enums/reading-period.enum';
 import { QuranTypeormAdapter } from '../../infrastructure/quran/adapters/quran-typeorm.adapter';
 import { UmmahQuranProviderService } from '../../infrastructure/external-apis/ummah/ummah-quran-provider.service';
 import { CreateQuranReadingGoalUsecase } from '../../usecases/quran/create-quran-reading-goal.usecase';
@@ -78,14 +84,135 @@ export class QuranUsecasesProxyService {
   memorization(userId: string) {
     return this.quran.findMemorizationByUserId(userId);
   }
-  createMemorization(userId: string, data: any) {
-    return this.quran.createMemorization({ ...data, userId });
+  async createMemorization(
+    userId: string,
+    data: any,
+    timezone?: string | null,
+  ) {
+    const payload = this.memorizationPayload(data, timezone);
+    const existing = await this.quran.findMemorizationByDate(
+      userId,
+      payload.memorizationDate,
+    );
+    if (existing) {
+      return this.quran.updateMemorization(existing.id, payload);
+    }
+    try {
+      return await this.quran.createMemorization({ ...payload, userId });
+    } catch (error) {
+      const concurrent = await this.quran.findMemorizationByDate(
+        userId,
+        payload.memorizationDate,
+      );
+      if (!concurrent) throw error;
+      return this.quran.updateMemorization(concurrent.id, payload);
+    }
   }
   async updateMemorization(userId: string, id: string, data: any) {
     const existing = (await this.quran.findMemorizationByUserId(userId)).find(
       (item: any) => item.id === id,
     );
     if (!existing) throw new Error('Record not found');
-    return this.quran.updateMemorization(id, data);
+    return this.quran.updateMemorization(
+      id,
+      this.memorizationPayload(data, null, existing),
+    );
+  }
+
+  async completeRecommendedSurah(
+    userId: string,
+    surahNumber: number,
+    data: { readingDate?: string },
+    timezone?: string | null,
+  ) {
+    if (!RECOMMENDED_SURAH_NUMBERS.includes(surahNumber)) {
+      throw new BadRequestException('Surah is not in the recommended catalog');
+    }
+    const readingDate = requireDateOnly(
+      data.readingDate ?? this.today(timezone),
+      'readingDate',
+    );
+    const existing = (await this.quran.findLogsByUserId(userId)).find(
+      (item) =>
+        item.readingDate === readingDate &&
+        item.surahNumber === surahNumber &&
+        item.objectiveReached,
+    );
+    if (existing) return existing;
+
+    const log = await new CreateQuranReadingLogUsecase(this.quran).execute(
+      userId,
+      {
+        readingDate,
+        pagesCount: 0,
+        hizbCount: 0,
+        surahNumber,
+        ayahFrom: 1,
+        ayahTo: 1,
+        readingPeriod: ReadingPeriod.DAY,
+        objectiveReached: true,
+        notes: 'RECOMMENDED_SURAH_COMPLETE',
+      },
+    );
+    await this.progression.recordQuranReadingLog(log);
+    return log;
+  }
+
+  private memorizationPayload(
+    data: any,
+    timezone?: string | null,
+    existing?: any,
+  ) {
+    const selectionUnit =
+      data.selectionUnit ??
+      existing?.selectionUnit ??
+      QuranMemorizationUnit.AYAH;
+    const selectionValue = Number(
+      data.selectionValue ??
+        existing?.selectionValue ??
+        (data.ayahFrom && data.ayahTo ? data.ayahTo - data.ayahFrom + 1 : 1),
+    );
+    const allowed =
+      selectionUnit === QuranMemorizationUnit.AYAH
+        ? [1, 5, 10]
+        : [0.125, 0.25, 0.5, 1];
+    if (!allowed.includes(selectionValue)) {
+      throw new BadRequestException('Unsupported memorization selection');
+    }
+    const status =
+      data.status ?? existing?.status ?? QuranMemorizationStatus.MEMORIZED;
+    const completed = [
+      QuranMemorizationStatus.MEMORIZED,
+      QuranMemorizationStatus.TO_REVIEW,
+    ].includes(status);
+    const completedAt = data.completedAt
+      ? new Date(data.completedAt)
+      : completed
+        ? (existing?.completedAt ?? new Date())
+        : null;
+
+    return {
+      ...data,
+      memorizationDate: requireDateOnly(
+        data.memorizationDate ??
+          existing?.memorizationDate ??
+          this.today(timezone),
+        'memorizationDate',
+      ),
+      selectionUnit,
+      selectionValue,
+      status,
+      completedAt,
+      lastReviewedAt: data.lastReviewedAt
+        ? new Date(data.lastReviewedAt)
+        : completed
+          ? completedAt
+          : existing?.lastReviewedAt,
+    };
+  }
+
+  private today(timezone?: string | null) {
+    const local = timezone ? DateTime.now().setZone(timezone) : DateTime.utc();
+    return (local.isValid ? local : DateTime.utc()).toISODate();
   }
 }

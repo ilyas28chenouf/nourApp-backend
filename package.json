@@ -13,6 +13,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "migration:run:objective-evidence": "node dist/infrastructure/database/run-objective-evidence-and-memorization.js",
     "seed:daily-reminders": "ts-node -r tsconfig-paths/register src/database/seeds/daily-reminders.seed.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "lint:check": "eslint \"{src,test}/**/*.ts\"",

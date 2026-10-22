@@ -107,7 +107,7 @@ jobs:
             package.json package-lock.json \
             "${LIGHTSAIL_USER}@${LIGHTSAIL_HOST}:${DEPLOY_PATH}/"
 
-      - name: Install production dependencies and restart PM2
+      - name: Install production dependencies, migrate, and restart PM2
         env:
           LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
@@ -191,6 +191,13 @@ jobs:
                 --omit=dev \
                 --no-audit \
                 --no-fund
+
+              echo ""
+              echo "========================================"
+              echo "Run the Objective Evidence and Memorization migration..."
+              echo "========================================"
+
+              npm run migration:run:objective-evidence
 
               echo ""
               echo "========================================"

@@ -98,7 +98,44 @@ export class DhikrTypeormAdapter implements DhikrPersistencePort {
   findLogById(id: string) {
     return this.logsRepository.findOne({ where: { id } }) as any;
   }
-  createLog(data: any) {
+  async createLog(data: any) {
+    const query = this.logsRepository
+      .createQueryBuilder('log')
+      .where('log.userId = :userId', { userId: data.userId })
+      .andWhere('log.dhikrDate = :dhikrDate', {
+        dhikrDate: data.dhikrDate,
+      });
+
+    if (data.period) {
+      query.andWhere('log.period = :period', { period: data.period });
+    } else {
+      query.andWhere('log.period IS NULL');
+    }
+
+    if (data.dhikrItemId) {
+      query.andWhere('log.dhikrItemId = :dhikrItemId', {
+        dhikrItemId: data.dhikrItemId,
+      });
+    } else {
+      query.andWhere('log.dhikrItemId IS NULL');
+    }
+
+    if (data.sessionType) {
+      query.andWhere('log.sessionType = :sessionType', {
+        sessionType: data.sessionType,
+      });
+    } else {
+      query.andWhere('log.sessionType IS NULL');
+    }
+
+    const existing = await query.orderBy('log.updatedAt', 'DESC').getOne();
+    if (existing) {
+      return this.logsRepository.save({
+        ...existing,
+        ...this.stripUndefined(data),
+      }) as any;
+    }
+
     return this.logsRepository.save(
       this.logsRepository.create(data) as any,
     ) as any;

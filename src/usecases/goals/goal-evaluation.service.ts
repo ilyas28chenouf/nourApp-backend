@@ -612,28 +612,38 @@ export class GoalEvaluationService {
         );
       });
     } else if (definition.code === 'FASTING_DAOUD') {
-      const dueDates = eachDateOnlyBetween(goal.startDate, anchor).filter(
-        (dueDate) => diffDateOnlyInDays(dueDate, goal.startDate) % 2 === 0,
-      );
       const completedDates = new Set(
         completedFasts.map((item) => item.fastingDate),
       );
-      const latestDueDate = dueDates.at(-1);
-      const recentDueDates = dueDates.slice(-2);
+      const periodProgress = (
+        from: string,
+        to: string,
+        target: number,
+        key: string,
+      ) => {
+        const periodEnd = to < anchor ? to : anchor;
+        const firstDueDate = goal.startDate > from ? goal.startDate : from;
+        const dueDates =
+          firstDueDate <= periodEnd
+            ? eachDateOnlyBetween(firstDueDate, periodEnd).filter(
+                (dueDate) =>
+                  diffDateOnlyInDays(dueDate, goal.startDate) % 2 === 0,
+              )
+            : [];
+        const actual = dueDates.filter((dueDate) =>
+          completedDates.has(dueDate),
+        ).length;
+        return this.milestone(key, Math.min(actual, target), target);
+      };
       milestones = [
-        this.milestone(
-          'latestFastingDay',
-          latestDueDate && completedDates.has(latestDueDate) ? 1 : 0,
+        periodProgress(
+          date.startOf('week').toISODate()!,
+          date.endOf('week').toISODate()!,
           1,
+          'weekly',
         ),
-        this.milestone(
-          'cadence',
-          recentDueDates.length > 0 &&
-            recentDueDates.every((dueDate) => completedDates.has(dueDate))
-            ? 1
-            : 0,
-          1,
-        ),
+        periodProgress(monthFrom, monthTo, 4, 'monthly'),
+        periodProgress(yearFrom, date.endOf('year').toISODate()!, 52, 'yearly'),
       ];
     }
 

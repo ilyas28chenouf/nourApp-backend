@@ -60,7 +60,7 @@ export class FastingController {
     @Body() dto: CreateFastingLogRequestDto,
   ) {
     return FastingResponseMapper.toDto(
-      await this.proxy.createLog(user.id, dto),
+      await this.proxy.createLog(user.id, dto, user.timezone),
     );
   }
   @Patch('logs/:id')
@@ -73,7 +73,7 @@ export class FastingController {
     @Body() dto: UpdateFastingLogRequestDto,
   ) {
     return FastingResponseMapper.toDto(
-      await this.proxy.updateLog(user.id, id, dto),
+      await this.proxy.updateLog(user.id, id, dto, user.timezone),
     );
   }
   @Delete('logs/:id')

@@ -215,6 +215,35 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
         expect.objectContaining({ key: 'annualCycles', target: 12 }),
       ],
     });
+
+    const daoudEvaluation = evaluationService();
+    jest.spyOn(daoudEvaluation, 'loadEvidence').mockResolvedValue(
+      evidence({
+        fasting: [
+          {
+            id: 'daoud-1',
+            userId: 'user-1',
+            fastingDate: '2026-08-19',
+            fastingType: 'OTHER',
+            status: 'FASTED',
+          },
+        ],
+      }),
+    );
+    const daoudResult = await new GoalAnalyticsUsecase(daoudEvaluation).execute(
+      'user-1',
+      [goal('daoud', 'FASTING_DAOUD')],
+      { period: 'WEEK', anchor: '2026-08-20' },
+    );
+
+    expect(daoudResult.untimedGoals[0]).toMatchObject({
+      goalCode: 'FASTING_DAOUD',
+      milestones: [
+        expect.objectContaining({ key: 'weekly', actual: 1, target: 1 }),
+        expect.objectContaining({ key: 'monthly', target: 4 }),
+        expect.objectContaining({ key: 'yearly', target: 52 }),
+      ],
+    });
   });
 
   it('deduplicates activities by week and exposes four document-defined month buckets', async () => {

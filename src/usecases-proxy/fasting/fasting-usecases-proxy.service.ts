@@ -21,19 +21,26 @@ export class FastingUsecasesProxyService {
   logs(userId: string, from?: string, to?: string) {
     return new GetFastingLogsUsecase(this.fasting).execute(userId, from, to);
   }
-  async createLog(userId: string, data: any) {
+  async createLog(userId: string, data: any, timezone?: string | null) {
     const log = await new CreateFastingLogUsecase(this.fasting).execute(
       userId,
       data,
+      timezone,
     );
     await this.progression.recordFastingLog(log);
     return log;
   }
-  async updateLog(userId: string, id: string, data: any) {
+  async updateLog(
+    userId: string,
+    id: string,
+    data: any,
+    timezone?: string | null,
+  ) {
     const log = await new UpdateFastingLogUsecase(this.fasting).execute(
       userId,
       id,
       data,
+      timezone,
     );
     await this.progression.recordFastingLog(log);
     return log;

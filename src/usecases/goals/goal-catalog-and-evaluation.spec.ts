@@ -223,7 +223,9 @@ describe('v1.6 goal catalog and automatic evaluation', () => {
           {
             id: 'daoud-1',
             userId: 'user-1',
-            fastingDate: '2026-08-19',
+            // This date is an alternating rest day when the goal starts on
+            // 2026-08-01, but a completed Daoud week must still count it.
+            fastingDate: '2026-08-20',
             fastingType: 'OTHER',
             status: 'FASTED',
           },

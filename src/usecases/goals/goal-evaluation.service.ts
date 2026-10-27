@@ -622,17 +622,13 @@ export class GoalEvaluationService {
         key: string,
       ) => {
         const periodEnd = to < anchor ? to : anchor;
-        const firstDueDate = goal.startDate > from ? goal.startDate : from;
-        const dueDates =
-          firstDueDate <= periodEnd
-            ? eachDateOnlyBetween(firstDueDate, periodEnd).filter(
-                (dueDate) =>
-                  diffDateOnlyInDays(dueDate, goal.startDate) % 2 === 0,
-              )
-            : [];
-        const actual = dueDates.filter((dueDate) =>
-          completedDates.has(dueDate),
-        ).length;
+        const actual =
+          periodEnd >= from
+            ? [...completedDates].filter(
+                (completedDate) =>
+                  completedDate >= from && completedDate <= periodEnd,
+              ).length
+            : 0;
         return this.milestone(key, Math.min(actual, target), target);
       };
       milestones = [
